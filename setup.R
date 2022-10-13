@@ -1,12 +1,20 @@
 library(MASS)
 library(data.table)
+library(multilevelTools)
+library(extraoperators)
 #library(tidyverse)
 library(compositions)
 library(multilevelcoda)
 library(brms)
 library(cmdstanr)
-library(multilevelTools)
 library(multilevelcoda)
+library(lme4)
+library(doFuture)
+library(foreach)
+library(doRNG)
+
+library(ggplot2)
+library(ggsci)
 
 if (Sys.info()[["sysname"]] %in% "Windows") {
   loc.base <- "g:"
