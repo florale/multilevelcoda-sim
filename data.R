@@ -48,9 +48,13 @@ bilr <- ilr(bcomp, V = psi)
 bd.f <- cbind(bilr, bd.f[, .(BSTRESS, Age)])
 
 # female simulated dataset
-simd.f <- mvrnorm(n = N / 2,
-                   mu = colMeans(bd.f, na.rm = TRUE), # check
-                   Sigma = cov(bd.f, use = "complete.obs"))
+means.f <- colMeans(bd.f, na.rm = TRUE)
+cov.f <- cov(bd.f, use = "complete.obs")
+cov.f[cbind(c(1, 2), c(2, 1))] <- -.045
+cov.f[cbind(c(3, 4), c(4, 3))] <- .07
+all(eigen(cov.f)$values > 0) ## check matrix still positive definite using eigen values
+round(cov2cor(cov.f), 2)
+simd.f <- mvrnorm(n = N / 2, mu = means.f, Sigma = cov.f, empirical = TRUE)
 simd.f <- as.data.table(simd.f)
 ## plot(simd.f)
 
@@ -76,9 +80,14 @@ bilr <- ilr(bcomp, V=psi)
 
 bd.m <- cbind(bilr, bd.m[, .(BSTRESS, Age)])
 
-simd.m <- mvrnorm(n = N / 2,
-                   mu = colMeans(bd.m, na.rm = TRUE),
-                   Sigma = cov(bd.m, use = "complete.obs"))
+means.m <- colMeans(bd.m, na.rm = TRUE)
+cov.m <- cov(bd.m, use = "complete.obs")
+cov.m[cbind(c(1, 2), c(2, 1))] <- -.045
+cov.m[cbind(c(3, 4), c(4, 3))] <- .09
+all(eigen(cov.m)$values > 0) ## check matrix still positive definite using eigen values
+round(cov2cor(cov.m), 2)
+
+simd.m <- mvrnorm(n = N / 2, mu = means.m, Sigma = cov.m)
 simd.m <- as.data.table(simd.m)
 ## plot(simd.m)
 
@@ -189,12 +198,26 @@ tmp <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR,
 
 # random effects -----------------------------------------------------------------------------------
 redat <- mvrnorm(n = length(unique(tmp$ID)),
-                 mu = c(0, 0), diag(2) * (c(8, 0.5)^2),
+                 mu = c(0, 0), diag(2) * (c(8, 1)^2),
                  empirical = TRUE)
 redat <- data.table(ID = unique(tmp$ID),
                     rint = redat[, 1], rslope = redat[, 2])
 
 tmp <- merge(tmp, redat, by = "ID")
+
+## add some checks on correlations
+cormat <- cor(tmp[, .(bilr1, bilr2, bilr3, bilr4, wilr1, wilr2, wilr3, wilr4, rint, rslope)])
+
+## view correlations
+round(cormat, 2)
+
+diag(cormat) <- 0 ## set diagonal to 0 to ignore these
+
+## expect all correlations to have absolute values < .90
+all(abs(cormat) < .9)
+
+## expect all correlations with random effects to have very small correlations < .05
+all(abs(cormat[, c("rint", "rslope")]) < .05)
 
 # outcome ------------------------------------------------------------------------------------------
 
@@ -205,12 +228,13 @@ tmp <- merge(tmp, redat, by = "ID")
 ##                           sd = 5)]
 
 tmp[, depression := rnorm(n = nrow(synd),
-                          mean = (50 + rint) + 
-                            (+0.5 * wilr1) + ((-1 + rslope) * wilr2) + (-0.5 * wilr3) + (-1 * wilr4),
+                          mean = (50 + rint) +
+                            (4 * bilr1) + (0 * bilr2) + (-4 * bilr3) + (0 * bilr4) +                            
+                            (+2 * wilr1) + ((-5 + rslope) * wilr2) + (0 * wilr3) + (-2 * wilr4),
                           sd = 5)]
 
-tmp[, depressionnore := rnorm(n = nrow(synd),
-                              mean = (50 + rint) +
-                                (-0.5 * bilr1) + (1 * bilr2) + (0.5 * bilr3) + (1 * bilr4) +
-                                (+0.5 * wilr1) + ((-1) * wilr2) + (-0.5 * wilr3) + (-1 * wilr4),
-                              sd = 5)]
+## tmp[, depressionnore := rnorm(n = nrow(synd),
+##                               mean = (50 + rint) +
+##                                 (-0.5 * bilr1) + (1 * bilr2) + (0.5 * bilr3) + (1 * bilr4) +
+##                                 (+0.5 * wilr1) + ((-1) * wilr2) + (-0.5 * wilr3) + (-1 * wilr4),
+##                               sd = 5)]

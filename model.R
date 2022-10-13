@@ -1,14 +1,13 @@
 # main model
 m <- lmer(depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
             (1 + wilr2 | ID),
-          data = tmp, REML = TRUE)
+          data = tmp, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
 
 summary(m)
 
-m2 <- lm(depression ~ 1 + bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4,
-         data = tmp)
-
-summary(m2)
+## m2 <- lm(depression ~ 1 + bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4,
+##          data = tmp)
+## summary(m2)
 
 # lmer substitution model --------------------------------------------------------------------------
 ID <- 1

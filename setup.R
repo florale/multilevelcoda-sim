@@ -25,7 +25,7 @@ if (Sys.info()[["sysname"]] %in% "Windows") {
 
 # sbp
 sbp <- matrix(c(
-  1, -1, -1,-1, -1,
+  1, 1, -1,-1, -1,
   1, -1, 0, 0, 0,
   0, 0, 1, -1, -1,
   0, 0, 0, 1, -1), ncol=5, byrow=TRUE)
