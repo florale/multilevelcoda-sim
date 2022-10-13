@@ -2,6 +2,7 @@
 source("setup.R")
 k <- 200 ## number of days
 N <- 20000 ## number of people
+set.seed(1234)
 
 # read data ----------------------------------------------------------------------------------------
 d <- as.data.table(readRDS(file.path(loc.base, "Shared drives/EMA_Studies/ema_studies.RDS")))
@@ -47,7 +48,6 @@ bilr <- ilr(bcomp, V = psi)
 bd.f <- cbind(bilr, bd.f[, .(BSTRESS, Age)])
 
 # female simulated dataset
-set.seed(1234)
 simd.f <- mvrnorm(n = N / 2,
                    mu = colMeans(bd.f, na.rm = TRUE), # check
                    Sigma = cov(bd.f, use = "complete.obs"))
@@ -76,7 +76,6 @@ bilr <- ilr(bcomp, V=psi)
 
 bd.m <- cbind(bilr, bd.m[, .(BSTRESS, Age)])
 
-set.seed(1234)
 simd.m <- mvrnorm(n = N / 2,
                    mu = colMeans(bd.m, na.rm = TRUE),
                    Sigma = cov(bd.m, use = "complete.obs"))
@@ -115,7 +114,6 @@ wilr <- ilr(wcomp, V = psi)
 wd.f <- cbind(wilr, wd.f[, .(WSTRESS)])
 ## plot(simdw.f)
 
-set.seed(1234)
 simdw.f <- mvrnorm(n = N / 2 * k,
                     mu = colMeans(wd.f, na.rm = TRUE),
                     Sigma = cov(wd.f, use = "complete.obs"))
@@ -147,7 +145,6 @@ wilr <- ilr(wcomp, V=psi)
 wd.m <- cbind(wilr, wd.m[, .(WSTRESS)])
 ## plot(wd.m)
 
-set.seed(1234)
 simdw.m <- mvrnorm(n = N / 2 * k, 
                    mu = colMeans(wd.m, na.rm = TRUE),
                    Sigma = cov(wd.m, use = "complete.obs"))
@@ -185,13 +182,12 @@ synd <- simd.all
 # synd <- readRDSfst("syntheticpopulation.RDS")
 
 cilr <- compilr(data = synd[, .(TST, WAKE, MVPA, LPA, SB, ID)],
-                sbp = sbp1, parts = c("TST", "WAKE", "MVPA", "LPA", "SB"), idvar = "ID")
+                sbp = sbp, parts = c("TST", "WAKE", "MVPA", "LPA", "SB"), idvar = "ID")
 
 tmp <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR, 
              cilr$TotalILR)
 
 # random effects -----------------------------------------------------------------------------------
-set.seed(1234)
 redat <- mvrnorm(n = length(unique(tmp$ID)),
                  mu = c(0, 0), diag(2) * (c(8, 0.5)^2),
                  empirical = TRUE)
@@ -202,18 +198,18 @@ tmp <- merge(tmp, redat, by = "ID")
 
 # outcome ------------------------------------------------------------------------------------------
 
-## tmp[, depression := rnorm(n = nrow(mcompd),
+## tmp[, depression := rnorm(n = nrow(synd),
 ##                           mean = (50 + rint) +
 ##                             (0 * bilr1) + (0 * bilr2) + (0 * bilr3) + (0 * bilr4) +
 ##                             (+0.5 * wilr1) + ((-1 + rslope) * wilr2) + (-0.5 * wilr3) + (-1 * wilr4),
 ##                           sd = 5)]
 
-tmp[, depression := rnorm(n = nrow(mcompd),
+tmp[, depression := rnorm(n = nrow(synd),
                           mean = (50 + rint) + 
                             (+0.5 * wilr1) + ((-1 + rslope) * wilr2) + (-0.5 * wilr3) + (-1 * wilr4),
                           sd = 5)]
 
-tmp[, depressionnore := rnorm(n = nrow(mcompd),
+tmp[, depressionnore := rnorm(n = nrow(synd),
                               mean = (50 + rint) +
                                 (-0.5 * bilr1) + (1 * bilr2) + (0.5 * bilr3) + (1 * bilr4) +
                                 (+0.5 * wilr1) + ((-1) * wilr2) + (-0.5 * wilr3) + (-1 * wilr4),
