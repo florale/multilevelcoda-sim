@@ -5,10 +5,6 @@ m <- lmer(depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + w
 
 summary(m)
 
-## m2 <- lm(depression ~ 1 + bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4,
-##          data = tmp)
-## summary(m2)
-
 # lmer substitution model --------------------------------------------------------------------------
 ID <- 1
 psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
@@ -93,7 +89,6 @@ bout <- foreach(i = colnames(psub), .combine = c) %dopar% {
     names(out) <- i
     out
   }
-bout
 
 ## within-person substitution model ----------------------------------------------------------------
 wout <- foreach(i = colnames(psub), .combine = c) %dopar% {
@@ -157,8 +152,6 @@ wout <- foreach(i = colnames(psub), .combine = c) %dopar% {
   names(out) <- i
   out
 }
-wout
-## add minute substituted to the model
 
 # check
 ggplot(wout$TST, aes(x = MinSubstituted, y = Mean)) +
@@ -193,7 +186,7 @@ simmodel <- function(data, sbp) {
   
   model <- brmcoda(cilr,
                    depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
-                     (1 + wilr2 | ID), cores = 10, chains = 8, iter = 4000, warmup = 500,
+                     (1 + wilr2 | ID), cores = 8, chains = 8, iter = 4000, warmup = 500,
                    backend = "cmdstanr")
   
   modelout <- data.table(
@@ -243,12 +236,12 @@ simmodel <- function(data, sbp) {
 }
 
 synd$depression <- tmp$depression
-test <- simmodel(data = synd[ID %in% 1:10, .SD[1:3], by = ID], sbp = sbp)
+test <- simmodel(data = synd[ID %in% 1:1000, .SD[1:14], by = ID], sbp = sbp)
 
 # testing ------------------------------------------------------------------------------------------
 registerDoFuture()
 plan(multisession, workers = 20)
-foreach (N = 10:10000, 
+foreach (N = 10:5000, 
          k = 3:200, .combine = c) %dopar% {
            
            dat <- synd[ID %in% 1:N, .SD[1:k], by = ID] # check to get random ID and obs
@@ -256,11 +249,19 @@ foreach (N = 10:10000,
            }
 
 registerDoFuture()
-plan(multisession, workers = 8)
-out <- foreach (N = 10:20,
-                k = 3:200, .combine = c) %dopar% {
-                  dat <- synd[ID %in% 1:N, .SD[1:k], by = ID] # check to get random ID and obs
-                  mod <- simmodel(dat, sbp = sbp)
-                  
-                  out[[N]] <- list(mod)
-                }
+plan(multisession, workers = 5)
+foreach (N = 10:20,
+         k = 3:200, .combine = c) %dopar% {
+           dat <- synd[ID %in% 1:N, .SD[1:k], by = ID]
+           mod <- simmodel(dat, sbp = sbp)
+           out[[N]] <- list(mod)
+         }
+registerDoSEQ()
+
+for (N in 10:20 ) {
+  for (k in 3:200) {
+    dat <- synd[ID %in% 1:N, .SD[1:k], by = ID]
+    mod <- simmodel(dat, sbp = sbp)
+    out[[N]] <- list(mod)
+  }
+}
