@@ -187,7 +187,7 @@ simmodel <- function(database, sbpbase) {
   
   model <- brmcoda(cilr,
                    depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
-                     (1 + wilr2 | ID), cores = 4, chains = 4, iter = 1500, warmup = 500,
+                     (1 + wilr2 | ID), cores = 4, chains = 4, iter = 2000, warmup = 1000,
                    backend = "cmdstanr")
   
   modelout <- data.table(
@@ -265,13 +265,3 @@ out <- foreach (N = c(10, 20), .combine = c) %:%
     
     list(simmodel(dat, sbp))
   }
-
-cilr <- compilr(data = mcompd, sbp = sbp, 
-                parts = c("TST", "WAKE", "MVPA", "LPA", "SB"), idvar = "ID")
-
-m <- brmcoda(compilr = cilr,
-             formula = STRESS ~ bilr1 + bilr2 + bilr3 + bilr4 +
-               wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
-             chain = 1, iter = 500)
-
-subm <- bsub(object = m, substitute = psub, minute = 5)
