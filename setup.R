@@ -12,6 +12,7 @@ library(lme4)
 library(doFuture)
 library(foreach)
 library(doRNG)
+library(parallel)
 
 library(ggplot2)
 library(ggsci)

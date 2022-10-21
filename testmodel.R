@@ -1,26 +1,182 @@
-library(data.table)
-library(extraoperators)
-library(compositions)
-library(multilevelcoda)
-library(brms)
-library(cmdstanr)
 
-library(doFuture)
-library(foreach)
-library(doRNG)
-library(parallel)
+# # main model
+# m <- lmer(depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
+#             (1 + wilr2 | ID),
+#           data = tmp, REML = TRUE, control = lmerControl(optimizer = "bobyqa"))
+# 
+# summary(m)
+# 
+# # lmer substitution model --------------------------------------------------------------------------
+# ID <- 1
+# psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
+# min <- 60
+# 
+# # mean composition
+# b <- cilr$BetweenComp
+# mcomp <- mean(b, robust = TRUE)
+# mcomp <- clo(mcomp, total = cilr$total)
+# mcomp <- as.data.table(t(mcomp))
+# 
+# # model for no change
+# bilr <- ilr(mcomp, V = cilr$psi)
+# bilr <- as.data.table(t(bilr))
+# wilr <- as.data.table(matrix(0, nrow = nrow(bilr), ncol = ncol(bilr)))
+# colnames(wilr) <- paste0("wilr", seq_len(ncol(wilr)))
+# colnames(bilr) <- paste0("bilr", seq_len(ncol(bilr)))
+# 
+# dsame <- cbind(bilr, wilr)
+# ysame <- predict(m, newdata = dsame, re.form = NA)
+# 
+# ## between-person substitution model ---------------------------------------------------------------
+# bout <- foreach(i = colnames(psub), .combine = c) %dopar% {
+#   
+#   posub <- as.data.table(psub)
+#   posub <- posub[(get(i) != 0)]
+#   posub <- posub[order(-rank(get(i)))]
+#   
+#   # substitution variable names
+#   subvar <- colnames(posub) %snin% eval(i)
+#   iv <- i
+#   
+#   kout <- vector("list", length = nrow(posub))
+#   jout <- vector("list", length = min)
+#   
+#   for (j in seq_len(min)) { # time level
+#     sub <- posub * j
+#     for (k in seq_len(nrow(sub))) {
+#       newcomp <- mcomp + sub[k, ]
+#       names(newcomp) <- cilr$parts
+#       MinSubstituted <- sub[k, get(i)]
+#       kout[[k]] <- cbind(mcomp, newcomp, MinSubstituted)
+#     }
+#     jout[[j]] <- do.call(rbind, kout)
+#   }
+#   newd <- setDT(do.call(rbind, jout))
+#   
+#   # useful information for the final results
+#   newd[, Substitute := rep(subvar, length.out = nrow(newd))]
+#   newd$Predictor <- iv
+#   newd$MinSubstituted <- as.numeric(newd$MinSubstituted)
+#   
+#   # remove impossible reallocation that result in negative values 
+#   cols <- colnames(newd) %snin% c("MinSubstituted", "Substitute", "Predictor")
+#   newd <- newd[rowSums(newd[, ..cols] < 0) == 0]
+#   
+#   # compositions and ilrs for predictions
+#   bcomp <- acomp(newd[, colnames(cilr$BetweenComp), with = FALSE])
+#   tcomp <- acomp(newd[, cilr$parts, with = FALSE])
+#   bilr <- ilr(bcomp, V = cilr$psi)
+#   tilr <- ilr(tcomp, V = cilr$psi)
+#   
+#   wilr <- matrix(0, nrow = nrow(tilr), ncol = ncol(tilr))
+#   wilr <- as.data.table(wilr)
+#   
+#   colnames(tilr) <- paste0("bilr", seq_len(ncol(tilr)))
+#   colnames(wilr) <- paste0("wilr", seq_len(ncol(wilr)))
+#   
+#   # prediction
+#     subd <- cbind(newd, tilr, wilr, ID)
+#     ysub <- predict(m, newdata = subd, re.form = NA)
+#   
+#   # difference
+#     ydiff <- ysub - ysame
+#     ydiff <- as.data.table(ydiff)
+#     setnames(ydiff, "ydiff", "Mean")
+#     
+#     # final results for entire composition
+#     ydiff <- cbind(ydiff, newd)
+#     
+#     out <- list(ydiff)
+#     names(out) <- i
+#     out
+#   }
+# 
+# ## within-person substitution model ----------------------------------------------------------------
+# wout <- foreach(i = colnames(psub), .combine = c) %dopar% {
+#   
+#   posub <- as.data.table(psub)
+#   posub <- posub[(get(i) != 0)]
+#   posub <- posub[order(-rank(get(i)))]
+#   
+#   # substitution variable names
+#   subvar <- colnames(posub) %snin% eval(i)
+#   iv <- i
+#   
+#   kout <- vector("list", length = nrow(posub))
+#   jout <- vector("list", length = min)
+#   
+#   for (j in seq_len(min)) { # time level
+#     sub <- posub * j
+#     for (k in seq_len(nrow(sub))) {
+#       newcomp <- mcomp + sub[k, ]
+#       names(newcomp) <- cilr$parts
+#       MinSubstituted <- sub[k, get(i)]
+#       kout[[k]] <- cbind(mcomp, newcomp, MinSubstituted)
+#     }
+#     jout[[j]] <- do.call(rbind, kout)
+#   }
+#   newd <- setDT(do.call(rbind, jout))
+#   
+#   # useful information for the final results
+#   newd[, Substitute := rep(subvar, length.out = nrow(newd))]
+#   newd$Predictor <- iv
+#   newd$MinSubstituted <- as.numeric(newd$MinSubstituted)
+#   
+#   # remove impossible reallocation that result in negative values 
+#   cols <- colnames(newd) %snin% c("MinSubstituted", "Substitute", "Predictor")
+#   newd <- newd[rowSums(newd[, ..cols] < 0) == 0]
+#   
+#   # compositions and ilrs for predictions
+#   bcomp <- acomp(newd[, colnames(cilr$BetweenComp), with = FALSE])
+#   tcomp <- acomp(newd[, cilr$parts, with = FALSE])
+#   wcomp <- tcomp - bcomp 
+#   
+#   bilr <- ilr(bcomp, V = cilr$psi)
+#   wilr <- ilr(wcomp, V = cilr$psi)
+# 
+#   colnames(bilr) <- paste0("bilr", seq_len(ncol(bilr)))
+#   colnames(wilr) <- paste0("wilr", seq_len(ncol(wilr)))
+#   
+#   # prediction
+#   subd <- cbind(newd, bilr, wilr, ID)
+#   ysub <- predict(m, newdata = subd, re.form = NA)
+#   
+#   # difference
+#   ydiff <- ysub - ysame
+#   ydiff <- as.data.table(ydiff)
+#   setnames(ydiff, "ydiff", "Mean")
+#   
+#   # final results for entire composition
+#   ydiff <- cbind(ydiff, newd)
+#   
+#   out <- list(ydiff)
+#   names(out) <- i
+#   out
+# }
+# 
+# # check
+# ggplot(wout$TST, aes(x = MinSubstituted, y = Mean)) +
+#   geom_hline(yintercept = 0, size = 0.2, linetype = 2) +
+#   geom_vline(xintercept = 0, size = 0.2, linetype = 2) +
+#   geom_line(aes(color = Substitute), size = 1) +
+#   scale_color_jco() +
+#   facet_grid(~ Substitute) +
+#   xlab("Change in Within-person Sleep (mins)") +
+#   ylab("Change in Depression") +
+#   theme_classic()
+# 
+# ggplot(bout$TST, aes(x = MinSubstituted, y = Mean)) +
+#   geom_hline(yintercept = 0, size = 0.2, linetype = 2) +
+#   geom_vline(xintercept = 0, size = 0.2, linetype = 2) +
+#   geom_line(aes(color = Substitute), size = 1) +
+#   scale_color_jco() +
+#   facet_grid(~ Substitute) +
+#   xlab("Change in Between-person Sleep (mins)") +
+#   ylab("Change in Depression") +
+#   theme_classic()
 
-library(ggplot2)
-library(ggsci)
 
-synd <- readRDS("syntheticpopulation.RDS")
-synd <- setDT(synd)
-
-sbp <- matrix(c(
-  1, 1, -1,-1, -1,
-  1, -1, 0, 0, 0,
-  0, 0, 1, -1, -1,
-  0, 0, 0, 1, -1), ncol=5, byrow=TRUE)
+# multilevelcoda model -----------------------------------------------------------------------------
 
 simmodel <- function(database, sbpbase) {
   
@@ -82,132 +238,40 @@ simmodel <- function(database, sbpbase) {
     k = k
   )
 }
-# max = 14000 - N = 1000, k = 14
-# min N = 20, k = 3
-# 200 obs
 
-out1 <- list()
-system.time(
-  for (N in 10:10*(1:20)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-      
-      mod <- simmodel(dat, sbpbase = sbp)
-      out1[[N]] <- list(mod)
-    }
-  })
-saveRDS(out1, "out1.RDS")
+test <- simmodel(data = synd[ID %in% 1:1000, .SD[1:14], by = ID], sbp = sbp)
 
-out2 <- list()
-system.time(
-  for (N in 10:10*(21:40)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-      
-      mod <- simmodel(dat, sbpbase = sbp)
-      out2[[N]] <- list(mod)
-    }
-  })
-saveRDS(out2, "out2.RDS")
+# testing ------------------------------------------------------------------------------------------
+# registerDoFuture()
+# plan(multisession, workers = 2)
+# registerDoSEQ()
 
-out3 <- list()
-system.time(
-  for (N in 10:10*(41:60)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
+# myseq <- tweak(sequential)
+# mymultisession <- tweak(multisession, workers = 4L)
+# plan(list(myseq, mymultisession))
 
-      mod <- simmodel(dat, sbpbase = sbp)
-      out3[[N]] <- list(mod)
-    }
-  })
-saveRDS(out3, "out3.RDS")
+future::availableCores()
+registerDoFuture()
+plan(list(
+  tweak(multisession, workers = 4L),
+  tweak(sequential)
+))
 
-out4 <- list()
-system.time(
-  for (N in 10:10*(61:70)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
+out <- foreach (N = c(10, 20), .combine = c) %:%
+  foreach(k = 5) %dopar% {
+    
+    useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+    dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
+    
+    list(simmodel(dat, sbp))
+  }
 
-      mod <- simmodel(dat, sbpbase = sbp)
-      out4[[N]] <- list(mod)
-    }
-  })
-saveRDS(out4, "out4.RDS")
+cilr <- compilr(data = mcompd, sbp = sbp, 
+                parts = c("TST", "WAKE", "MVPA", "LPA", "SB"), idvar = "ID")
 
-out5 <- list()
-system.time(
-  for (N in 10:10*(71:80)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
+m <- brmcoda(compilr = cilr,
+             formula = STRESS ~ bilr1 + bilr2 + bilr3 + bilr4 +
+               wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
+             chain = 1, iter = 500)
 
-      mod <- simmodel(dat, sbpbase = sbp)
-      out5[[N]] <- list(mod)
-    }
-  })
-saveRDS(out5, "out5.RDS")
-
-
-out6 <- list()
-system.time(
-  for (N in 10:10*(81:90)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-      
-      mod <- simmodel(dat, sbpbase = sbp)
-      out6[[N]] <- list(mod)
-    }
-  })
-saveRDS(out6, "out6.RDS")
-
-out7 <- list()
-system.time(
-  for (N in 10:10*(91:100)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-      
-      mod <- simmodel(dat, sbpbase = sbp)
-      out7[[N]] <- list(mod)
-    }
-  })
-saveRDS(out7, "out7.RDS")
-
-# user  system elapsed 
-# 37.035   1.449  36.356 
-
-# # 24 models - max 100 obs
-# system.time(
-#   for (N in c(10, 20, 50, 100)) {
-#     for (k in 5:10) {
-#       useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-#       dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-#       
-#       mod <- simmodel(dat, sbp = sbp)
-#       out[[N]] <- list(mod)
-#     }
-#   })
-# 
-# # user  system elapsed 
-# # 999.735  35.059 898.519 
-# 
-# # 14000 obs
-# system.time(
-#   for (N in 1000 ) {
-#     for (k in 14) {
-#       useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-#       dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-#       
-#       mod <- simmodel(dat, sbp = sbp)
-#       out[[N]] <- list(mod)
-#     }
-#   })
-# 
-# # user  system elapsed 
-# # 428.006   4.414 163.029 
-
+subm <- bsub(object = m, substitute = psub, minute = 5)

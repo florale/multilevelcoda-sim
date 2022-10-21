@@ -187,8 +187,7 @@ simd.all[STRESS < 0, STRESS := 0][STRESS > 10, STRESS := 10]
 summary(simd.all)
 synd <- simd.all
 
-# JWileymisc::saveRDSfst(synd, filename = "syntheticpopulation.RDS")
-# synd <- readRDSfst("syntheticpopulation.RDS")
+# ILR ------------------------
 cilr <- compilr(data = synd[, .(TST, WAKE, MVPA, LPA, SB, ID)],
                 sbp = sbp, parts = c("TST", "WAKE", "MVPA", "LPA", "SB"), idvar = "ID")
 
@@ -239,3 +238,6 @@ tmp[, depression := rnorm(n = nrow(synd),
 ##                               sd = 5)]
 
 synd$depression <- tmp$depression
+
+# saveRDS(synd, file = "syntheticpopulation.RDS")
+# synd <- readRDS("syntheticpopulation.RDS")
