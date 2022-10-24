@@ -235,7 +235,7 @@ simmodel <- function(database, sbpbase) {
     BetweenResult = bsubm,
     WithinResult = wsubm,
     N = N,
-    k = k
+    K = K
   )
 }
 
@@ -265,3 +265,43 @@ out <- foreach (N = c(10, 20), .combine = c) %:%
     
     list(simmodel(dat, sbp))
   }
+
+# check divergent transitions
+N <- 10
+k = 3
+
+useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
+
+psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
+parts <- colnames(psub)
+
+cilr <- compilr(dat, sbp, parts, total = 1440, idvar = "ID")
+
+model <- brmcoda(cilr,
+                 depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
+                   (1 + wilr2 | ID), cores = 4, chains = 4, iter = 2000, warmup = 1000,
+                 backend = "cmdstanr")
+
+summary(model$Model)
+
+# 
+out <- list()
+mod <- list()
+obs <- c(3:4)
+ppl <- c(10:10*(1:2))
+
+system.time(
+  for (n in seq_along(ppl)) {
+    for (o in seq_along(obs)) {
+      
+      N = ppl[n]
+      K = obs[o]
+      
+      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), K, replace = FALSE)], by = ID]
+
+      mod[[o]] <- simmodel(dat, sbpbase = sbp)
+    }
+    out[[n]] <- mod
+  })
