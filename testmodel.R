@@ -178,6 +178,67 @@
 
 # multilevelcoda model -----------------------------------------------------------------------------
 
+# simmodel <- function(database, sbpbase) {
+#   
+#   psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
+#   parts <- colnames(psub)
+#   
+#   cilr <- compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
+#   
+#   model <- brmcoda(cilr,
+#                    depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
+#                      (1 + wilr2 | ID), cores = 4, chains = 4, iter = 2000, warmup = 1000,
+#                    backend = "cmdstanr")
+#   
+#   modelout <- data.table(
+#     bilr1 = summary(model$Model)$fixed[2, 1],
+#     bilr1_CILow = summary(model$Model)$fixed[2, 3],
+#     bilr1_CIHigh = summary(model$Model)$fixed[2, 4],
+#     
+#     bilr2 = summary(model$Model)$fixed[3, 1],
+#     bilr2_CILow = summary(model$Model)$fixed[3, 3],
+#     bilr2_CIHigh = summary(model$Model)$fixed[3, 4],
+#     
+#     bilr3 = summary(model$Model)$fixed[4, 1],
+#     bilr3_CILow = summary(model$Model)$fixed[4, 3],
+#     bilr3_CIHigh = summary(model$Model)$fixed[4, 4],
+#     
+#     bilr4 = summary(model$Model)$fixed[5, 1],
+#     bilr4_CILow = summary(model$Model)$fixed[5, 3],
+#     bilr4_CIHigh = summary(model$Model)$fixed[5, 4],
+#     
+#     wilr1 = summary(model$Model)$fixed[6, 1],
+#     wilr1_CILow = summary(model$Model)$fixed[6, 3],
+#     wilr1_CIHigh = summary(model$Model)$fixed[6, 4],
+#     
+#     wilr2 = summary(model$Model)$fixed[7, 1],
+#     wilr2_CILow = summary(model$Model)$fixed[7, 3],
+#     wilr2_CIHigh = summary(model$Model)$fixed[7, 4],
+#     
+#     wilr3 = summary(model$Model)$fixed[8, 1],
+#     wilr3_CILow = summary(model$Model)$fixed[8, 3],
+#     wilr3_CIHigh = summary(model$Model)$fixed[8, 4],
+#     
+#     wilr4 = summary(model$Model)$fixed[9, 1],
+#     wilr4_CILow = summary(model$Model)$fixed[9, 3],
+#     wilr4_CIHigh = summary(model$Model)$fixed[9, 4],
+#     
+#     Rhat = summary(model$Model)$fixed[, 5]
+#   )
+#   
+#   bsubm <- bsub(model, substitute = psub, minute = 30)
+#   wsubm <- wsub(model, substitute = psub, minute = 30)
+#   
+#   out <- list(
+#     CompILR = cilr,
+#     Result = modelout,
+#     BetweenResult = bsubm,
+#     WithinResult = wsubm,
+#     N = N,
+#     K = K
+#   )
+# }
+
 simmodel <- function(database, sbpbase) {
   
   psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
@@ -190,52 +251,20 @@ simmodel <- function(database, sbpbase) {
                      (1 + wilr2 | ID), cores = 4, chains = 4, iter = 2000, warmup = 1000,
                    backend = "cmdstanr")
   
-  modelout <- data.table(
-    bilr1 = summary(model$Model)$fixed[2, 1],
-    bilr1_CILow = summary(model$Model)$fixed[2, 3],
-    bilr1_CIHigh = summary(model$Model)$fixed[2, 4],
-    
-    bilr2 = summary(model$Model)$fixed[3, 1],
-    bilr2_CILow = summary(model$Model)$fixed[3, 3],
-    bilr2_CIHigh = summary(model$Model)$fixed[3, 4],
-    
-    bilr3 = summary(model$Model)$fixed[4, 1],
-    bilr3_CILow = summary(model$Model)$fixed[4, 3],
-    bilr3_CIHigh = summary(model$Model)$fixed[4, 4],
-    
-    bilr4 = summary(model$Model)$fixed[5, 1],
-    bilr4_CILow = summary(model$Model)$fixed[5, 3],
-    bilr4_CIHigh = summary(model$Model)$fixed[5, 4],
-    
-    wilr1 = summary(model$Model)$fixed[6, 1],
-    wilr1_CILow = summary(model$Model)$fixed[6, 3],
-    wilr1_CIHigh = summary(model$Model)$fixed[6, 4],
-    
-    wilr2 = summary(model$Model)$fixed[7, 1],
-    wilr2_CILow = summary(model$Model)$fixed[7, 3],
-    wilr2_CIHigh = summary(model$Model)$fixed[7, 4],
-    
-    wilr3 = summary(model$Model)$fixed[8, 1],
-    wilr3_CILow = summary(model$Model)$fixed[8, 3],
-    wilr3_CIHigh = summary(model$Model)$fixed[8, 4],
-    
-    wilr4 = summary(model$Model)$fixed[9, 1],
-    wilr4_CILow = summary(model$Model)$fixed[9, 3],
-    wilr4_CIHigh = summary(model$Model)$fixed[9, 4],
-    
-    Rhat = summary(model$Model)$fixed[, 5]
-  )
+  summodel <- summary(model$Model)
+  ndt <- sum(subset(nuts_params(model$Model), Parameter == "divergent__")$Value)
   
   bsubm <- bsub(model, substitute = psub, minute = 30)
   wsubm <- wsub(model, substitute = psub, minute = 30)
   
   out <- list(
     CompILR = cilr,
-    Result = modelout,
+    Result = summodel,
     BetweenResult = bsubm,
     WithinResult = wsubm,
     N = N,
-    K = K
+    K = K,
+    ndt = ndt
   )
 }
 
@@ -268,7 +297,7 @@ out <- foreach (N = c(10, 20), .combine = c) %:%
 
 # check divergent transitions
 N <- 10
-k = 3
+k <- 3
 
 useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
 dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
@@ -284,6 +313,11 @@ model <- brmcoda(cilr,
                  backend = "cmdstanr")
 
 summary(model$Model)
+launch_shinystan(model$Model)
+
+np <- nuts_params(model$Model)
+dt <- subset(np, Parameter == "divergent__")
+ndt <- sum(subset(np, Parameter == "divergent__")$Value)
 
 # 
 out <- list()
@@ -304,4 +338,42 @@ system.time(
       mod[[o]] <- simmodel(dat, sbpbase = sbp)
     }
     out[[n]] <- mod
+  })
+
+# 
+obs <- data.table(K = 3:28)
+obs[, Kwt := dbeta((K - min(K))/(max(K) - min(K)), 
+                   1, 2)]
+obs[, Kwt := Kwt/sum(Kwt)]
+
+ppl <- data.table(N = c(10:1000))
+ppl[, Nwt := dbeta((N - min(N))/(max(N) - min(N)),
+                   1, 2)]
+ppl[, Nwt := Nwt/sum(Nwt)]
+
+d <- expand.grid(
+  K = obs$K,
+  N = ppl$N
+)
+d <- merge(d, obs, by = "K")
+d <- merge(d, ppl, by = "N")
+d <- as.data.table(d)
+d[, wt := Kwt*Nwt]
+
+set.seed(123) # set different for each script
+sampledd <- d[sample(seq_len(.N), size = 10, replace = TRUE, prob = wt)]
+
+ggplot(sampledd, aes(x = N, y = K)) + geom_density_2d_filled()
+
+out <- list()
+system.time(
+  for (i in seq_len(nrow(sampledd))) {
+    
+    N = sampledd[i]$N
+    K = sampledd[i]$K
+    
+    useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+    dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), K, replace = FALSE)], by = ID]
+    
+    out[[i]] <- simmodel(dat, sbpbase = sbp)
   })
