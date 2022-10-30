@@ -1,4 +1,3 @@
-
 # # main model
 # m <- lmer(depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
 #             (1 + wilr2 | ID),
@@ -175,7 +174,6 @@
 #   ylab("Change in Depression") +
 #   theme_classic()
 
-
 # multilevelcoda model -----------------------------------------------------------------------------
 
 # simmodel <- function(database, sbpbase) {
@@ -239,7 +237,7 @@
 #   )
 # }
 
-simmodel <- function(database, sbpbase) {
+simmodel <- function(database, sbpbase, N, K) {
   
   psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
   parts <- colnames(psub)
@@ -270,32 +268,78 @@ simmodel <- function(database, sbpbase) {
 
 test <- simmodel(data = synd[ID %in% 1:1000, .SD[1:14], by = ID], sbp = sbp)
 
-# testing ------------------------------------------------------------------------------------------
-# registerDoFuture()
-# plan(multisession, workers = 2)
-# registerDoSEQ()
-
-# myseq <- tweak(sequential)
-# mymultisession <- tweak(multisession, workers = 4L)
-# plan(list(myseq, mymultisession))
-
+# testing for loop for sim models -------------------------------------------------------------------
+# foreach - failed, keep here to document # ------------
 future::availableCores()
+# set.seed(123456, "L'Ecuyer-CMRG")
 registerDoFuture()
 plan(list(
-  tweak(multisession, workers = 4L),
+  tweak(multisession, workers = 2L),
   tweak(sequential)
 ))
 
-out <- foreach (N = c(10, 20), .combine = c) %:%
-  foreach(k = 5) %dopar% {
-    
-    useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-    dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-    
-    list(simmodel(dat, sbp))
-  }
+# work but %dopar% is not recommended
+# out <- foreach (N = c(10, 20), .combine = c) %:%
+#        foreach(k = 5) %dopar% {
+#     
+#     useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+#     dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
+#     
+#     simmodel(dat, sbp, N, k)
+#        }
 
-# check divergent transitions
+# does not parallel #
+# out <- list()
+# out <- foreach (N = c(10, 20),
+#                 k = 5, .combine = c) %dorng% {
+# 
+#     useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+#     dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
+#     
+#     simmodel(dat, sbp, N, k)
+#   }
+
+# only parallel outer loop - ok, but need tidyup # ------------
+## if use, need to edit simmodel() to pass N and k as arguments
+registerDoFuture()
+plan(list(
+  tweak(multisession, workers = 2L),
+  tweak(sequential)
+))
+out <- list()
+out <- foreach (N = c(10, 20), .combine = c) %dorng% {
+  mod <- list()
+  for (k in 3:5) {
+         
+         useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+         dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
+         
+         mod[[k]] <- simmodel(dat, sbp, N, k)
+       }
+  mod
+}
+# normal for loop - ok # ------------------
+out <- list()
+mod <- list()
+obs <- c(3:4)
+ppl <- c(10:10*(1:2))
+
+system.time(
+  for (n in seq_along(ppl)) {
+    for (o in seq_along(obs)) {
+      
+      N = ppl[n]
+      K = obs[o]
+      
+      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), K, replace = FALSE)], by = ID]
+      
+      mod[[o]] <- simmodel(dat, sbpbase = sbp)
+    }
+    out[[n]] <- mod
+  })
+
+# check divergent transitions # -----------
 N <- 10
 k <- 3
 
@@ -319,28 +363,7 @@ np <- nuts_params(model$Model)
 dt <- subset(np, Parameter == "divergent__")
 ndt <- sum(subset(np, Parameter == "divergent__")$Value)
 
-# 
-out <- list()
-mod <- list()
-obs <- c(3:4)
-ppl <- c(10:10*(1:2))
-
-system.time(
-  for (n in seq_along(ppl)) {
-    for (o in seq_along(obs)) {
-      
-      N = ppl[n]
-      K = obs[o]
-      
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), K, replace = FALSE)], by = ID]
-
-      mod[[o]] <- simmodel(dat, sbpbase = sbp)
-    }
-    out[[n]] <- mod
-  })
-
-# 
+# weighted distribution of n and k ----------------
 obs <- data.table(K = 3:28)
 obs[, Kwt := dbeta((K - min(K))/(max(K) - min(K)), 
                    1, 2)]
@@ -375,5 +398,52 @@ system.time(
     useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
     dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), K, replace = FALSE)], by = ID]
     
-    out[[i]] <- simmodel(dat, sbpbase = sbp)
+    out[[i]] <- simmodel(dat, sbp, N, K)
   })
+# system time
+# user   system  elapsed 
+# 1266.378   21.395  612.166 
+
+# foreach with weighted distribution (only 1 loop) - perf # ----------
+obs <- data.table(K = 3:28)
+obs[, Kwt := dbeta((K - min(K))/(max(K) - min(K)), 
+                   1, 2)]
+obs[, Kwt := Kwt/sum(Kwt)]
+
+ppl <- data.table(N = c(10:1000))
+ppl[, Nwt := dbeta((N - min(N))/(max(N) - min(N)),
+                   1, 2)]
+ppl[, Nwt := Nwt/sum(Nwt)]
+
+d <- expand.grid(
+  K = obs$K,
+  N = ppl$N
+)
+d <- merge(d, obs, by = "K")
+d <- merge(d, ppl, by = "N")
+d <- as.data.table(d)
+d[, wt := Kwt*Nwt]
+
+set.seed(123) 
+sampledd <- d[sample(seq_len(.N), size = 10, replace = TRUE, prob = wt)]
+
+registerDoFuture()
+plan(list(
+  tweak(multisession, workers = 8L),
+  tweak(sequential)
+))
+
+out <- foreach (i = seq_len(nrow(sampledd)), 
+                .combine = c) %dorng% {
+                  
+                  N = sampledd[i]$N
+                  K = sampledd[i]$K
+                  
+                  useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+                  dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), K, replace = FALSE)], by = ID]
+                  
+                  list(simmodel(dat, sbp, N, K))
+                }
+# system time
+# user  system elapsed 
+# 44.354   1.410 496.234 

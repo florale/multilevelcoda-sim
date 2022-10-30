@@ -22,7 +22,7 @@ sbp <- matrix(c(
   0, 0, 1, -1, -1,
   0, 0, 0, 1, -1), ncol=5, byrow=TRUE)
 
-simmodel <- function(database, sbpbase) {
+simmodel <- function(database, sbpbase, N, K) {
   
   psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
   parts <- colnames(psub)
@@ -31,153 +31,66 @@ simmodel <- function(database, sbpbase) {
   
   model <- brmcoda(cilr,
                    depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
-                     (1 + wilr2 | ID), cores = 4, chains = 4, iter = 1500, warmup = 500,
+                     (1 + wilr2 | ID), cores = 4, chains = 4, iter = 2000, warmup = 1000,
                    backend = "cmdstanr")
   
-  modelout <- data.table(
-    bilr1 = summary(model$Model)$fixed[2, 1],
-    bilr1_CILow = summary(model$Model)$fixed[2, 3],
-    bilr1_CIHigh = summary(model$Model)$fixed[2, 4],
-    
-    bilr2 = summary(model$Model)$fixed[3, 1],
-    bilr2_CILow = summary(model$Model)$fixed[3, 3],
-    bilr2_CIHigh = summary(model$Model)$fixed[3, 4],
-    
-    bilr3 = summary(model$Model)$fixed[4, 1],
-    bilr3_CILow = summary(model$Model)$fixed[4, 3],
-    bilr3_CIHigh = summary(model$Model)$fixed[4, 4],
-    
-    bilr4 = summary(model$Model)$fixed[5, 1],
-    bilr4_CILow = summary(model$Model)$fixed[5, 3],
-    bilr4_CIHigh = summary(model$Model)$fixed[5, 4],
-    
-    wilr1 = summary(model$Model)$fixed[6, 1],
-    wilr1_CILow = summary(model$Model)$fixed[6, 3],
-    wilr1_CIHigh = summary(model$Model)$fixed[6, 4],
-    
-    wilr2 = summary(model$Model)$fixed[7, 1],
-    wilr2_CILow = summary(model$Model)$fixed[7, 3],
-    wilr2_CIHigh = summary(model$Model)$fixed[7, 4],
-    
-    wilr3 = summary(model$Model)$fixed[8, 1],
-    wilr3_CILow = summary(model$Model)$fixed[8, 3],
-    wilr3_CIHigh = summary(model$Model)$fixed[8, 4],
-    
-    wilr4 = summary(model$Model)$fixed[9, 1],
-    wilr4_CILow = summary(model$Model)$fixed[9, 3],
-    wilr4_CIHigh = summary(model$Model)$fixed[9, 4],
-    
-    Rhat = summary(model$Model)$fixed[, 5]
-  )
+  summodel <- summary(model$Model)
+  ndt <- sum(subset(nuts_params(model$Model), Parameter == "divergent__")$Value)
   
   bsubm <- bsub(model, substitute = psub, minute = 30)
   wsubm <- wsub(model, substitute = psub, minute = 30)
   
   out <- list(
     CompILR = cilr,
-    Result = modelout,
+    Result = summodel,
     BetweenResult = bsubm,
     WithinResult = wsubm,
     N = N,
-    k = k
+    K = K,
+    ndt = ndt
   )
 }
-# max = 14000 - N = 1000, k = 14
-# min N = 20, k = 3
-# 200 obs
 
-out1 <- list()
-system.time(
-  for (N in 10:10*(1:20)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-      
-      mod <- simmodel(dat, sbpbase = sbp)
-      out1[[N]] <- list(mod)
-    }
-  })
+obs <- data.table(K = 3:28)
+obs[, Kwt := dbeta((K - min(K))/(max(K) - min(K)), 
+                   1, 2)]
+obs[, Kwt := Kwt/sum(Kwt)]
 
-out2 <- list()
-system.time(
-  for (N in 10:10*(21:40)) {
-    for (k in 3:14) {
-      useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-      dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-      
-      mod <- simmodel(dat, sbpbase = sbp)
-      out2[[N]] <- list(mod)
-    }
-  })
+ppl <- data.table(N = c(10:1000))
+ppl[, Nwt := dbeta((N - min(N))/(max(N) - min(N)),
+                   1, 2)]
+ppl[, Nwt := Nwt/sum(Nwt)]
 
-# out1 <- list()
-# system.time(
-#   for (N in 10:10*(1:100)) {
-#     for (k in 3:14) {
-#       useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-#       dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-#       
-#       mod <- simmodel(dat, sbpbase = sbp)
-#       out1[[N]] <- list(mod)
-#     }
-#   })
-# 
-# out1 <- list()
-# system.time(
-#   for (N in 10:10*(1:100)) {
-#     for (k in 3:14) {
-#       useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-#       dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-#       
-#       mod <- simmodel(dat, sbpbase = sbp)
-#       out1[[N]] <- list(mod)
-#     }
-#   })
-# 
-# out1 <- list()
-# system.time(
-#   for (N in 10:10*(1:100)) {
-#     for (k in 3:14) {
-#       useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-#       dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-#       
-#       mod <- simmodel(dat, sbpbase = sbp)
-#       out1[[N]] <- list(mod)
-#     }
-#   })
+d <- expand.grid(
+  K = obs$K,
+  N = ppl$N
+)
+d <- merge(d, obs, by = "K")
+d <- merge(d, ppl, by = "N")
+d <- as.data.table(d)
+d[, wt := Kwt*Nwt]
 
-# user  system elapsed 
-# 37.035   1.449  36.356 
+set.seed(1) 
+sampledd <- d[sample(seq_len(.N), size = 10, replace = TRUE, prob = wt)]
 
-# # 24 models - max 100 obs
-# system.time(
-#   for (N in c(10, 20, 50, 100)) {
-#     for (k in 5:10) {
-#       useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-#       dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-#       
-#       mod <- simmodel(dat, sbp = sbp)
-#       out[[N]] <- list(mod)
-#     }
-#   })
-# 
-# # user  system elapsed 
-# # 999.735  35.059 898.519 
-# 
-# # 14000 obs
-# system.time(
-#   for (N in 1000 ) {
-#     for (k in 14) {
-#       useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
-#       dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), k, replace = FALSE)], by = ID]
-#       
-#       mod <- simmodel(dat, sbp = sbp)
-#       out[[N]] <- list(mod)
-#     }
-#   })
-# 
-# # user  system elapsed 
-# # 428.006   4.414 163.029 
+# plan(cluster, workers = availableWorkers())
 
-saveRDS(out1, "out1.RDS")
-saveRDS(out2, "out2.RDS")
+registerDoFuture()
+plan(multisession, workers = 5L)
+# options(doFuture.debug = TRUE)
+
+system.time(testout <- foreach (i = seq_len(nrow(sampledd)),
+                                .combine = c) %dorng% {
+                                  
+                                  N = sampledd[i]$N
+                                  K = sampledd[i]$K
+                                  
+                                  useIDs <- sample(unique(synd$ID), size = N, replace = FALSE)
+                                  dat <- synd[ID %in% useIDs, .SD[sample(seq_len(.N), K, replace = FALSE)], by = ID]
+                                  
+                                  list(simmodel(dat, sbp, N, K))
+                            }) 
+
+saveRDS(testout, "testout.RDS")
+sessionInfo()
+testout <- readRDS("testout.RDS")
