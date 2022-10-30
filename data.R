@@ -1,10 +1,42 @@
 ## Simulated Dataset for multilevelcoda
-source("setup.R")
+library(MASS)
+library(data.table)
+library(multilevelTools)
+library(extraoperators)
+#library(tidyverse)
+library(compositions)
+library(multilevelcoda)
+library(brms)
+library(cmdstanr)
+library(multilevelcoda)
+library(lme4)
+library(doFuture)
+library(foreach)
+library(doRNG)
+library(parallel)
+
+library(ggplot2)
+library(ggsci)
+
+# sbp
+sbp <- matrix(c(
+  1, 1, -1,-1, -1,
+  1, -1, 0, 0, 0,
+  0, 0, 1, -1, -1,
+  0, 0, 0, 1, -1), ncol=5, byrow=TRUE)
+
 k <- 200 ## number of days
 N <- 20000 ## number of people
 set.seed(1234)
 
 # read data ----------------------------------------------------------------------------------------
+
+if (Sys.info()[["sysname"]] %in% "Windows") {
+  loc.base <- "g:"
+} else if (Sys.info()[["sysname"]] %in% "Darwin") {
+  loc.base <- "/Volumes/GoogleDrive"
+}
+
 d <- as.data.table(readRDS(file.path(loc.base, "Shared drives/EMA_Studies/ema_studies.RDS")))
 
 setnames(d, "TSTacti", "TST")
