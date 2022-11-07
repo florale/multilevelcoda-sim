@@ -1,36 +1,18 @@
-## Simulated Dataset for multilevelcoda
-library(MASS)
+#### Calculate Means & Covariance Matrix for multilevel compositional data simulation ####
 library(data.table)
-library(multilevelTools)
-library(extraoperators)
-#library(tidyverse)
 library(compositions)
-library(multilevelcoda)
-library(brms)
-library(cmdstanr)
-library(multilevelcoda)
-library(lme4)
-library(doFuture)
-library(foreach)
-library(doRNG)
-library(parallel)
+library(multilevelTools)
 
-library(ggplot2)
-library(ggsci)
-
-# sbp
+# sbp & psi
 sbp <- matrix(c(
   1, 1, -1,-1, -1,
   1, -1, 0, 0, 0,
   0, 0, 1, -1, -1,
-  0, 0, 0, 1, -1), ncol=5, byrow=TRUE)
+  0, 0, 0, 1, -1), ncol = 5, byrow = TRUE)
+psi <- gsi.buildilrBase(t(sbp))
 
-k <- 200 ## number of days
-N <- 20000 ## number of people
-set.seed(1234)
 
 # read data ----------------------------------------------------------------------------------------
-
 if (Sys.info()[["sysname"]] %in% "Windows") {
   loc.base <- "g:"
 } else if (Sys.info()[["sysname"]] %in% "Darwin") {
@@ -59,25 +41,28 @@ d[, c("BLPA", "WLPA") := meanDeviations(LPA), by = UID]
 d[, c("BSB", "WSB") := meanDeviations(SB), by = UID]
 d[, c("BWAKE", "WWAKE") := meanDeviations(WAKE), by = UID]
 d[, c("BTST", "WTST") := meanDeviations(TST), by = UID]
-d[, BSTRESS := mean(STRESS, na.rm = TRUE), by = UID]
+d[, c("BSTRESS", "WSTRESS") := meanDeviations(STRESS), by = UID]
 
-hist(d[!duplicated(UID)]$Age)
-table(d[!duplicated(UID)]$Female)
+## make within variable ratio of total to between
+d[, WMVPA := MVPA / BMVPA]
+d[, WLPA := LPA / BLPA]
+d[, WSB := SB / BSB]
+d[, WWAKE := WAKE / BWAKE]
+d[, WTST := TST / BTST]
+
+## hist(d[!duplicated(UID)]$Age)
+## table(d[!duplicated(UID)]$Female)
 
 # between-person dataset for simulation
-bd <- d[!duplicated(UID), .(UID, BTST, BWAKE, BMVPA, BLPA, BSB, BSTRESS, Age = log(Age), Female)]
+bd <- d[!duplicated(UID), .(BTST, BWAKE, BMVPA, BLPA, BSB, BSTRESS, Age = log(Age), Female)]
 summary(bd)
 
 ## between female  ---------------------------------------------------------------------------------
 bd.f <- bd[Female == 1, .(BTST, BWAKE, BMVPA, BLPA, BSB, BSTRESS, Age)]
 
-# composition
-b <- bd.f[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]
-bcomp <- acomp(b)
-psi <- gsi.buildilrBase(t(sbp))
-bilr <- ilr(bcomp, V = psi)
-
-bd.f <- cbind(bilr, bd.f[, .(BSTRESS, Age)])
+bd.f <- cbind(  ## convert to composition
+  ilr(acomp(bd.f[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]), V = psi),
+  bd.f[, .(BSTRESS, Age)])
 
 # female simulated dataset
 means.f <- colMeans(bd.f, na.rm = TRUE)
@@ -86,31 +71,13 @@ cov.f[cbind(c(1, 2), c(2, 1))] <- -.045
 cov.f[cbind(c(3, 4), c(4, 3))] <- .07
 all(eigen(cov.f)$values > 0) ## check matrix still positive definite using eigen values
 round(cov2cor(cov.f), 2)
-simd.f <- mvrnorm(n = N / 2, mu = means.f, Sigma = cov.f, empirical = TRUE)
-simd.f <- as.data.table(simd.f)
-## plot(simd.f)
-
-invb <- ilrInv(simd.f[, .(V1, V2, V3, V4)], V = psi)
-invb <- clo(invb, total = 1440)
-
-simd.f <- cbind(invb, simd.f[, .(BSTRESS, Age = exp(Age))])
-summary(simd.f)
-simd.f[BSTRESS < 0, BSTRESS := 0]
-simd.f[Age < 18, Age := 18]
-
-simd.f$Female <- 1
-simd.f$ID <- seq_len(nrow(simd.f))
-names(simd.f) <- c("BTST", "BWAKE", "BMVPA", "BLPA", "BSB", "BSTRESS", "Age", "Female", "ID")
 
 ## between male  -----------------------------------------------------------------------------------
 bd.m <- bd[Female == 0, .(BTST, BWAKE, BMVPA, BLPA, BSB, BSTRESS, Age)]
 
-b <- bd.m[, . (BTST, BWAKE, BMVPA, BLPA, BSB)]
-bcomp <- acomp(b)
-psi <- gsi.buildilrBase(t(sbp))
-bilr <- ilr(bcomp, V=psi)
-
-bd.m <- cbind(bilr, bd.m[, .(BSTRESS, Age)])
+bd.m <- cbind(  ## convert to composition
+  ilr(acomp(bd.m[, . (BTST, BWAKE, BMVPA, BLPA, BSB)]), V = psi),
+  bd.m[, .(BSTRESS, Age)])
 
 means.m <- colMeans(bd.m, na.rm = TRUE)
 cov.m <- cov(bd.m, use = "complete.obs")
@@ -119,157 +86,81 @@ cov.m[cbind(c(3, 4), c(4, 3))] <- .09
 all(eigen(cov.m)$values > 0) ## check matrix still positive definite using eigen values
 round(cov2cor(cov.m), 2)
 
-simd.m <- mvrnorm(n = N / 2, mu = means.m, Sigma = cov.m)
-simd.m <- as.data.table(simd.m)
-## plot(simd.m)
-
-invb <- ilrInv(simd.m[, .(V1, V2, V3, V4)], V = psi)
-invb <- clo(invb, total = 1440)
-
-simd.m <- cbind(invb, simd.m[, .(BSTRESS, Age = exp(Age))])
-summary(simd.m)
-simd.m[BSTRESS < 0, BSTRESS := 0]
-simd.m[Age < 18, Age := 18]
-
-summary(simd.m)
-
-simd.m$Female <- 0
-simd.m$ID <- seq_len(nrow(simd.m))
-names(simd.m) <- c("BTST", "BWAKE", "BMVPA", "BLPA", "BSB", "BSTRESS", "Age", "Female", "ID")
-
 ## within female  ----------------------------------------------------------------------------------
-wd.f <- d[Female == 1, .(TST, WAKE, MVPA, LPA, SB, BTST, BWAKE, BMVPA, BLPA, BSB, STRESS, BSTRESS)]
-wd.f[, WSTRESS := STRESS - BSTRESS]
-wd.f[, WTST := TST/BTST]
-wd.f[, WWAKE := WAKE/BWAKE]
-wd.f[, WMVPA := MVPA/BMVPA]
-wd.f[, WLPA := LPA/BLPA]
-wd.f[, WSB := SB/BSB]
+wd.f <- d[Female == 1, .(WTST, WWAKE, WMVPA, WLPA, WSB, WSTRESS)]
 
-# female within composition
-w <- wd.f[, . (WTST, WWAKE, WMVPA, WLPA, WSB)]
-wcomp <- acomp(w)
-psi <- gsi.buildilrBase(t(sbp))
-wilr <- ilr(wcomp, V = psi)
+wd.f <- cbind( ## convert to composition
+  ilr(acomp(wd.f[, . (WTST, WWAKE, WMVPA, WLPA, WSB)]), V = psi),
+  wd.f[, .(WSTRESS)])
 
-wd.f <- cbind(wilr, wd.f[, .(WSTRESS)])
-## plot(simdw.f)
-
-simdw.f <- mvrnorm(n = N / 2 * k,
-                    mu = colMeans(wd.f, na.rm = TRUE),
-                    Sigma = cov(wd.f, use = "complete.obs"))
-simdw.f <- as.data.table(simdw.f)
-
-invb <- ilrInv(simdw.f[, .(V1, V2, V3, V4)], V = psi)
-invb <- clo(invb, total = 5) # 5 because 1 for each means no change
-simdw.f <- cbind(invb, simdw.f[, .(WSTRESS)])
-names(simdw.f) <- c("WTST", "WWAKE", "WMVPA", "WLPA", "WSB", "WSTRESS")
-
-simdw.f$ID <- rep(seq_len(N / 2), each = k)
-simd.fall <- merge(simdw.f, simd.f, by = "ID")
+means.wf <- colMeans(wd.f, na.rm = TRUE)
+cov.wf <- cov(wd.f, use = "complete.obs")
 
 ## within male -------------------------------------------------------------------------------------
-wd.m <- d[Female == 0, .(TST, WAKE, MVPA, LPA, SB, BTST, BWAKE, BMVPA, BLPA, BSB, STRESS, BSTRESS)]
+wd.m <- d[Female == 0, .(WTST, WWAKE, WMVPA, WLPA, WSB, WSTRESS)]
 
-wd.m[, WSTRESS := STRESS - BSTRESS]
-wd.m[, WTST := TST/BTST]
-wd.m[, WWAKE := WAKE/BWAKE]
-wd.m[, WMVPA := MVPA/BMVPA]
-wd.m[, WLPA := LPA/BLPA]
-wd.m[, WSB := SB/BSB]
+wd.m <- cbind( ## convert to composition
+  ilr(acomp(wd.m[, . (WTST, WWAKE, WMVPA, WLPA, WSB)]), V = psi),
+  wd.m[, .(WSTRESS)])
 
-w <- wd.m[, . (WTST, WWAKE, WMVPA, WLPA, WSB)]
-wcomp <- acomp(w)
-psi <- gsi.buildilrBase(t(sbp))
-wilr <- ilr(wcomp, V=psi)
+means.wm <- colMeans(wd.m, na.rm = TRUE)
+cov.wm <- cov(wd.m, use = "complete.obs")
 
-wd.m <- cbind(wilr, wd.m[, .(WSTRESS)])
-## plot(wd.m)
+meanscovs <- list(
+  BMeans.F = means.f,
+  BCov.F = cov.f,
+  BMeans.M = means.m,
+  BCov.M = cov.m,
+  WMeans.F = means.wf,
+  WCov.F = cov.wf,
+  WMeans.M = means.wm,
+  WCov.M = cov.wm,
+  compvars = c("TST", "WAKE", "MVPA", "LPA", "SB"),
+  sbp = sbp,
+  psi = psi)
 
-simdw.m <- mvrnorm(n = N / 2 * k, 
-                   mu = colMeans(wd.m, na.rm = TRUE),
-                   Sigma = cov(wd.m, use = "complete.obs"))
-simdw.m <- as.data.table(simdw.m)
+saveRDS(meanscovs, file = "meanscovs.RDS")
 
-invb <- ilrInv(simdw.m[, .(V1, V2, V3, V4)], V = psi)
-invb <- clo(invb, total = 5)
-simdw.m <- cbind(invb, simdw.m[, .(WSTRESS)])
-names(simdw.m) <- c("WTST", "WWAKE", "WMVPA", "WLPA", "WSB", "WSTRESS")
 
-simdw.m$ID <- rep(seq_len(N / 2), each = k)
-simd.mall <- merge(simdw.m, simd.m, by = "ID")
-simd.mall$ID <- simd.mall$ID + max(simd.fall$ID)
 
-# full dataset ------------------------------------------------------------------------------------\
-simd.all <- rbind(simd.mall, simd.fall)
 
-simd.all[, TST := WTST*BTST]
-simd.all[, WAKE := WWAKE*BWAKE]
-simd.all[, MVPA := WMVPA*BMVPA]
-simd.all[, LPA := WLPA*BLPA]
-simd.all[, SB := WSB*BSB]
-simd.all[, STRESS := WSTRESS + BSTRESS]
 
-t <- simd.all[, .(TST, WAKE, MVPA, LPA, SB)]
-t <- clo(t, total = 1440)
+library(data.table)
+library(compositions)
+library(multilevelTools)
+library(MASS)
 
-simd.all <- cbind(simd.all[, .(ID, Age, Female, STRESS)], t)
-simd.all[STRESS < 0, STRESS := 0][STRESS > 10, STRESS := 10]
+set.seed(1234)
+test <- with(meanscovs, rbind(
+  cbind(simulateData(
+    bm = BMeans.F, wm = WMeans.F,
+    bcov = BCov.F, wcov = WCov.F,
+    n = 2000, k = 50, psi = psi),
+    Female = 1),
+  cbind(simulateData(
+    bm = BMeans.M, wm = WMeans.M,
+    bcov = BCov.M, wcov = WCov.M,
+    n = 2000, k = 50, psi = psi),
+    Female = 0)))
+test[, ID := paste0(ID,"_", Female)]
+  
+plot(
+  quantile(d$Age, probs = seq(.01, .99, .01), na.rm = TRUE),
+  quantile(test$Age, probs = seq(.01, .99, .01)))
+abline(a = 0, b = 1)
 
-summary(simd.all)
-synd <- simd.all
 
-# ILR ------------------------
-cilr <- compilr(data = synd[, .(TST, WAKE, MVPA, LPA, SB, ID)],
-                sbp = sbp, parts = c("TST", "WAKE", "MVPA", "LPA", "SB"), idvar = "ID")
+plot(
+  quantile(d$TST, probs = seq(.01, .99, .01)),
+  quantile(test$TST, probs = seq(.01, .99, .01)))
+abline(a = 0, b = 1)
 
-tmp <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR, 
-             cilr$TotalILR)
+plot(
+  quantile(d$MVPA, probs = seq(.01, .99, .01)),
+  quantile(test$MVPA, probs = seq(.01, .99, .01)))
+abline(a = 0, b = 1)
 
-# random effects -----------------------------------------------------------------------------------
-redat <- mvrnorm(n = length(unique(tmp$ID)),
-                 mu = c(0, 0), diag(2) * (c(8, 1)^2),
-                 empirical = TRUE)
-redat <- data.table(ID = unique(tmp$ID),
-                    rint = redat[, 1], rslope = redat[, 2])
-
-tmp <- merge(tmp, redat, by = "ID")
-
-## add some checks on correlations
-cormat <- cor(tmp[, .(bilr1, bilr2, bilr3, bilr4, wilr1, wilr2, wilr3, wilr4, rint, rslope)])
-
-## view correlations
-round(cormat, 2)
-
-diag(cormat) <- 0 ## set diagonal to 0 to ignore these
-
-## expect all correlations to have absolute values < .90
-all(abs(cormat) < .9)
-
-## expect all correlations with random effects to have very small correlations < .05
-all(abs(cormat[, c("rint", "rslope")]) < .05)
-
-# outcome ------------------------------------------------------------------------------------------
-
-## tmp[, depression := rnorm(n = nrow(synd),
-##                           mean = (50 + rint) +
-##                             (0 * bilr1) + (0 * bilr2) + (0 * bilr3) + (0 * bilr4) +
-##                             (+0.5 * wilr1) + ((-1 + rslope) * wilr2) + (-0.5 * wilr3) + (-1 * wilr4),
-##                           sd = 5)]
-
-tmp[, depression := rnorm(n = nrow(synd),
-                          mean = (50 + rint) +
-                            (4 * bilr1) + (0 * bilr2) + (-4 * bilr3) + (0 * bilr4) +                            
-                            (+2 * wilr1) + ((-5 + rslope) * wilr2) + (0 * wilr3) + (-2 * wilr4),
-                          sd = 5)]
-
-## tmp[, depressionnore := rnorm(n = nrow(synd),
-##                               mean = (50 + rint) +
-##                                 (-0.5 * bilr1) + (1 * bilr2) + (0.5 * bilr3) + (1 * bilr4) +
-##                                 (+0.5 * wilr1) + ((-1) * wilr2) + (-0.5 * wilr3) + (-1 * wilr4),
-##                               sd = 5)]
-
-synd$depression <- tmp$depression
-
-# saveRDS(synd, file = "syntheticpopulation.RDS")
-# synd <- readRDS("syntheticpopulation.RDS")
+plot(
+  quantile(d$WAKE, probs = seq(.01, .99, .01)),
+  quantile(test$WAKE, probs = seq(.01, .99, .01)))
+abline(a = 0, b = 1)
