@@ -57,24 +57,51 @@ simulateData <- function(bm, wm, bcov, wcov, n, k, psi) {
 }
 
 
-simmodel <- function(database, sbpbase) {
+simmodel <- function(database, sbpbase, prefit = NULL) {
   
   psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
   parts <- colnames(psub)
   
   cilr <- compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
-  
-  model <- brmcoda(cilr,
-                   depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
-                     (1 + wilr2 | ID), cores = 4, chains = 4, iter = 2000, warmup = 1000,
-                   backend = "cmdstanr")
-  
+
+  prior <- c(
+    set_prior("normal(50, 5)", class = "Intercept"),
+    set_prior("normal(0,  4)", class = "b"),
+    set_prior("normal(0, 10)", class = "sigma"),
+    set_prior("normal(0, 10)", class = "sd", coef = "Intercept", group = "ID"),
+    set_prior("normal(0,  4)", class = "sd", coef = "wilr2", group = "ID"),
+    set_prior("lkj(1)", class = "cor"))
+
+  ## priordat <- data.table(x = seq(from = -100, to = 100), by = .01)
+  ## ggplot(priordat, aes(x = x)) + ## fixed effects intercept
+  ##   geom_line(aes(y = dnorm(x, mean = 50, sd = 5)), colour = "black") +
+  ##   coord_cartesian(xlim = c(30, 70), expand = FALSE) + theme_minimal()
+  ## ggplot(priordat, aes(x = x)) + ## fixed effects coefficients
+  ##   geom_line(aes(y = dnorm(x, mean = 0, sd = 4)), colour = "black") +
+  ##   coord_cartesian(xlim = c(-10, 10), expand = FALSE) + theme_minimal()
+  ## ggplot(priordat, aes(x = x)) + ## random effect SDs & residual SD
+  ##   geom_line(aes(y = dnorm(x, mean = 0, sd = 10)), colour = "black") +
+  ##   geom_line(aes(y = dnorm(x, mean = 0, sd = 4)), colour = "blue") +
+  ##   coord_cartesian(xlim = c(0, 10), expand = FALSE) + theme_minimal()
+
+  if (isTRUE(is.null(prefit))) {
+    model <- brmcoda(cilr,
+                     depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
+                       (1 + wilr2 | ID), cores = 4, chains = 4, iter = 3000, warmup = 500,
+                     prior = prior, backend = "cmdstanr")
+  } else {
+    model <- brmcoda(cilr,
+                     depression ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
+                       (1 + wilr2 | ID), cores = 4, chains = 4, iter = 3000, warmup = 500,
+                     prior = prior, backend = "cmdstanr", fit = prefit)
+  }
+
   summodel <- summary(model$Model)
   ndt <- sum(subset(nuts_params(model$Model), Parameter == "divergent__")$Value)
-  
+
   bsubm <- bsub(model, substitute = psub, minute = 30)
   wsubm <- wsub(model, substitute = psub, minute = 30)
-  
+
   out <- list(
     CompILR = cilr,
     Result = summodel,
@@ -84,27 +111,33 @@ simmodel <- function(database, sbpbase) {
     K = K,
     ndt = ndt
   )
+
+  if (isTRUE(is.null(prefit))) {
+    out$brmsfit <- model$Model
+  }
+  return(out)
 }
 
-# simulated data
-obs <- data.table(K = c(3:28))
-obs[, Kwt := dbeta((K - min(K))/(max(K) - min(K)),
-                   1, 2)]
-obs[, Kwt := Kwt/sum(Kwt)]
+## # simulated data
+## obs <- data.table(K = c(3:28))
+## obs[, Kwt := dbeta((K - min(K))/(max(K) - min(K)),
+##                    1, 2)]
+## obs[, Kwt := Kwt/sum(Kwt)]
+## ppl <- data.table(N = seq(10, 1000, by = 2))
+## ppl[, Nwt := dbeta((N - min(N))/(max(N) - min(N)),
+##                    1, 2)]
+## ppl[, Nwt := Nwt/sum(Nwt)]
+## d <- expand.grid(
+##   K = obs$K,
+##   N = ppl$N
+## )
+## d <- merge(d, obs, by = "K")
+## d <- merge(d, ppl, by = "N")
+## d <- setDT(d)
+## d[, wt := Kwt * Nwt]
 
-ppl <- data.table(N = seq(10, 1000, by = 2))
-ppl[, Nwt := dbeta((N - min(N))/(max(N) - min(N)),
-                   1, 2)]
-ppl[, Nwt := Nwt/sum(Nwt)]
-
-d <- expand.grid(
-  K = obs$K,
-  N = ppl$N
-)
-d <- merge(d, obs, by = "K")
-d <- merge(d, ppl, by = "N")
-d <- setDT(d)
-d[, wt := Kwt*Nwt]
-
+## conditions (1000 runs each condition)
+d <- as.data.table(expand.grid(N = c(500, 100, 50), K = c(28, 7, 3)))
+d <- d[rep(seq_len(.N), each = 1000)]
 
 meanscovs <- readRDS("meanscovs.RDS")
