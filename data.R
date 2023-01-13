@@ -2,6 +2,7 @@
 library(data.table)
 library(compositions)
 library(multilevelTools)
+library(MASS)
 
 # sbp & psi
 sbp <- matrix(c(
@@ -119,12 +120,12 @@ meanscovs <- list(
   sbp = sbp,
   psi = psi)
 
+# save and load data --------
 saveRDS(meanscovs, file = "meanscovs.RDS")
 
+meanscovs <- readRDS("meanscovs.RDS")
 
-
-
-
+# check ------------------
 library(data.table)
 library(compositions)
 library(multilevelTools)
@@ -149,7 +150,6 @@ plot(
   quantile(test$Age, probs = seq(.01, .99, .01)))
 abline(a = 0, b = 1)
 
-
 plot(
   quantile(d$TST, probs = seq(.01, .99, .01)),
   quantile(test$TST, probs = seq(.01, .99, .01)))
@@ -164,3 +164,9 @@ plot(
   quantile(d$WAKE, probs = seq(.01, .99, .01)),
   quantile(test$WAKE, probs = seq(.01, .99, .01)))
 abline(a = 0, b = 1)
+
+
+# check compositional normality
+qqnorm(acomp(test[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]))
+qqnorm(acomp(test[, .(WTST, WWAKE, WMVPA, WLPA, WSB)]))
+qqnorm(acomp(test[, .(TST, WAKE, MVPA, LPA, SB)]))

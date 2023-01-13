@@ -11,7 +11,6 @@ set.seed(1) # set different for each script
 
 sampledd <- d[1:20] ## use the first 20 runs, for running on server, you might do 1:1000 in on model, 1001:2000 in a second, and so on
 
-
 out1 <- vector("list", length = nrow(sampledd))
 
 starttime <- proc.time()

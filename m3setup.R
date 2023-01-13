@@ -56,7 +56,6 @@ simulateData <- function(bm, wm, bcov, wcov, n, k, psi) {
   return(simd.all)
 }
 
-
 simmodel <- function(database, sbpbase, prefit = NULL) {
   
   psub <- possub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
@@ -137,7 +136,8 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
 ## d[, wt := Kwt * Nwt]
 
 ## conditions (1000 runs each condition)
-d <- as.data.table(expand.grid(N = c(500, 100, 50), K = c(28, 7, 3)))
+d <- as.data.table(expand.grid(N = c(30, 50, 360, 1200), 
+                               K = c(3, 5, 7, 7, 14)))
 d <- d[rep(seq_len(.N), each = 1000)]
 
-meanscovs <- readRDS("meanscovs.RDS")
+# meanscovs <- readRDS("meanscovs.RDS")
