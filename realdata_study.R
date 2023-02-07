@@ -1,4 +1,3 @@
-#### Calculate Means & Covariance Matrix for multilevel compositional data simulation ####
 library(data.table)
 library(compositions)
 library(multilevelTools)
@@ -17,13 +16,7 @@ psi <- gsi.buildilrBase(t(sbp))
 
 
 # read data ----------------------------------------------------------------------------------------
-if (Sys.info()[["sysname"]] %in% "Windows") {
-  loc.base <- "g:"
-} else if (Sys.info()[["sysname"]] %in% "Darwin") {
-  loc.base <- "/Volumes/GoogleDrive"
-}
-
-d <- as.data.table(readRDS(file.path(loc.base, "Shared drives/EMA_Studies/ema_studies.RDS")))
+d <- as.data.table(readRDS("/Users/florale/Library/CloudStorage/GoogleDrive-flora.le@monash.edu/Shared drives/EMA_Studies/ema_studies.RDS"))
 
 setnames(d, "TSTacti", "TST")
 setnames(d, "MVPAPERCacti", "MVPA")
@@ -72,8 +65,8 @@ dd <- cbind(
 
 # descriptives
 
-egltable(c("SLEEPY", "TST", "WAKE", "MVPA", "LPA", "SB"), data = dd)
-table(dd$SLEEPY)
+# egltable(c("SLEEPY", "TST", "WAKE", "MVPA", "LPA", "SB"), data = dd)
+table(dd$SLEEPY) # 1-5
 
 # models - COPEEACZ COPEMenZ SLEEPY
 # mt <- brm(COPE_ApprZ ~ ilr1 + ilr2 + ilr3 + ilr4 + (1 | UID), data = dd)
@@ -93,11 +86,61 @@ m <- brmcoda(cilr,
              cores = 8, seed = 123)
 summary(m$Model)
 
-library(doFuture)
-registerDoFuture()
-plan(multisession, workers = 5)
+# library(doFuture)
+# registerDoFuture()
+# plan(multisession, workers = 5)
+# 
+# subm <- substitution(m, delta = 1:60, 
+#                      level = c("between", "within"), type = c("conditional", "marginal"))
+# 
+# registerDoSEQ()
 
-subm <- substitution(m, delta = 1:60, 
-                     level = c("between", "within"), type = c("conditional", "marginal"))
+# save results to guide sim study ------------
 
-registerDoSEQ()
+groundtruth <- data.table(
+  b0      = summary(m0)$fixed[1, 1],
+  b_bilr1 = summary(m0)$fixed[2, 1],
+  b_bilr2 = summary(m0)$fixed[3, 1],
+  b_bilr3 = summary(m0)$fixed[4, 1],
+  b_bilr4 = summary(m0)$fixed[5, 1],
+  b_wilr1 = summary(m0)$fixed[6, 1],
+  b_wilr2 = summary(m0)$fixed[7, 1],
+  b_wilr3 = summary(m0)$fixed[8, 1],
+  b_wilr4 = summary(m0)$fixed[9, 1],
+  
+  ll_b0    = summary(m0)$fixed[1, 3],
+  ll_bilr1 = summary(m0)$fixed[2, 3],
+  ll_bilr2 = summary(m0)$fixed[3, 3],
+  ll_bilr3 = summary(m0)$fixed[4, 3],
+  ll_bilr4 = summary(m0)$fixed[5, 3],
+  ll_wilr1 = summary(m0)$fixed[6, 3],
+  ll_wilr2 = summary(m0)$fixed[7, 3],
+  ll_wilr3 = summary(m0)$fixed[8, 3],
+  ll_wilr4 = summary(m0)$fixed[9, 3],
+  
+  ul_b0    = summary(m0)$fixed[1, 4],
+  ul_bilr1 = summary(m0)$fixed[2, 4],
+  ul_bilr2 = summary(m0)$fixed[3, 4],
+  ul_bilr3 = summary(m0)$fixed[4, 4],
+  ul_bilr4 = summary(m0)$fixed[5, 4],
+  ul_wilr1 = summary(m0)$fixed[6, 4],
+  ul_wilr2 = summary(m0)$fixed[7, 4],
+  ul_wilr3 = summary(m0)$fixed[8, 4],
+  ul_wilr4 = summary(m0)$fixed[9, 4],
+  
+  u0    = summary(m0)$random$UID[1, 1],
+  ll_u0 = summary(m0)$random$UID[1, 3],
+  ul_u0 = summary(m0)$random$UID[1, 4],
+  
+  sigma = summary(m0)$spec_pars[[1]],
+  ll_sigma = summary(m0)$spec_pars[[3]],
+  ul_sigma = summary(m0)$spec_pars[[4]]
+  )
+
+# colMeans( as.data.frame(ranef(m0)$UID)[ , 1, drop = FALSE])
+# ranef <- as.data.frame(ranef(m0)$UID)
+# resid <- residuals(m0)
+# resid_m <- colMeans(resid[, 1, drop = FALSE], )
+# resid_sd <- sd(resid[, 1])
+
+saveRDS(groundtruth, file = "groundtruth.RDS")
