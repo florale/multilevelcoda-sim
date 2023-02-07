@@ -19,7 +19,7 @@ if (Sys.info()[["sysname"]] %in% "Windows") {
   loc.base <- "/Volumes/GoogleDrive"
 }
 
-d <- as.data.table(readRDS(file.path(loc.base, "Shared drives/EMA_Studies/ema_studies.RDS")))
+d <- as.data.table(readRDS("/Users/florale/Library/CloudStorage/GoogleDrive-flora.le@monash.edu/Shared drives/EMA_Studies/ema_studies.RDS"))
 
 setnames(d, "TSTacti", "TST")
 setnames(d, "MVPAPERCacti", "MVPA")
@@ -49,12 +49,12 @@ d[, WLPA := LPA / BLPA]
 d[, WSB := SB / BSB]
 d[, WWAKE := WAKE / BWAKE]
 d[, WTST := TST / BTST]
+d[, total := TST + WAKE + MVPA + LPA + SB]
 
 ## hist(d[!duplicated(UID)]$Age)
 ## table(d[!duplicated(UID)]$Female)
-
 ## between sim comp  -------------------------------------------------------------------------------
-bd <- d[!duplicated(UID), .(BTST, BWAKE, BMVPA, BLPA, BSB)]
+bd <- d[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]
 
 # # sim ilr
 # bd_ilr <- ilr(acomp(bd[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]), V = psi)
@@ -75,7 +75,9 @@ wd <- d[, .(WTST, WWAKE, WMVPA, WLPA, WSB)]
 # cov.w <- cov(wd_ilr, use = "complete.obs")
 
 # sim comp
-wd <- acomp(wd)
+td <- acomp(d[, .(TST, WAKE, MVPA, LPA, SB)])
+wd <- td - bd
+# wd <- acomp(wd)
 (m_wd <- mean.acomp(wd))
 (v_wd <- var.acomp(wd))
 
@@ -141,21 +143,3 @@ meanscovs <- readRDS("meanscovs.RDS")
 # qqnorm(acomp(test[, .(WTST, WWAKE, WMVPA, WLPA, WSB)]))
 # qqnorm(acomp(test[, .(TST, WAKE, MVPA, LPA, SB)]))
 # 
-# add sim outcome --------------
-## use regression with real data as a guide
-source("realdata_study.R")
-summary(m0)
-
-est_gt <- data.table(b0 = summary(m0)$fixed[1, 1],
-                     b_bilr1 = summary(m0)$fixed[2, 1],
-                     b_bilr2 = summary(m0)$fixed[3, 1],
-                     b_bilr3 = summary(m0)$fixed[4, 1],
-                     b_bilr4 = summary(m0)$fixed[5, 1],
-                     b_wilr1 = summary(m0)$fixed[6, 1],
-                     b_wilr2 = summary(m0)$fixed[7, 1],
-                     b_wilr3 = summary(m0)$fixed[8, 1],
-                     b_wilr4 = summary(m0)$fixed[9, 1],
-                     rint = summary(m0)$random$UID[1, 1])
-
-# colMeans( as.data.frame(ranef(m0)$UID)[ , 1, drop = FALSE])
-# ranef <- as.data.frame(ranef(m0)$UID)
