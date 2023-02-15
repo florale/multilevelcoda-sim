@@ -38,3 +38,5 @@ vignettes/*.pdf
 multilevelcoda-sim.Rproj
 
 *.RDS
+
+.DS_Store
