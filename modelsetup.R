@@ -30,8 +30,6 @@ library(ggsci)
 #   simd.b <- as.data.table(simd.b)
 # 
 #   inv.b <- ilrInv(simd.b[, .(V1, V2, V3, V4)], V = psi)
-#   inv.b <- clo(inv.b, total = 1440)
-# 
 #   simd.b <- as.data.table(inv.b)
 #   setnames(simd.b, c("BTST", "BWAKE", "BMVPA", "BLPA", "BSB"))
 # 
@@ -52,30 +50,45 @@ library(ggsci)
 #   simd.all[, MVPA := WMVPA * BMVPA]
 #   simd.all[, LPA := WLPA * BLPA]
 #   simd.all[, SB := WSB * BSB]
-#   return(simd.all)
+#   
+#   simd.t <- simd.all[, .(TST, WAKE, MVPA, LPA, SB)]
+#   simd.t <- clo(simd.t, total = 1440)
+#   simd.t <- as.data.table(simd.t)
+#   setnames(simd.t, c("TST", "WAKE", "MVPA", "LPA", "SB"))
+#   
+#   simd.t[, ID := rep(seq_len(n), each = k)]
+#   
+#   return(simd.t)
 # }
 
 simulateData <- function(bm, wm, bcov, wcov, n, k, psi) {
   simd.b <- rnorm.acomp(n = n, bm, bcov)
-  simd.b <- clo(simd.b, total = 1440)
   simd.b <- as.data.table(simd.b)
   setnames(simd.b, c("BTST", "BWAKE", "BMVPA", "BLPA", "BSB"))
-  
+
   simd.w <- rnorm.acomp(n = n * k, wm, wcov)
   simd.w <- clo(simd.w, total = 5)
   simd.w <- as.data.table(simd.w)
   setnames(simd.w, c("WTST", "WWAKE", "WMVPA", "WLPA", "WSB"))
-  
+
   simd.b[, ID := seq_len(n)]
   simd.w[, ID := rep(seq_len(n), each = k)]
-  
+
   simd.all <- merge(simd.b, simd.w, by = "ID")
   simd.all[, TST := WTST * BTST]
   simd.all[, WAKE := WWAKE * BWAKE]
   simd.all[, MVPA := WMVPA * BMVPA]
   simd.all[, LPA := WLPA * BLPA]
   simd.all[, SB := WSB * BSB]
-  return(simd.all)
+
+  simd.t <- simd.all[, .(TST, WAKE, MVPA, LPA, SB)]
+  simd.t <- clo(simd.t, total = 1440)
+  simd.t <- as.data.table(simd.t)
+  setnames(simd.t, c("TST", "WAKE", "MVPA", "LPA", "SB"))
+
+  simd.t[, ID := rep(seq_len(n), each = k)]
+
+  return(simd.t)
 }
 
 simmodel <- function(database, sbpbase, prefit = NULL) {
@@ -105,8 +118,14 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
   ##   coord_cartesian(xlim = c(0, 10), expand = FALSE) + theme_minimal()
 
   if (isTRUE(is.null(prefit))) {
-    model <- brmcoda(cilr,
-                     sleepy ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
+    model_se <- brmcoda(cilr,
+                     sleepy_se ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
+                       (1 | ID), cores = 4, chains = 4, iter = 3000, warmup = 500, backend = "cmdstanr")
+    model_me <- brmcoda(cilr,
+                     sleepy_me ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
+                       (1 | ID), cores = 4, chains = 4, iter = 3000, warmup = 500, backend = "cmdstanr")
+    model_le <- brmcoda(cilr,
+                     sleepy_le ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 +
                        (1 | ID), cores = 4, chains = 4, iter = 3000, warmup = 500, backend = "cmdstanr")
   } else {
     model <- brmcoda(cilr,
@@ -116,20 +135,19 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
 
   summodel <- summary(model$Model)
   ndt <- sum(subset(nuts_params(model$Model), Parameter == "divergent__")$Value)
-
-  bsubm <- substitution(model, delta = 1:30,
-                        level = "between", type = "conditional")
-  wsubm <- substitution(model, delta = 1:30,
-                        level = "within", type = "conditional")
-
+  
+  subm <- substitution(model, 
+                       delta = 1:30,
+                       level = c("between", "within"), 
+                       type = "conditional")
+  
   out <- list(
     CompILR = cilr,
-    Result = summodel,
-    BetweenResult = bsubm,
-    WithinResult = wsubm,
+    MainModel = summodel,
+    SubstitutionModel = subm,
     N = N,
     K = K,
-    ndt = ndt #number of divergent chains
+    ndt = ndt # number of divergent transitions
   )
 
   if (isTRUE(is.null(prefit))) {
@@ -157,10 +175,9 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
 ## d[, wt := Kwt * Nwt]
 
 ## conditions (1000 runs each condition)
-d <- as.data.table(expand.grid(N = c(30, 50, 360, 1200), 
-                               K = c(3, 5, 7, 14),
-                               mrint = summary(m0)$random$UID[1, 1],
-                               sdrint = summary(m0)$random$UID[1, 2]))
-d <- d[rep(seq_len(.N), 1000)]
+cond <- as.data.table(expand.grid(N = c(30, 50, 360, 1200),
+                                  K = c(3, 5, 7, 14)))
+cond <- cond[rep(seq_len(.N), 1000)]
 
 meanscovs <- readRDS("meanscovs.RDS")
+groundtruth <- readRDS("groundtruth.RDS")
