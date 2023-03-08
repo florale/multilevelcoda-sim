@@ -56,30 +56,30 @@ d[, total := TST + WAKE + MVPA + LPA + SB]
 ## between sim comp  -------------------------------------------------------------------------------
 bd <- d[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]
 
-# # sim ilr
-# bd_ilr <- ilr(acomp(bd[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]), V = psi)
-# means <- colMeans(bd_ilr, na.rm = TRUE)
-# cov <- cov(bd_ilr, use = "complete.obs")
+# sim ilr
+bd_ilr <- ilr(acomp(bd[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]), V = psi)
+means <- colMeans(bd_ilr, na.rm = TRUE)
+cov <- cov(bd_ilr, use = "complete.obs")
 
-# sim comp
-bd <- acomp(bd)
-(m_bd <- mean.acomp(bd))
-(v_bd <- var.acomp(bd))
+# # sim comp
+# bd <- acomp(bd)
+# (m_bd <- mean.acomp(bd))
+# (v_bd <- var.acomp(bd))
 
 ## within sim comp  --------------------------------------------------------------------------------
 wd <- d[, .(WTST, WWAKE, WMVPA, WLPA, WSB)]
 
-# # sim ilr
-# wd_ilr <- ilr(acomp(wd[, . (WTST, WWAKE, WMVPA, WLPA, WSB)]), V = psi)
-# means.w <- colMeans(wd_ilr, na.rm = TRUE)
-# cov.w <- cov(wd_ilr, use = "complete.obs")
+# sim ilr
+wd_ilr <- ilr(acomp(wd[, . (WTST, WWAKE, WMVPA, WLPA, WSB)]), V = psi)
+means.w <- colMeans(wd_ilr, na.rm = TRUE)
+cov.w <- cov(as.matrix(wd_ilr), use = "complete.obs")
 
-# sim comp
-td <- acomp(d[, .(TST, WAKE, MVPA, LPA, SB)])
-wd <- td - bd
-# wd <- acomp(wd)
-(m_wd <- mean.acomp(wd))
-(v_wd <- var.acomp(wd))
+# # sim comp
+# td <- acomp(d[, .(TST, WAKE, MVPA, LPA, SB)])
+# wd <- td - bd
+# # wd <- acomp(wd)
+# (m_wd <- mean.acomp(wd))
+# (v_wd <- var.acomp(wd))
 
 # save and load data --------
 # meanscovs <- list(
