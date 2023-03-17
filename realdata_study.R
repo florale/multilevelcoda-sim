@@ -97,7 +97,7 @@ summary(m$Model)
 
 # save results to guide sim study ------------
 
-groundtruth <- data.table(
+real_result <- data.table(
   b0      = summary(m0)$fixed[1, 1],
   b_bilr1 = summary(m0)$fixed[2, 1],
   b_bilr2 = summary(m0)$fixed[3, 1],
