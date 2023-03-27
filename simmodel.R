@@ -26,7 +26,7 @@ groundtruth <- readRDS("groundtruth.RDS")
 cond <- as.data.table(expand.grid(N = c(30, 50, 360, 1200),
                                   K = c(3, 5, 7, 14),
                                   rint_sd = c(1, sqrt(.5), sqrt(1.5)),
-                                  res_sd = c(1, sqrt(.5), sqrt(1.5), sqrt(2)),
+                                  res_sd = c(1, sqrt(.5), sqrt(2)),
                                   run = 1:1000))
 cond <- cond[
     (rint_sd == 1 & res_sd == 1) |
@@ -36,6 +36,22 @@ cond <- cond[
     (rint_sd == 1 & res_sd == sqrt(.5))] 
 
 sampled_cond <- cond[1:2]
+
+cond <- cond[
+  (rint_sd == 1 & res_sd == 1) |
+    (rint_sd == sqrt(.5) & res_sd == sqrt(1.5)) |
+    (rint_sd == sqrt(1.5) & res_sd == sqrt(.5)) |
+    (rint_sd == 1 & res_sd == sqrt(2)) |
+    (rint_sd == 1 & res_sd == sqrt(.5))]
+
+cond[, cond := 1:.N, .(run)]
+
+cond[, condition := NA]
+cond[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
+cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+cond[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
 ## functions ---------
 simulateData <- function(bm, wm, bcov, wcov, n, k, psi) {
@@ -115,7 +131,7 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
     K = K,
     rint_sd = rint_sd,
     res_sd = res_sd,
-    run =run
+    run = run
   )
   return(out)
 }
@@ -134,7 +150,8 @@ for (i in seq_len(nrow(sampled_cond))) {
   K <- sampled_cond[i, K]
   rint_sd <- sampled_cond[i, rint_sd]
   res_sd <- sampled_cond[i, res_sd]
-
+  run <- sampled_cond[i, run]
+  
   simd <- with(meanscovs, rbind(
     simulateData(
       bm = BMeans, wm = WMeans,
@@ -159,9 +176,15 @@ for (i in seq_len(nrow(sampled_cond))) {
 
   # outcome - simulated based on ml regression  -----------------------------
   tmp[, sleepy :=  rnorm(n = nrow(simd),
-                         mean = 2.20  + rint +
-                           (-0.20 * bilr1) + (-0.01 * bilr2) + (-0.02 * bilr3) + (0.05 * bilr4) +
-                           (+0.15 * wilr1) + (0.25 * wilr2) + (0.01 * wilr3) + (-0.15 * wilr4),
+                         mean = groundtruth$b0  + rint +
+                           (groundtruth$b_bilr1 * bilr1) + 
+                           (groundtruth$b_bilr2 * bilr2) + 
+                           (groundtruth$b_bilr3 * bilr3) + 
+                           (groundtruth$b_bilr4 * bilr4) +
+                           (groundtruth$b_wilr1 * wilr1) + 
+                           (groundtruth$b_wilr2 * wilr2) + 
+                           (groundtruth$b_wilr3 * wilr3) + 
+                           (groundtruth$b_wilr4 * wilr4),
                          sd = res_sd)]
 
   simd$sleepy <- tmp$sleepy
