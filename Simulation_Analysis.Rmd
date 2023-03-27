@@ -1,0 +1,519 @@
+---
+title: "Simulation Study for multilevelcoda"
+author: "Flora Le (flora.le@monash.edu)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(knitr)
+library(kableExtra)
+
+library(MASS)
+library(data.table)
+library(extraoperators)
+library(compositions)
+library(multilevelcoda)
+library(brms)
+library(cmdstanr)
+
+library(doFuture)
+library(foreach)
+library(doRNG)
+library(parallel)
+
+library(ggplot2)
+library(ggsci)
+library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
+library(heatmaply)
+library(ggthemes)
+
+# library(minted)
+opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90, digits = 3)
+data.table::setDTthreads(10)
+
+library(ggthemr)
+fcol <- c("#666666", "#ADC7DA", "#3C5C76", "#FAF7F3")
+flora <- define_palette(swatch = fcol,
+                        gradient = c(lower = fcol[1L], upper = fcol[2L]))
+ggthemr(flora)
+ggthemr_reset()
+```
+
+# Setup
+
+```{r}
+groundtruth <- readRDS("groundtruth.RDS")
+meanscovs <- readRDS("meanscovs.RDS")
+out <- readRDS("out.RDS") # result
+
+cond <- as.data.table(expand.grid(N = 50,
+                                  K = 5,
+                                  rint_sd = c(1, sqrt(.5), sqrt(1.5)),
+                                  res_sd = c(1, sqrt(.5), sqrt(1.5), sqrt(2)),
+                                  run = 1:1000))
+cond <- cond[
+    (rint_sd == 1 & res_sd == 1) |
+    (rint_sd == sqrt(.5) & res_sd == sqrt(1.5)) |
+    (rint_sd == sqrt(1.5) & res_sd == sqrt(.5)) |
+    (rint_sd == 1 & res_sd == sqrt(2)) |
+    (rint_sd == 1 & res_sd == sqrt(.5))]
+
+cond[, cond := 1:.N, .(run)]
+
+cond[, condition := NA]
+cond[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
+cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+cond[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+```
+
+# Extract results
+
+```{r}
+# inspect 1 model
+out[[1]]$Result$ModelSummary
+
+### estimates ###
+fe_results <- do.call(rbind, lapply(out, function(x) {
+  x$Result$ModelSummary$fixed$Estimate
+}))
+colnames(fe_results) <- paste0("b_", rownames(out[[1]]$Result$ModelSummary$fixed))
+
+### SE ###
+se <- lci <- do.call(rbind, lapply(out, function(x) {
+    x$Result$ModelSummary$fixed[["Est.Error"]]}))
+colnames(se) <- paste0("se_", rownames(out[[1]]$Result$ModelSummary$fixed))
+
+### CIs ###
+lci <- do.call(rbind, lapply(out, function(x) {
+  x$Result$ModelSummary$fixed[["l-95% CI"]]
+}))
+colnames(lci) <-
+  paste0("ll_", rownames(out[[1]]$Result$ModelSummary$fixed))
+
+uci <- do.call(rbind, lapply(out, function(x) {
+  x$Result$ModelSummary$fixed[["u-95% CI"]]
+}))
+colnames(uci) <-
+  paste0("ul_", rownames(out[[1]]$Result$ModelSummary$fixed))
+
+ci <- cbind(lci, uci)
+fe_results <- cbind(cond, fe_results, se, ci)
+
+### random ###
+re_results <- cbind(
+  sapply(out, function(x) {
+    x$Result$ModelSummary$random$ID$Estimate
+  }),
+  sapply(out, function(x) {
+    x$Result$ModelSummary$random$ID[["Est.Error"]]
+  }),
+  sapply(out, function(x) {
+    x$Result$ModelSummary$random$ID[["l-95% CI"]]
+  }),
+  sapply(out, function(x) {
+    x$Result$ModelSummary$random$ID[["u-95% CI"]]
+  })
+)
+colnames(re_results) <- c("u0", "se_u0", "ll_u0", "ul_u0")
+
+# res
+res_results <- cbind(
+  sapply(out, function(x) {
+    x$Result$ModelSummary$spec_pars$Estimate
+  }),
+  sapply(out, function(x) {
+    x$Result$ModelSummary$spec_pars[["Est.Error"]]
+  }),
+  sapply(out, function(x) {
+    x$Result$ModelSummary$spec_pars[["l-95% CI"]]
+  }),
+  sapply(out, function(x) {
+    x$Result$ModelSummary$spec_pars[["u-95% CI"]]
+  })
+)
+colnames(res_results) <-
+  c("sigma", "se_sigma", "ll_sigma", "ul_sigma")
+
+results <- cbind(fe_results, re_results, res_results)
+```
+
+# Checking performances manually
+## Average bias
+## Fixed 
+
+```{r}
+# hist
+hist(results[, b_Intercept] - groundtruth$b0)
+
+hist(results[, b_bilr1] - groundtruth$b_bilr1)
+hist(results[, b_bilr2] - groundtruth$b_bilr2)
+hist(results[, b_bilr3] - groundtruth$b_bilr3)
+hist(results[, b_bilr4] - groundtruth$b_bilr4)
+hist(results[, b_wilr1] - groundtruth$b_wilr1)
+hist(results[, b_wilr2] - groundtruth$b_wilr2)
+hist(results[, b_wilr3] - groundtruth$b_wilr3)
+hist(results[, b_wilr4] - groundtruth$b_wilr4)
+
+# average difference between sim and groundtruth 
+mean(results[, b_Intercept] - groundtruth$b_Intercept)
+
+mean(results[, b_bilr1] - groundtruth$b_bilr1)
+mean(results[, b_bilr2] - groundtruth$b_bilr2)
+mean(results[, b_bilr3] - groundtruth$b_bilr3)
+mean(results[, b_bilr4] - groundtruth$b_bilr4)
+mean(results[, b_wilr1] - groundtruth$b_wilr1)
+mean(results[, b_wilr2] - groundtruth$b_wilr2)
+mean(results[, b_wilr3] - groundtruth$b_wilr3) 
+mean(results[, b_wilr4] - groundtruth$b_wilr4)
+```
+
+## Random 
+
+```{r}
+hist(results[rint_sd == 1 & res_sd == 1, u0 - rint_sd])
+hist(results[rint_sd == sqrt(.5) & res_sd == sqrt(1.5), u0 - rint_sd])
+hist(results[rint_sd == sqrt(1.5) & res_sd == sqrt(.5), u0 - rint_sd])
+hist(results[rint_sd == 1 & res_sd == sqrt(2), u0 - rint_sd])
+hist(results[rint_sd == 1 & res_sd == sqrt(.5), u0 - rint_sd])
+
+# average sim
+results[, mean(u0), by = condition]
+
+# average difference between sim and groundtruth 
+results[, mean(u0 - rint_sd), by = condition]
+```
+
+## Residuals
+
+```{r}
+hist(results[rint_sd == 1 & res_sd == 1, sigma - res_sd])
+hist(results[rint_sd == sqrt(.5) & res_sd == sqrt(1.5), sigma - res_sd])
+hist(results[rint_sd == sqrt(1.5) & res_sd == sqrt(.5), sigma - res_sd])
+hist(results[rint_sd == 1 & res_sd == sqrt(2), sigma - res_sd])
+hist(results[rint_sd == 1 & res_sd == sqrt(.5), sigma - res_sd])
+
+# average sim
+results[, mean(sigma), by = condition]
+
+# average bias
+results[, mean(sigma - res_sd), by = condition]
+```
+
+## Coverage
+
+```{r}
+# fe
+results[, coverage_bilr1 := (groundtruth$b_bilr1 >= ll_bilr1) & (groundtruth$b_bilr1 <= ul_bilr1)]
+results[, coverage_bilr2 := (groundtruth$b_bilr2 >= ll_bilr2) & (groundtruth$b_bilr2 <= ul_bilr2)]
+results[, coverage_bilr3 := (groundtruth$b_bilr3 >= ll_bilr3) & (groundtruth$b_bilr3 <= ul_bilr3)]
+results[, coverage_bilr4 := (groundtruth$b_bilr4 >= ll_bilr4) & (groundtruth$b_bilr4 <= ul_bilr4)]
+
+results[, coverage_wilr1 := (groundtruth$b_wilr1 >= ll_wilr1) & (groundtruth$b_wilr1 <= ul_wilr1)]
+results[, coverage_wilr2 := (groundtruth$b_wilr2 >= ll_wilr2) & (groundtruth$b_wilr2 <= ul_wilr2)]
+results[, coverage_wilr3 := (groundtruth$b_wilr3 >= ll_wilr3) & (groundtruth$b_wilr3 <= ul_wilr3)]
+results[, coverage_wilr4 := (groundtruth$b_wilr4 >= ll_wilr4) & (groundtruth$b_wilr4 <= ul_wilr4)]
+
+results[, coverage_u0 := (groundtruth$u0 >= ll_u0) & (groundtruth$u0 <= ul_u0)]
+results[, coverage_u0_small := (groundtruth$u0_small >= ll_u0) & (groundtruth$u0_small <= ul_u0)]
+results[, coverage_u0_large := (groundtruth$u0_large >= ll_u0) & (groundtruth$u0_large <= ul_u0)]
+
+results[, coverage_sigma := (groundtruth$sigma >= ll_sigma) & (groundtruth$sigma <= ul_sigma)]
+results[, coverage_sigma_small := (groundtruth$sigma_small >= ll_sigma) & (groundtruth$sigma_small <= ul_sigma)]
+results[, coverage_sigma_large := (groundtruth$sigma_large >= ll_sigma) & (groundtruth$sigma_large <= ul_sigma)]
+
+results[, mean(coverage_bilr1), by = condition]
+results[, mean(coverage_bilr2), by = condition]
+results[, mean(coverage_bilr3), by = condition]
+results[, mean(coverage_bilr4), by = condition]
+
+results[, mean(coverage_wilr1), by = condition]
+results[, mean(coverage_wilr2), by = condition]
+results[, mean(coverage_wilr3), by = condition]
+results[, mean(coverage_wilr4), by = condition]
+
+# re
+results[rint_sd == 1 & res_sd == 1, mean(coverage_u0)]
+results[rint_sd == sqrt(.5) & res_sd == sqrt(1.5), mean(coverage_u0_small)]
+results[rint_sd == sqrt(1.5) & res_sd == sqrt(.5), mean(coverage_u0_large)]
+
+# res
+results[rint_sd == 1 & res_sd == 1, mean(coverage_sigma)]
+results[rint_sd == 1 & res_sd == sqrt(.5), mean(coverage_sigma_small)]
+results[rint_sd == 1 & res_sd == sqrt(2), mean(coverage_sigma_large)]
+
+```
+
+# Summarsing performances rsimsum
+### b_Intercept
+
+```{r b0}
+
+s_b0 <- simsum(
+  results,
+  estvarname = "b_Intercept",
+  true = groundtruth$b_Intercept,
+  se = "se_Intercept",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_Intercept", "ul_Intercept")
+)
+summary(s_b0)
+
+```
+
+### b_bilr1
+
+```{r bilr1}
+
+s_bilr1 <- simsum(
+  results,
+  estvarname = "b_bilr1",
+  true = groundtruth$b_bilr1,
+  se = "se_bilr1",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"), 
+  x = TRUE
+)
+summary(s_bilr1)
+
+```
+
+### b_bilr2
+
+```{r bilr2}
+
+s_bilr2 <- simsum(
+  results,
+  estvarname = "b_bilr2",
+  true = groundtruth$b_bilr2,
+  se = "se_bilr2",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K")
+)
+summary(s_bilr2)
+
+```
+
+### b_bilr3
+
+```{r bilr3}
+
+s_bilr3 <- simsum(
+  results,
+  estvarname = "b_bilr3",
+  true = groundtruth$b_bilr3,
+  se = "se_bilr3",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K")
+)
+summary(s_bilr3)
+
+```
+
+### b_bilr4
+
+```{r bilr4}
+
+s_bilr4 <- simsum(
+  results,
+  estvarname = "b_bilr4",
+  true = groundtruth$b_bilr4,
+  se = "se_bilr4",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr4", "ul_bilr4")
+)
+summary(s_bilr4)
+
+```
+
+### b_wilr1
+
+```{r wilr1}
+
+s_wilr1 <- simsum(
+  results,
+  estvarname = "b_wilr1",
+  true = groundtruth$b_wilr1,
+  se = "se_wilr1",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr1", "ul_wilr1")
+)
+summary(s_wilr1)
+
+```
+
+### b_wilr2
+
+```{r wilr2}
+
+s_wilr2 <- simsum(
+  results,
+  estvarname = "b_wilr2",
+  true = groundtruth$b_wilr2,
+  se = "se_wilr2",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr2", "ul_wilr2")
+)
+summary(s_wilr2)
+
+```
+
+### b_wilr3
+
+```{r}
+
+s_wilr3 <- simsum(
+  results,
+  estvarname = "b_wilr3",
+  true = groundtruth$b_wilr3,
+  se = "se_wilr3",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr3", "ul_wilr3")
+)
+summary(s_wilr3)
+
+```
+
+### b_wilr4
+
+```{r wilr4}
+
+s_wilr4 <- simsum(
+  results,
+  estvarname = "b_wilr4",
+  true = groundtruth$b_wilr4,
+  se = "se_wilr4",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr4", "ul_wilr4")
+)
+summary(s_wilr4)
+
+```
+
+### u0
+
+```{r u0}
+
+s_u0 <- multisimsum(
+  results,
+  par = "par",
+  estvarname = "u0",
+  true = c(groundtruth$u0, groundtruth$u0_small, groundtruth$u0_large),
+  se = "se_u0",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K")
+)
+summary(s_u0)
+
+```
+
+### sigma
+
+```{r sigma}
+
+s_sigma <- simsum(
+  results,
+  estvarname = "sigma",
+  true = groundtruth$sigma,
+  se = "se_sigma",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K")
+)
+summary(s_sigma)
+
+```
+
+
+# Visualsing
+
+```{r}
+autoplot(s_bilr1, type = "est")
+pattern(s_bilr1)
+
+autoplot(summary(s_bilr1), type = "lolly", stats = "bias")
+autoplot(summary(s_bilr1), type = "lolly", stats = "cover")
+
+autoplot(summary(s_bilr1), type = "forest", stats = "bias")
+autoplot(summary(s_bilr1), type = "forest", stats = "cover")
+
+autoplot(s_bilr1, type = "est_ridge") +
+  scale_color_jco() +
+  scale_fill_jco()
+
+autoplot(s_bilr1, type = "zip")
+autoplot(s_bilr1, type = "zip", zoom = 0.2)
+
+autoplot(s_bilr1, type = "est_density")
+autoplot(s_bilr1, type = "est_hex")
+
+autoplot(s_bilr1, type = "heat", stats = "bias", text = TRUE)
+
+```
+
+Make heatmap manually to add text
+
+```{r}
+df <- tidy(s_bilr1, stats = "bias")
+
+### Heat plot
+.heat_plot <- function(data, methodvar, by, stats) {
+  ### Create a .dgm column
+  if (!is.null(by)) {
+    tmp <- lapply(by, function(x) data[[x]])
+    data[[".dgm"]] <- do.call(paste, c(tmp, sep = ", "))
+  } else {
+    data[[".dgm"]] <- "Single DGM"
+  }
+  ### Build basic plot
+  if (!is.null(methodvar)) {
+    methodvar <- rlang::sym(methodvar)
+    gg <- ggplot2::ggplot(data = data, ggplot2::aes(x = {{methodvar}}, y = .dgm, fill = est))
+  } else {
+    gg <- ggplot2::ggplot(data = data, ggplot2::aes(x = "Single Method", y = .dgm, fill = est)) +
+      ggplot2::labs(x = "")
+  }
+  gg <- gg +
+    ggplot2::geom_raster() +
+    ggplot2::labs(y = "", fill = stats) +
+    geom_text(data = data, aes(y = .dgm, label = round(est, digits = 3)), color = "black")
+
+  ### Return plot
+  return(gg)
+}
+.heat_plot(data = df, methodvar = s_bilr1$methodvar, by = s_bilr1$by, stats = df$stat[[1]]) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  theme_classic()
+
+# heatmaply(
+#   as.data.table(df),
+#   seriate = "OLO", 
+#   row_dend_left = TRUE,
+#   plot_method = "plotly"
+# )
+```
+
