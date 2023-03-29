@@ -9,6 +9,7 @@ library(insight)
 library(doFuture)
 library(foreach)
 library(parallel)
+library(MASS)
 
 ## input ---------
 meanscovs <- readRDS("meanscovs.RDS")
@@ -28,6 +29,7 @@ plan(multisession, workers = 4L)
 
 starttime <- proc.time()
 for (i in seq_len(nrow(sampled_cond))) {
+  
   N <- sampled_cond[i, N]
   K <- sampled_cond[i, K]
   rint_sd <- sampled_cond[i, rint_sd]
@@ -73,8 +75,6 @@ for (i in seq_len(nrow(sampled_cond))) {
 
   simd$sleepy <- tmp$sleepy
 
-  outcome <- c(grep("sleepy", names(simd), value = T))
-  
   if (i == 1) {
     out[[i]] <- simmodel(database = simd, sbpbase = meanscovs$sbp)
     } else {
@@ -85,3 +85,6 @@ for (i in seq_len(nrow(sampled_cond))) {
 endtime <- proc.time()
 endtime - starttime ## time to complete
 saveRDS(out, "out.RDS", compress = "xz")
+
+prefit <- out[[1]]$Result$brmsfit
+saveRDS(prefit, "prefit.RDS", compress = "xz")
