@@ -17,12 +17,6 @@ library(ggsci)
 ## synd <- readRDS("syntheticpopulation.RDS")
 ## synd <- setDT(synd)
 
-## sbp <- matrix(c(
-##   1, 1, -1,-1, -1,
-##   1, -1, 0, 0, 0,
-##   0, 0, 1, -1, -1,
-##   0, 0, 0, 1, -1), ncol=5, byrow=TRUE)
-
 # function for sim ilr
 
 # simulateData <- function(bm, wm, bcov, wcov, n, k, psi) {
@@ -155,29 +149,3 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
   }
   return(out)
 }
-
-## # simulated data
-## obs <- data.table(K = c(3:28))
-## obs[, Kwt := dbeta((K - min(K))/(max(K) - min(K)),
-##                    1, 2)]
-## obs[, Kwt := Kwt/sum(Kwt)]
-## ppl <- data.table(N = seq(10, 1000, by = 2))
-## ppl[, Nwt := dbeta((N - min(N))/(max(N) - min(N)),
-##                    1, 2)]
-## ppl[, Nwt := Nwt/sum(Nwt)]
-## d <- expand.grid(
-##   K = obs$K,
-##   N = ppl$N
-## )
-## d <- merge(d, obs, by = "K")
-## d <- merge(d, ppl, by = "N")
-## d <- setDT(d)
-## d[, wt := Kwt * Nwt]
-
-## conditions (1000 runs each condition)
-cond <- as.data.table(expand.grid(N = c(30, 50, 360, 1200),
-                                  K = c(3, 5, 7, 14)))
-cond <- cond[rep(seq_len(.N), 1000)]
-
-meanscovs <- readRDS("meanscovs.RDS")
-groundtruth <- readRDS("groundtruth.RDS")
