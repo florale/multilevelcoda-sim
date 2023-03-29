@@ -1,0 +1,165 @@
+---
+title: "multilevelcoda data generation"
+output: 
+    pdf_document:
+        toc: true
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\newpage
+
+# Data generation process
+
+
+## Mathematical specification
+
+We define the $k = 1, 2, \ldots, D' (= D-1)$ *ilr* response coordinates, $z_{ijk}$, 
+for individual $j = 1, 2, \ldots, n$ at time point $i = 1, 2, \ldots, m_j$  as
+
+$$
+z_{ijk} = 
+\left(\gamma_{00k} + u_{0jk}\right) + 
+x_{ij} \left(\gamma_{01k} + u_{1jk} \right) + 
+\epsilon_{ijk}
+$$
+
+or equivalently for the set of $D'$ response variables for individual $j$ at time point $i$  
+
+$$
+\boldsymbol{z}_{ij}^T =
+\begin{bmatrix}
+z_{ij1}&
+z_{ij2}&
+\ldots &
+z_{ijD'}\\
+\end{bmatrix}
+=
+\left(\boldsymbol{\gamma}_{00} + \boldsymbol{u}_{0j}\right) + 
+{x}_{ij} \left(\boldsymbol{\gamma}_{01} + \boldsymbol{u}_{1j} \right) + 
+\boldsymbol{\epsilon}_{ij}
+$$
+
+where 
+
+* ${x}_{ij}$ a specific person $j$ at time $i$ scalar covariate, \textcolor{red}{(is this a time variable and how are the ${x}_{ij}$ generated in the simulated data?)}
+
+
+with population level parameters: 
+
+* $\boldsymbol{\gamma}_{00}$ a $1{\times}D'$ matrix containing the fixed intercept values for each *ilr* ($k=1,2, \ldots,D'$), \textcolor{red}{(what are these values?)}
+* $\boldsymbol{\gamma}_{01}$ a $1{\times}D'$ matrix containing the fixed slope values for each *ilr* ($k=1,2, \ldots,D'$), \textcolor{red}{(what are these values?)}
+
+
+with person level random effects: 
+
+* $\boldsymbol{u}_{0j}^T \sim \mathcal{N}\left(\boldsymbol{0}, \Omega_{0B} \right)$ is a vector containing the person $j$ specific random intercepts for each *ilr* ($k=1,2,\ldots,D'$) [ that is, the random effects are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with between-person variance-covariance $\Omega_{0B}$] \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_{0B}$?)}
+* $\boldsymbol{u}_{1j}^T \sim \mathcal{N}\left(\boldsymbol{0}, \Omega_{1B} \right)$ is a vector containing the person $j$ specific random slopes for each *ilr* ($k=1,2, \ldots,D'$) [ that is, the random (slope-offset) effects are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with between-person variance-covariance $\Omega_{1B}$], \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_{1B}$?)}
+
+with within-person random error:
+
+* $\boldsymbol{\epsilon}_{ij}^T \sim \mathcal{N}\left(\boldsymbol{0}_{D'{\times}1}, \Omega_W \right)$ is a independently and identically distributed random vector containing the person $j$ at time point $i$ random errors for each *ilr* ($k=1,2, \ldots,D'$) [ that is, the random errors are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with within-person variance-covariance matrix $\Omega_W$] \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_W$?)}
+
+
+\newpage
+
+
+## Code specification
+
+```{r, eval = FALSE}
+
+library("mvtnorm")
+
+n <- 100   # number of people
+m <- 3     # number of time points per person
+Ddash <- 4 # number of ilr coordinates
+  
+
+gamma_00 <- ... # some Ddash length vector of ilr population intercepts
+gamma_01 <- ... # some Ddash length vector of ilr population slopes
+x_ij <- ...     # n*m covariates
+
+0_Ddash <- rep(0, Ddash) # mean vector of random effects and error
+Omega_w  <- ... # some Ddash x Ddash matrix of variance covariance
+Omega_0b <- ... # some Ddash x Ddash matrix of variance covariance
+Omega_1b <- ... # some Ddash x Ddash matrix of variance covariance
+
+  
+u_0j <- 
+  rmvnorm(
+    n = n, 
+    mean = 0_Ddash,
+    sigma = Omega_0b
+  )
+  
+u_1j <- 
+  rmvnorm(
+    n = n, 
+    mean = 0_Ddash,
+    sigma = Omega_1b
+  )
+
+e_ij <- 
+  rmvnorm(
+    n = n * m, 
+    mean = 0_Ddash,
+    sigma = Omega_w
+  )
+
+z_ij <- ... # a linear combination of gamma_00, gamma_01, u_0j, u_1j, e_ij
+
+```
+
+
+
+\newpage
+# Model specification in `R/brms`
+
+```{r, eval = FALSE}
+
+head(dataset, n = 10)
+
+# the "q" below allows the random intercepts to be correlated over outcome vars
+# e.g., `cor(ilr1, ilr2)` for the random intercepts within person id 
+bf1 <- bf(ilr1 ~ ... + (1 | q | id))
+bf2 <- bf(ilr2 ~ ... + (1 | q | id))
+bf3 <- bf(ilr3 ~ ... + (1 | q | id))
+bf4 <- bf(ilr4 ~ ... + (1 | q | id))
+
+brm(
+  mvbf(bf1, bf2, bf3, bf4, rescor = TRUE),
+  data = dataset,
+  iter = ..., 
+  ...
+)
+
+
+```
+
+\newpage
+
+# A note on the response vector's distribution
+
+The distribution of the response vector $\boldsymbol{z}_{ij}^T$ is determined purely from the right hand side of the model equation. As the right hand side of the model equation is a linear combination of multivariate normal random variables, the response vector for person $j$ at time point $i$ is also multivariate normal distributed with mean corresponding to the fixed effects and variance corresponding to the random effects (and error):
+
+$$
+\boldsymbol{z}_{ij}
+\sim 
+\mathcal{N}\left(
+\boldsymbol{\gamma}_{00} + \boldsymbol{\gamma}_{01},
+\Omega_{0B} + x_{ij} \Omega_{1B} + \Omega_W 
+\right)
+$$
+
+
+
+
+
+
+
+
+
+
