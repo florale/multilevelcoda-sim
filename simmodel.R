@@ -17,7 +17,7 @@ source("input.R") # conditions and functions
 
 ## set different for each script -------
 set.seed(1) 
-sampled_cond <- cond[1:1000] 
+sampled_cond <- cond[1:1] 
 
 ## model -------------------
 out <- vector("list", length = nrow(sampled_cond))
@@ -40,7 +40,7 @@ for (i in seq_len(nrow(sampled_cond))) {
       bcov = BCov, wcov = WCov,
       n = N, k = K, psi = psi)))
 
-  # ILR ---------------------------------------------------------------------
+    # ILR ---------------------------------------------------------------------
   cilr <- compilr(
     data = simd,
     sbp = meanscovs$sbp,
@@ -57,17 +57,19 @@ for (i in seq_len(nrow(sampled_cond))) {
   tmp <- merge(tmp, redat, by = "ID")
 
   # outcome - simulated based on ml regression  -----------------------------
-  tmp[, sleepy :=  rnorm(n = nrow(simd),
-                         mean = groundtruth$b0  + rint +
-                           (groundtruth$b_bilr1 * bilr1) + 
-                           (groundtruth$b_bilr2 * bilr2) + 
-                           (groundtruth$b_bilr3 * bilr3) + 
-                           (groundtruth$b_bilr4 * bilr4) +
-                           (groundtruth$b_wilr1 * wilr1) + 
-                           (groundtruth$b_wilr2 * wilr2) + 
-                           (groundtruth$b_wilr3 * wilr3) + 
-                           (groundtruth$b_wilr4 * wilr4),
-                         sd = res_sd)]
+  tmp[, sleepy :=  rnorm(
+    n = nrow(simd),
+    mean = groundtruth$b_Intercept  + rint +
+      (groundtruth$b_bilr1 * bilr1) +
+      (groundtruth$b_bilr2 * bilr2) +
+      (groundtruth$b_bilr3 * bilr3) +
+      (groundtruth$b_bilr4 * bilr4) +
+      (groundtruth$b_wilr1 * wilr1) +
+      (groundtruth$b_wilr2 * wilr2) +
+      (groundtruth$b_wilr3 * wilr3) +
+      (groundtruth$b_wilr4 * wilr4),
+    sd = res_sd
+  )]
 
   simd$sleepy <- tmp$sleepy
 
