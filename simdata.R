@@ -58,8 +58,8 @@ bd <- d[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]
 
 # sim ilr
 bd_ilr <- ilr(acomp(bd[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]), V = psi)
-means <- colMeans(bd_ilr, na.rm = TRUE)
-cov <- cov(bd_ilr, use = "complete.obs")
+means.b <- colMeans(bd_ilr, na.rm = TRUE)
+cov.b <- cov(bd_ilr, use = "complete.obs")
 
 # # sim comp
 # bd <- acomp(bd)
@@ -82,23 +82,23 @@ cov.w <- cov(as.matrix(wd_ilr), use = "complete.obs")
 # (v_wd <- var.acomp(wd))
 
 # save and load data --------
-# meanscovs <- list(
-#   BMeans = means,
-#   BCov = cov,
-#   WMeans = means.w,
-#   WCov = cov.w,
-#   compvars = c("TST", "WAKE", "MVPA", "LPA", "SB"),
-#   sbp = sbp,
-#   psi = psi)
-
 meanscovs <- list(
-  BMeans = m_bd,
-  BCov = v_bd,
-  WMeans = m_wd,
-  WCov = v_wd,
+  BMeans = means.b,
+  BCov = cov.b,
+  WMeans = means.w,
+  WCov = cov.w,
   compvars = c("TST", "WAKE", "MVPA", "LPA", "SB"),
   sbp = sbp,
   psi = psi)
+
+# meanscovs <- list(
+#   BMeans = m_bd,
+#   BCov = v_bd,
+#   WMeans = m_wd,
+#   WCov = v_wd,
+#   compvars = c("TST", "WAKE", "MVPA", "LPA", "SB"),
+#   sbp = sbp,
+#   psi = psi)
 
 saveRDS(meanscovs, file = "meanscovs.RDS")
 
