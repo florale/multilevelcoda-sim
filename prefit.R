@@ -14,6 +14,131 @@ library(MASS)
 ## input ---------
 meanscovs <- readRDS("meanscovs.RDS")
 source("input.R") # groundtruth, conditions and functions
+set.seed(2023)
+
+## SIM MODEL
+simmodel5 <- function(database, sbpbase, prefit = NULL) {
+  psub <- basesub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
+  parts <- colnames(psub)
+  
+  cilr <-
+    compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
+  
+  model <- list()
+  # model --------
+    m <-
+      brmcoda(
+        cilr,
+        sleepy ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
+        cores = 4,
+        chains = 4,
+        iter = 3000,
+        warmup = 500,
+        backend = "cmdstanr"
+      )
+    
+    submodel <- substitution(
+      m,
+      delta = c(10, 20, 30, 60),
+      level = c("between", "within"),
+      type = "conditional"
+    )
+    
+    model <- list(
+      ModelSummary = summary(m$Model),
+      Substitution = submodel,
+      ndt = sum(subset( # number of divergent transitions
+        nuts_params(m$Model), Parameter == "divergent__")$Value),
+      brmsfit = m$Model
+    )
+  
+  list(
+    CompILR = cilr,
+    Result = model
+  )
+}
+
+simmodel4 <- function(database, sbpbase, prefit = NULL) {
+  psub <- basesub(c("Sleep", "MVPA", "LPA", "SB"))
+  parts <- colnames(psub)
+  
+  cilr <-
+    compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
+  
+  model <- list()
+  # model --------
+    m <-
+      brmcoda(
+        cilr,
+        sleepy ~ bilr1 + bilr2 + bilr3 + wilr1 + wilr2 + wilr3 + (1 | ID),
+        cores = 4,
+        chains = 4,
+        iter = 3000,
+        warmup = 500,
+        backend = "cmdstanr"
+      )
+    
+    submodel <- substitution(
+      m,
+      delta = c(10, 20, 30, 60),
+      level = c("between", "within"),
+      type = "conditional"
+    )
+    
+    model <- list(
+      ModelSummary = summary(m$Model),
+      Substitution = submodel,
+      ndt = sum(subset( # number of divergent transitions
+        nuts_params(m$Model), Parameter == "divergent__")$Value),
+      brmsfit = m$Model
+    )
+  
+  list(
+    CompILR = cilr,
+    Result = model
+  )
+}
+
+simmodel3 <- function(database, sbpbase, prefit = NULL) {
+  psub <- basesub(c("Sleep", "PA", "SB"))
+  parts <- colnames(psub)
+  
+  cilr <-
+    compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
+  
+  model <- list()
+  # model --------
+    m <-
+      brmcoda(
+        cilr,
+        sleepy ~ bilr1 + bilr2 + wilr1 + wilr2 + (1 | ID),
+        cores = 4,
+        chains = 4,
+        iter = 3000,
+        warmup = 500,
+        backend = "cmdstanr"
+      )
+    
+    submodel <- substitution(
+      m,
+      delta = c(10, 20, 30, 60),
+      level = c("between", "within"),
+      type = "conditional"
+    )
+    
+    model <- list(
+      ModelSummary = summary(m$Model),
+      Substitution = submodel,
+      ndt = sum(subset( # number of divergent transitions
+        nuts_params(m$Model), Parameter == "divergent__")$Value),
+      brmsfit = m$Model
+    )
+  
+  list(
+    CompILR = cilr,
+    Result = model
+  )
+}
 
 ### prefit 3 class classification --------------
 registerDoFuture()
@@ -136,13 +261,13 @@ for (i in seq_len(nrow(sampled_cond))) {
   # outcome - simulated based on ml regression  -----------------------------
   tmp[, sleepy :=  rnorm(
     n = nrow(simd),
-    mean = groundtruth$b_Intercept  + rint +
-      (groundtruth$b_bilr1 * bilr1) +
-      (groundtruth$b_bilr2 * bilr2) +
-      (groundtruth$b_bilr3 * bilr3) +
-      (groundtruth$b_wilr1 * wilr1) +
-      (groundtruth$b_wilr2 * wilr2) +
-      (groundtruth$b_wilr3 * wilr3),
+    mean = groundtruth4$b_Intercept  + rint +
+      (groundtruth4$b_bilr1 * bilr1) +
+      (groundtruth4$b_bilr2 * bilr2) +
+      (groundtruth4$b_bilr3 * bilr3) +
+      (groundtruth4$b_wilr1 * wilr1) +
+      (groundtruth4$b_wilr2 * wilr2) +
+      (groundtruth4$b_wilr3 * wilr3),
     sd = res_sd
   )]
   
@@ -190,7 +315,7 @@ for (i in seq_len(nrow(sampled_cond))) {
   # ILR ---------------------------------------------------------------------
   cilr <- compilr(
     data = simd,
-    sbp = meanscovs$sbp,
+    sbp = meanscovs$sbp5,
     parts = c("TST", "WAKE", "MVPA", "LPA", "SB"), idvar = "ID")
   
   tmp <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR, 
@@ -206,25 +331,25 @@ for (i in seq_len(nrow(sampled_cond))) {
   # outcome - simulated based on ml regression  -----------------------------
   tmp[, sleepy :=  rnorm(
     n = nrow(simd),
-    mean = groundtruth$b_Intercept  + rint +
-      (groundtruth$b_bilr1 * bilr1) +
-      (groundtruth$b_bilr2 * bilr2) +
-      (groundtruth$b_bilr3 * bilr3) +
-      (groundtruth$b_bilr4 * bilr4) +
-      (groundtruth$b_wilr1 * wilr1) +
-      (groundtruth$b_wilr2 * wilr2) +
-      (groundtruth$b_wilr3 * wilr3) +
-      (groundtruth$b_wilr4 * wilr4),
+    mean = groundtruth5$b_Intercept  + rint +
+      (groundtruth5$b_bilr1 * bilr1) +
+      (groundtruth5$b_bilr2 * bilr2) +
+      (groundtruth5$b_bilr3 * bilr3) +
+      (groundtruth5$b_bilr4 * bilr4) +
+      (groundtruth5$b_wilr1 * wilr1) +
+      (groundtruth5$b_wilr2 * wilr2) +
+      (groundtruth5$b_wilr3 * wilr3) +
+      (groundtruth5$b_wilr4 * wilr4),
     sd = res_sd
   )]
   
   simd$sleepy <- tmp$sleepy
   
   if (i == 1) {
-    out5[[i]] <- simmodel(database = simd, sbpbase = meanscovs$sbp)
+    out5[[i]] <- simmodel5(database = simd, sbpbase = meanscovs$sbp5)
   } else {
     prefit <- out5[[1]]$Result$brmsfit
-    out5[[i]] <- simmodel(database = simd, sbpbase = meanscovs$sbp, prefit = prefit)
+    out5[[i]] <- simmodel5(database = simd, sbpbase = meanscovs$sbp5, prefit = prefit)
   }
 }
 
