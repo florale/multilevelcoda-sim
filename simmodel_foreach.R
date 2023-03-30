@@ -22,7 +22,7 @@ source("input.R") # groundtruth, conditions and functions
 
 ## set different for each script -------
 set.seed(1) 
-sampled_cond <- cond[1:1000] 
+sampled_cond <- cond[c(1, 65, 129)] 
 
 ## model -------------------
 registerDoFuture()
@@ -42,7 +42,6 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
                  run           <- sampled_cond[i, run]
                  n_parts       <- sampled_cond[i, n_parts]
                  sbp_n         <- sampled_cond[i, sbp]
-                 simmodel_n    <- sampled_cond[i, simmodel]
                  prefit_n      <- sampled_cond[i, prefit]
                  groundtruth_n <- sampled_cond[i, groundtruth]
                  parts         <- sampled_cond[i, parts]
@@ -133,9 +132,10 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
 
                  # model -------------------------------------------------
                  list(append(
-                   get(simmodel_n)(
+                   simmodel(
                      database = simd,
                      sbpbase = sbp,
+                     parts = parts,
                      prefit = prefit),
                    list(N = N,
                         K = K,

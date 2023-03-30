@@ -99,11 +99,6 @@ cond[, sbp := ifelse(n_parts == 3, "sbp3", sbp)]
 cond[, sbp := ifelse(n_parts == 4, "sbp4", sbp)]
 cond[, sbp := ifelse(n_parts == 5, "sbp5", sbp)]
 
-cond[, simmodel := NA]
-cond[, simmodel := ifelse(n_parts == 3, "simmodel3", simmodel)]
-cond[, simmodel := ifelse(n_parts == 4, "simmodel4", simmodel)]
-cond[, simmodel := ifelse(n_parts == 5, "simmodel5", simmodel)]
-
 cond[, prefit := NA]
 cond[, prefit := ifelse(n_parts == 3, "prefit3", prefit)]
 cond[, prefit := ifelse(n_parts == 4, "prefit4", prefit)]
@@ -189,191 +184,31 @@ simulateData.acomp <- function(bm, wm, bcov, wcov, n, k, psi) {
 }
 
 ## SIM MODEL
-simmodel5 <- function(database, sbpbase, prefit = NULL) {
-  psub <- basesub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
-  parts <- colnames(psub)
-  
+simmodel <- function(database, parts, sbpbase, prefit = prefit) {
+  model <- list()
+  psub <- basesub(parts)
   cilr <-
     compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
   
-  model <- list()
-  # model --------
-  if (isTRUE(is.null(prefit))) {
-    m <-
-      brmcoda(
-        cilr,
-        sleepy ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
-        cores = 4,
-        chains = 4,
-        iter = 3000,
-        warmup = 500,
-        backend = "cmdstanr"
-      )
-    
-    submodel <- substitution(
-      m,
-      delta = c(10, 20, 30, 60),
-      level = c("between", "within"),
-      type = "conditional"
-    )
-    
-    model <- list(
-      ModelSummary = summary(m$Model),
-      Substitution = submodel,
-      ndt = sum(subset( # number of divergent transitions
-        nuts_params(m$Model), Parameter == "divergent__")$Value),
-      brmsfit = m$Model
-    )
-    
-  } else {
-    dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
-    fit <- update(prefit, newdata = dat, backend = "cmdstanr")
-    m <- structure(list(CompIlr = cilr,
-                        Model = fit),
-                   class = "brmcoda")
-    
-    submodel <- substitution(
-      m,
-      delta = c(10, 20, 30, 60),
-      level = c("between", "within"),
-      type = "conditional"
-    )
-    
-    model <- list(
-      ModelSummary = summary(m$Model),
-      Substitution = submodel,
-      ndt = sum(subset(
-        nuts_params(m$Model), Parameter == "divergent__")$Value)
-    )
-  }
+  # model --------    
+  dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
+  fit <- update(prefit, newdata = dat, backend = "cmdstanr")
+  m <- structure(list(CompIlr = cilr,
+                      Model = fit),
+                 class = "brmcoda")
   
-  list(
-    CompILR = cilr,
-    Result = model
+  submodel <- substitution(
+    m,
+    delta = c(10, 20, 30, 60),
+    level = c("between", "within"),
+    type = "conditional"
   )
-}
-
-simmodel4 <- function(database, sbpbase, prefit = NULL) {
-  psub <- basesub(c("Sleep", "MVPA", "LPA", "SB"))
-  parts <- colnames(psub)
   
-  cilr <-
-    compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
-  
-  model <- list()
-  # model --------
-  if (isTRUE(is.null(prefit))) {
-    m <-
-      brmcoda(
-        cilr,
-        sleepy ~ bilr1 + bilr2 + bilr3 + wilr1 + wilr2 + wilr3 + (1 | ID),
-        cores = 4,
-        chains = 4,
-        iter = 3000,
-        warmup = 500,
-        backend = "cmdstanr"
-      )
-    
-    submodel <- substitution(
-      m,
-      delta = c(10, 20, 30, 60),
-      level = c("between", "within"),
-      type = "conditional"
-    )
-    
-    model <- list(
-      ModelSummary = summary(m$Model),
-      Substitution = submodel,
-      ndt = sum(subset( # number of divergent transitions
-        nuts_params(m$Model), Parameter == "divergent__")$Value),
-      brmsfit = m$Model
-    )
-    
-  } else {
-    dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
-    fit <- update(prefit, newdata = dat, backend = "cmdstanr")
-    m <- structure(list(CompIlr = cilr,
-                        Model = fit),
-                   class = "brmcoda")
-    
-    submodel <- substitution(
-      m,
-      delta = c(10, 20, 30, 60),
-      level = c("between", "within"),
-      type = "conditional"
-    )
-    
-    model <- list(
-      ModelSummary = summary(m$Model),
-      Substitution = submodel,
-      ndt = sum(subset(
-        nuts_params(m$Model), Parameter == "divergent__")$Value)
-    )
-  }
-  
-  list(
-    CompILR = cilr,
-    Result = model
-  )
-}
-
-simmodel3 <- function(database, sbpbase, prefit = NULL) {
-  psub <- basesub(c("Sleep", "PA", "SB"))
-  parts <- colnames(psub)
-  
-  cilr <-
-    compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
-  
-  model <- list()
-  # model --------
-  if (isTRUE(is.null(prefit))) {
-    m <-
-      brmcoda(
-        cilr,
-        sleepy ~ bilr1 + bilr2 + wilr1 + wilr2 + (1 | ID),
-        cores = 4,
-        chains = 4,
-        iter = 3000,
-        warmup = 500,
-        backend = "cmdstanr"
-      )
-    
-    submodel <- substitution(
-      m,
-      delta = c(10, 20, 30, 60),
-      level = c("between", "within"),
-      type = "conditional"
-    )
-    
-    model <- list(
-      ModelSummary = summary(m$Model),
-      Substitution = submodel,
-      ndt = sum(subset( # number of divergent transitions
-        nuts_params(m$Model), Parameter == "divergent__")$Value),
-      brmsfit = m$Model
-    )
-    
-  } else {
-    dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
-    fit <- update(prefit, newdata = dat, backend = "cmdstanr")
-    m <- structure(list(CompIlr = cilr,
-                        Model = fit),
-                   class = "brmcoda")
-    
-    submodel <- substitution(
-      m,
-      delta = c(10, 20, 30, 60),
-      level = c("between", "within"),
-      type = "conditional"
-    )
-    
-    model <- list(
-      ModelSummary = summary(m$Model),
-      Substitution = submodel,
-      ndt = sum(subset(
-        nuts_params(m$Model), Parameter == "divergent__")$Value)
-    )
-  }
+  model <- list(
+    ModelSummary = summary(m$Model),
+    Substitution = submodel,
+    ndt = sum(subset(
+      nuts_params(m$Model), Parameter == "divergent__")$Value))
   
   list(
     CompILR = cilr,
