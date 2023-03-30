@@ -1,21 +1,86 @@
+library(compositions)
 
-# sb
+# sbp --------------------
 sbp <- matrix(c(
   1, 1, -1,-1, -1,
   1, -1, 0, 0, 0,
   0, 0, 1, -1, -1,
   0, 0, 0, 1, -1), ncol = 5, byrow = TRUE)
-psi <- gsi.buildilrBase(t(sbp))
+
+sbp4 <- matrix(c(
+  1, -1, -1,-1,
+  0, 1, -1, -1,
+  0, 0, 1, -1), ncol = 4, byrow = TRUE)
+
+sbp3 <- matrix(c(
+  1, -1,-1, 
+  0, 1, -1),ncol = 3, byrow = TRUE)
+
+## groundtruth----------------------
+groundtruth <- data.table(
+  b_Intercept  = 2.20,
+  b_bilr1      = -0.20,
+  b_bilr2      = -0.01,
+  b_bilr3      = -0.02,
+  b_bilr4      = 0.05,
+  b_wilr1      = +0.15,
+  b_wilr2      = 0.25,
+  b_wilr3      = 0.01,
+  b_wilr4      = -0.15,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(1.5),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
+)
+
+groundtruth4 <- data.table(
+  b_Intercept  = 2.50,
+  b_bilr1      = -0.30,
+  b_bilr2      = -0.02,
+  b_bilr3      = 0.01,
+  b_wilr1      = +0.20,
+  b_wilr2      = 0.00,
+  b_wilr3      = -0.15,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(1.5),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
+)
+
+groundtruth3 <- data.table(
+  b_Intercept  = 2.40,
+  b_bilr1      = -0.30,
+  b_bilr2      = -0.10,
+  b_wilr1      = +0.25,
+  b_wilr2      = -0.20,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(1.5),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
+)
 
 ## conditions --------
 # 4*4*5
-cond <- as.data.table(expand.grid(N = c(30, 50, 360, 1200),
-                                  K = c(3, 5, 7, 14),
-                                  rint_sd = c(1, sqrt(.5), sqrt(1.5)),
-                                  res_sd = c(1, sqrt(.5), sqrt(2)),
-                                  run = 1:1000))
+cond <- as.data.table(
+  expand.grid(N = c(30, 50, 360, 1200),
+              K = c(3, 5, 7, 14),
+              rint_sd = c(1, sqrt(.5), sqrt(1.5)),
+              res_sd = c(1, sqrt(.5), sqrt(2)),
+              run = 1:1000))
 cond <- cond[
-  (rint_sd == 1 & res_sd == 1) |
+    (rint_sd == 1 & res_sd == 1) |
     (rint_sd == sqrt(.5) & res_sd == sqrt(1.5)) |
     (rint_sd == sqrt(1.5) & res_sd == sqrt(.5)) |
     (rint_sd == 1 & res_sd == sqrt(2)) |
@@ -129,16 +194,14 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
     model <- list(
       ModelSummary = summary(m$Model),
       Substitution = submodel,
-      ndt = sum(subset(
-        nuts_params(m$Model), Parameter == "divergent__"
-      )$Value),
-      # number of divergent transitions
+      ndt = sum(subset( # number of divergent transitions
+        nuts_params(m$Model), Parameter == "divergent__")$Value),
       brmsfit = m$Model
     )
     
   } else {
     dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
-    fit <- update(prefit, newdata = dat, recompile = FALSE)
+    fit <- update(prefit, newdata = dat, backend = "cmdstanr")
     m <- structure(list(CompIlr = cilr,
                         Model = fit),
                    class = "brmcoda")
@@ -154,19 +217,12 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
       ModelSummary = summary(m$Model),
       Substitution = submodel,
       ndt = sum(subset(
-        nuts_params(m$Model), Parameter == "divergent__"
-      )$Value)
+        nuts_params(m$Model), Parameter == "divergent__")$Value)
     )
   }
   
-  out <- list(
+  list(
     CompILR = cilr,
-    Result = model,
-    N = N,
-    K = K,
-    rint_sd = rint_sd,
-    res_sd = res_sd,
-    run = run
+    Result = model
   )
-  return(out)
 }

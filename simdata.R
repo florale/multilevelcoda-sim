@@ -104,27 +104,6 @@ saveRDS(meanscovs, file = "meanscovs.RDS")
 
 meanscovs <- readRDS("meanscovs.RDS")
 
-## groundtruth 
-groundtruth <- data.table(
-  b_Intercept  = 2.20,
-  b_bilr1      = -0.20,
-  b_bilr2      = -0.01,
-  b_bilr3      = -0.02,
-  b_bilr4      = 0.05,
-  b_wilr1      = +0.15,
-  b_wilr2      = 0.25,
-  b_wilr3      = 0.01,
-  b_wilr4      = -0.15,
-  
-  u0           = 1,
-  u0_small     = sqrt(.5),
-  u0_large     = sqrt(1.5),
-  
-  sigma        = 1,
-  sigma_small  = sqrt(.5),
-  sigma_large  = sqrt(2)
-)
-saveRDS(groundtruth, file = "groundtruth.RDS")
 # # check ------------------
 # library(data.table)
 # library(compositions)
