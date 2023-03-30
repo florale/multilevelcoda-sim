@@ -17,7 +17,7 @@ sbp3 <- matrix(c(
   0, 1, -1),ncol = 3, byrow = TRUE)
 
 ## groundtruth----------------------
-groundtruth <- data.table(
+groundtruth5 <- data.table(
   b_Intercept  = 2.20,
   b_bilr1      = -0.20,
   b_bilr2      = -0.01,
@@ -78,6 +78,7 @@ cond <- as.data.table(
               K = c(3, 5, 7, 14),
               rint_sd = c(1, sqrt(.5), sqrt(1.5)),
               res_sd = c(1, sqrt(.5), sqrt(2)),
+              n_parts = c(3, 4, 5),
               run = 1:1000))
 cond <- cond[
     (rint_sd == 1 & res_sd == 1) |
@@ -92,6 +93,31 @@ cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_R
 cond[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+cond[, sbp := NA]
+cond[, sbp := ifelse(n_parts == 3, "sbp3", sbp)]
+cond[, sbp := ifelse(n_parts == 4, "sbp4", sbp)]
+cond[, sbp := ifelse(n_parts == 5, "sbp5", sbp)]
+
+cond[, simmodel := NA]
+cond[, simmodel := ifelse(n_parts == 3, "simmodel3", simmodel)]
+cond[, simmodel := ifelse(n_parts == 4, "simmodel4", simmodel)]
+cond[, simmodel := ifelse(n_parts == 5, "simmodel5", simmodel)]
+
+cond[, prefit := NA]
+cond[, prefit := ifelse(n_parts == 3, "prefit3", prefit)]
+cond[, prefit := ifelse(n_parts == 4, "prefit4", prefit)]
+cond[, prefit := ifelse(n_parts == 5, "prefit5", prefit)]
+
+cond[, parts := NA]
+cond[, parts := ifelse(n_parts == 3, "Sleep PA SB", parts)]
+cond[, parts := ifelse(n_parts == 4, "Sleep MVPA LPA SB", parts)]
+cond[, parts := ifelse(n_parts == 5, "TST WAKE MVPA LPA SB", parts)]
+
+cond[, groundtruth := NA]
+cond[, groundtruth := ifelse(n_parts == 3, "groundtruth3", groundtruth)]
+cond[, groundtruth := ifelse(n_parts == 4, "groundtruth4", groundtruth)]
+cond[, groundtruth := ifelse(n_parts == 5, "groundtruth5", groundtruth)]
 
 ## functions ---------
 ## SIM DATA USING ILR
@@ -163,7 +189,7 @@ simulateData.acomp <- function(bm, wm, bcov, wcov, n, k, psi) {
 }
 
 ## SIM MODEL
-simmodel <- function(database, sbpbase, prefit = NULL) {
+simmodel5 <- function(database, sbpbase, prefit = NULL) {
   psub <- basesub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
   parts <- colnames(psub)
   
@@ -177,6 +203,134 @@ simmodel <- function(database, sbpbase, prefit = NULL) {
       brmcoda(
         cilr,
         sleepy ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
+        cores = 4,
+        chains = 4,
+        iter = 3000,
+        warmup = 500,
+        backend = "cmdstanr"
+      )
+    
+    submodel <- substitution(
+      m,
+      delta = c(10, 20, 30, 60),
+      level = c("between", "within"),
+      type = "conditional"
+    )
+    
+    model <- list(
+      ModelSummary = summary(m$Model),
+      Substitution = submodel,
+      ndt = sum(subset( # number of divergent transitions
+        nuts_params(m$Model), Parameter == "divergent__")$Value),
+      brmsfit = m$Model
+    )
+    
+  } else {
+    dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
+    fit <- update(prefit, newdata = dat, backend = "cmdstanr")
+    m <- structure(list(CompIlr = cilr,
+                        Model = fit),
+                   class = "brmcoda")
+    
+    submodel <- substitution(
+      m,
+      delta = c(10, 20, 30, 60),
+      level = c("between", "within"),
+      type = "conditional"
+    )
+    
+    model <- list(
+      ModelSummary = summary(m$Model),
+      Substitution = submodel,
+      ndt = sum(subset(
+        nuts_params(m$Model), Parameter == "divergent__")$Value)
+    )
+  }
+  
+  list(
+    CompILR = cilr,
+    Result = model
+  )
+}
+
+simmodel4 <- function(database, sbpbase, prefit = NULL) {
+  psub <- basesub(c("Sleep", "MVPA", "LPA", "SB"))
+  parts <- colnames(psub)
+  
+  cilr <-
+    compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
+  
+  model <- list()
+  # model --------
+  if (isTRUE(is.null(prefit))) {
+    m <-
+      brmcoda(
+        cilr,
+        sleepy ~ bilr1 + bilr2 + bilr3 + wilr1 + wilr2 + wilr3 + (1 | ID),
+        cores = 4,
+        chains = 4,
+        iter = 3000,
+        warmup = 500,
+        backend = "cmdstanr"
+      )
+    
+    submodel <- substitution(
+      m,
+      delta = c(10, 20, 30, 60),
+      level = c("between", "within"),
+      type = "conditional"
+    )
+    
+    model <- list(
+      ModelSummary = summary(m$Model),
+      Substitution = submodel,
+      ndt = sum(subset( # number of divergent transitions
+        nuts_params(m$Model), Parameter == "divergent__")$Value),
+      brmsfit = m$Model
+    )
+    
+  } else {
+    dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
+    fit <- update(prefit, newdata = dat, backend = "cmdstanr")
+    m <- structure(list(CompIlr = cilr,
+                        Model = fit),
+                   class = "brmcoda")
+    
+    submodel <- substitution(
+      m,
+      delta = c(10, 20, 30, 60),
+      level = c("between", "within"),
+      type = "conditional"
+    )
+    
+    model <- list(
+      ModelSummary = summary(m$Model),
+      Substitution = submodel,
+      ndt = sum(subset(
+        nuts_params(m$Model), Parameter == "divergent__")$Value)
+    )
+  }
+  
+  list(
+    CompILR = cilr,
+    Result = model
+  )
+}
+
+simmodel3 <- function(database, sbpbase, prefit = NULL) {
+  psub <- basesub(c("Sleep", "PA", "SB"))
+  parts <- colnames(psub)
+  
+  cilr <-
+    compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
+  
+  model <- list()
+  # model --------
+  if (isTRUE(is.null(prefit))) {
+    m <-
+      brmcoda(
+        cilr,
+        sleepy ~ bilr1 + bilr2 + wilr1 + wilr2 + (1 | ID),
         cores = 4,
         chains = 4,
         iter = 3000,

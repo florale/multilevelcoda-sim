@@ -14,33 +14,46 @@ library(doRNG)
 
 ## input ---------
 meanscovs <- readRDS("meanscovs.RDS")
-groundtruth <- readRDS("groundtruth.RDS")
-prefit <- readRDS("prefit.RDS")
+prefit5 <- readRDS("prefit5.RDS")
+prefit4 <- readRDS("prefit4.RDS")
+prefit3 <- readRDS("prefit3.RDS")
 
-source("input.R") # conditions and functions
+source("input.R") # groundtruth, conditions and functions
 
 ## set different for each script -------
 set.seed(1) 
-sampled_cond <- cond[1:3] 
+sampled_cond <- cond[1:1000] 
 
 ## model -------------------
-# options(doFuture.foreach.export = ".export-and-automatic-with-warning")
 registerDoFuture()
-plan(list(tweak(multisession, workers = 10L),
-          tweak(sequential)))
+plan(multisession, workers = 10L)
 
 starttime <- proc.time()
 out <- vector("list", length = nrow(sampled_cond))
+sim_model <- list()
 
 out <- foreach(i = seq_len(nrow(sampled_cond)),
-               .combine = c) %dorng% {
+               .combine = c, .export = ls(globalenv())) %dorng% {
                  
-                 N <- sampled_cond[i, N]
-                 K <- sampled_cond[i, K]
-                 rint_sd <- sampled_cond[i, rint_sd]
-                 res_sd <- sampled_cond[i, res_sd]
-                 run <- sampled_cond[i, run]
+                 N             <- sampled_cond[i, N]
+                 K             <- sampled_cond[i, K]
+                 rint_sd       <- sampled_cond[i, rint_sd]
+                 res_sd        <- sampled_cond[i, res_sd]
+                 run           <- sampled_cond[i, run]
+                 n_parts       <- sampled_cond[i, n_parts]
+                 sbp_n         <- sampled_cond[i, sbp]
+                 simmodel_n    <- sampled_cond[i, simmodel]
+                 prefit_n      <- sampled_cond[i, prefit]
+                 groundtruth_n <- sampled_cond[i, groundtruth]
+                 parts         <- sampled_cond[i, parts]
                  
+                 # inputs
+                 sbp           <- meanscovs[[paste(sbp_n)]]
+                 prefit        <- get(prefit_n)
+                 groundtruth   <- get(groundtruth_n)
+                 parts         <- as.vector(strsplit(parts, " ")[[1]])
+                 
+                 # sim data ----------------------------------------------
                  simd <- with(meanscovs, rbind(
                    simulateData(
                      bm = BMeans,
@@ -52,20 +65,22 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
                      psi = psi)
                  ))
                  
-                 # ILR ---------------------------------------------------------------------
+                 simd[, Sleep := TST + WAKE]
+                 simd[, PA := MVPA + LPA]
+
+                 # ILR ---------------------------------------------------
                  cilr <- compilr(
                    data = simd,
-                   sbp = meanscovs$sbp,
-                   parts = c("TST", "WAKE", "MVPA", "LPA", "SB"),
-                   idvar = "ID"
-                 )
+                   sbp = sbp,
+                   parts = parts,
+                   idvar = "ID")
                  
                  tmp <- cbind(cilr$data,
                               cilr$BetweenILR,
                               cilr$WithinILR,
                               cilr$TotalILR)
                  
-                 # random effects ----------------------------------------------------------
+                 # random effects ----------------------------------------
                  redat <- data.table(ID = unique(tmp$ID),
                                      rint = rnorm(
                                        n = length(unique(tmp$ID)),
@@ -74,35 +89,61 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
                  
                  tmp <- merge(tmp, redat, by = "ID")
                  
-                 # outcome - simulated based on ml regression  -----------------------------
-                 tmp[, sleepy :=  rnorm(
-                   n = nrow(simd),
-                   mean = groundtruth$b_Intercept  + rint +
-                     (groundtruth$b_bilr1 * bilr1) +
-                     (groundtruth$b_bilr2 * bilr2) +
-                     (groundtruth$b_bilr3 * bilr3) +
-                     (groundtruth$b_bilr4 * bilr4) +
-                     (groundtruth$b_wilr1 * wilr1) +
-                     (groundtruth$b_wilr2 * wilr2) +
-                     (groundtruth$b_wilr3 * wilr3) +
-                     (groundtruth$b_wilr4 * wilr4),
-                   sd = res_sd)]
+                 # outcome -----------------------------------------------
+                 if (n_parts == 3) {
+                   tmp[, sleepy :=  rnorm(
+                     n = nrow(simd),
+                     mean = groundtruth$b_Intercept  + rint +
+                       (groundtruth$b_bilr1 * bilr1) +
+                       (groundtruth$b_bilr2 * bilr2) +
+                       (groundtruth$b_wilr1 * wilr1) +
+                       (groundtruth$b_wilr2 * wilr2),
+                     sd = res_sd)]
+                 }
+                 
+                 if (n_parts == 4) {
+                   tmp[, sleepy :=  rnorm(
+                     n = nrow(simd),
+                     mean = groundtruth$b_Intercept  + rint +
+                       (groundtruth$b_bilr1 * bilr1) +
+                       (groundtruth$b_bilr2 * bilr2) +
+                       (groundtruth$b_bilr2 * bilr3) +
+                       (groundtruth$b_wilr1 * wilr1) +
+                       (groundtruth$b_wilr2 * wilr2) +
+                       (groundtruth$b_wilr2 * wilr3),
+                     sd = res_sd)]
+                 }
+                 
+                 if (n_parts == 5) {
+                   tmp[, sleepy :=  rnorm(
+                     n = nrow(simd),
+                     mean = groundtruth$b_Intercept  + rint +
+                       (groundtruth$b_bilr1 * bilr1) +
+                       (groundtruth$b_bilr2 * bilr2) +
+                       (groundtruth$b_bilr3 * bilr3) +
+                       (groundtruth$b_bilr4 * bilr4) +
+                       (groundtruth$b_wilr1 * wilr1) +
+                       (groundtruth$b_wilr2 * wilr2) +
+                       (groundtruth$b_wilr3 * wilr3) +
+                       (groundtruth$b_wilr4 * wilr4),
+                     sd = res_sd)]
+                 }
                  
                  simd$sleepy <- tmp$sleepy
-                 
-                 list(
-                   simmodel(
+
+                 # model -------------------------------------------------
+                 list(append(
+                   get(simmodel_n)(
                      database = simd,
-                     sbpbase = meanscovs$sbp,
-                     prefit = prefit
-                   ),
-                   N = N,
-                   K = K,
-                   rint_sd = rint_sd,
-                   res_sd = res_sd,
-                   run = run
-                 )
-               }
+                     sbpbase = sbp,
+                     prefit = prefit),
+                   list(N = N,
+                        K = K,
+                        rint_sd = rint_sd,
+                        res_sd = res_sd,
+                        run = run,
+                        parts = parts)))
+               } 
 
 endtime <- proc.time()
 endtime - starttime ## time to complete
