@@ -5,12 +5,28 @@ library(multilevelTools)
 library(MASS)
 
 # sbp & psi
+# sbp --------------------
 sbp <- matrix(c(
   1, 1, -1,-1, -1,
   1, -1, 0, 0, 0,
   0, 0, 1, -1, -1,
   0, 0, 0, 1, -1), ncol = 5, byrow = TRUE)
 psi <- gsi.buildilrBase(t(sbp))
+
+sbp5 <- matrix(c(
+  1, 1, -1,-1, -1,
+  1, -1, 0, 0, 0,
+  0, 0, 1, -1, -1,
+  0, 0, 0, 1, -1), ncol = 5, byrow = TRUE)
+
+sbp4 <- matrix(c(
+  1, -1, -1,-1,
+  0, 1, -1, -1,
+  0, 0, 1, -1), ncol = 4, byrow = TRUE)
+
+sbp3 <- matrix(c(
+  1, -1,-1, 
+  0, 1, -1),ncol = 3, byrow = TRUE)
 
 # read data ----------------------------------------------------------------------------------------
 if (Sys.info()[["sysname"]] %in% "Windows") {
@@ -89,7 +105,11 @@ meanscovs <- list(
   WCov = cov.w,
   compvars = c("TST", "WAKE", "MVPA", "LPA", "SB"),
   sbp = sbp,
-  psi = psi)
+  psi = psi,
+  sbp5 = sbp5,
+  sbp4 = sbp4,
+  sbp3 = sbp3
+)
 
 # meanscovs <- list(
 #   BMeans = m_bd,
