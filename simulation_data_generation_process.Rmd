@@ -1,119 +1,217 @@
 ---
 title: "multilevelcoda data generation"
-output: 
-    pdf_document:
-        toc: true
+output:
+  pdf_document:
+    toc: yes
+  word_document:
+    toc: yes
 date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(extraoperators)
+library(compositions)
+library(multilevelcoda)
+library(brms)
+library(cmdstanr)
+library(insight)
+
+library(doFuture)
+library(foreach)
+library(parallel)
+library(MASS)
+```
+
+# Inputs 
+
+```{r}
+meanscovs <- readRDS("meanscovs.RDS") # mean and covariance to generate data
+groundtruth <- readRDS("groundtruth.RDS") # based on real data study
+source("input.R") # conditions and functions to generate data and run models
+
+# sim model script
+# source("simmodel.R")
 ```
 
 \newpage
 
 # Data generation process
-
+\textcolor{red}{The model we are using is a multilevel model with compositional predictors, 
+specifically daily 5-part sleep-wake behaviours predicting sleepiness. 
+It corresponds to the Multilevel models with compositional predictors section in the package paper.
+In this study, model includes random intercept, no random slopes}.
 
 ## Mathematical specification
-
-We define the $k = 1, 2, \ldots, D' (= D-1)$ *ilr* response coordinates, $z_{ijk}$, 
-for individual $j = 1, 2, \ldots, n$ at time point $i = 1, 2, \ldots, m_j$  as
-
-$$
-z_{ijk} = 
-\left(\gamma_{00k} + u_{0jk}\right) + 
-x_{ij} \left(\gamma_{01k} + u_{1jk} \right) + 
-\epsilon_{ijk}
-$$
-
-or equivalently for the set of $D'$ response variables for individual $j$ at time point $i$  
-
-$$
-\boldsymbol{z}_{ij}^T =
-\begin{bmatrix}
-z_{ij1}&
-z_{ij2}&
-\ldots &
-z_{ijD'}\\
-\end{bmatrix}
-=
-\left(\boldsymbol{\gamma}_{00} + \boldsymbol{u}_{0j}\right) + 
-{x}_{ij} \left(\boldsymbol{\gamma}_{01} + \boldsymbol{u}_{1j} \right) + 
-\boldsymbol{\epsilon}_{ij}
-$$
+To express a model for the time-varying $D$-part multilevel compositional predictor, 
+we first denote the repeated measure observed at time point $i$ for individual $j$ as $y_{ij}$. 
+The prediction of the outcome $y_{ij}$ is the linear combination of the between-person and 
+within-person effects of a $D$-part composition (expressed as a set of $(D - 1)$-part or $ilr$ coordinates). 
+We write
+$$y_{ij} = \beta_{0j} + \sum_{k = 1}^{D-1} \beta_k bz_{jk} + \sum_{k = 1}^{D-1}\beta_{(k + D - 1)j}\hspace{0.1cm} wz_{ijk} + \varepsilon_{ij}$$
 
 where 
 
-* ${x}_{ij}$ a specific person $j$ at time $i$ scalar covariate, \textcolor{red}{(is this a time variable and how are the ${x}_{ij}$ generated in the simulated data?)}
+* ${y}_{ij}$ a repeated measure observed at time point $i$ for individual $j$. 
+This was generated through the linear combination of the between-person and 
+within-person effects of a $D$-part composition (expressed as a set of $(D - 1)$-part or $ilr$ coordinates).
 
-
+and 
+$$
+\begin{bmatrix}
+\beta_{0j} \\
+\beta_{1j} \\
+\vdots \\
+\beta_{(k + D - 1)j}
+\end{bmatrix} 
+= 
+\begin{bmatrix}
+\gamma_{00} \\
+\gamma_{01} \\
+\vdots \\
+\gamma_{0(k + D - 1)} 
+\end{bmatrix}
++
+\begin{bmatrix}
+u_{0j} \\
+u_{1j} \\
+\vdots \\
+u_{(k + D - 1)j}
+\end{bmatrix}
+$$
 with population level parameters: 
 
-* $\boldsymbol{\gamma}_{00}$ a $1{\times}D'$ matrix containing the fixed intercept values for each *ilr* ($k=1,2, \ldots,D'$), \textcolor{red}{(what are these values?)}
-* $\boldsymbol{\gamma}_{01}$ a $1{\times}D'$ matrix containing the fixed slope values for each *ilr* ($k=1,2, \ldots,D'$), \textcolor{red}{(what are these values?)}
-
+$$
+\begin{bmatrix}
+\gamma_{00} \\
+\gamma_{01} \\
+\vdots \\
+\gamma_{0(k + D - 1)} 
+\end{bmatrix}
+$$
 
 with person level random effects: 
 
 * $\boldsymbol{u}_{0j}^T \sim \mathcal{N}\left(\boldsymbol{0}, \Omega_{0B} \right)$ is a vector containing the person $j$ specific random intercepts for each *ilr* ($k=1,2,\ldots,D'$) [ that is, the random effects are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with between-person variance-covariance $\Omega_{0B}$] \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_{0B}$?)}
 * $\boldsymbol{u}_{1j}^T \sim \mathcal{N}\left(\boldsymbol{0}, \Omega_{1B} \right)$ is a vector containing the person $j$ specific random slopes for each *ilr* ($k=1,2, \ldots,D'$) [ that is, the random (slope-offset) effects are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with between-person variance-covariance $\Omega_{1B}$], \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_{1B}$?)}
 
+\textcolor{red}{we are thinking of skipping random slopes for simplicity and to save time running brm models, so would it just be:}
+
+$$
+\begin{bmatrix}
+u_{0j} \\
+u_{1j} \\
+\vdots \\
+u_{(k + D - 1)j}
+\end{bmatrix}
+\sim 
+\mathcal{N}(\boldsymbol{0}, 
+\boldsymbol{\Sigma})
+$$
+
+$$
+u_{0j}
+\sim
+\mathcal{N}(\boldsymbol{0}, 
+\boldsymbol{\sigma})
+$$
 with within-person random error:
 
 * $\boldsymbol{\epsilon}_{ij}^T \sim \mathcal{N}\left(\boldsymbol{0}_{D'{\times}1}, \Omega_W \right)$ is a independently and identically distributed random vector containing the person $j$ at time point $i$ random errors for each *ilr* ($k=1,2, \ldots,D'$) [ that is, the random errors are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with within-person variance-covariance matrix $\Omega_W$] \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_W$?)}
 
-
+$$\varepsilon_{ij} \sim \mathcal{N}(0, \sigma^{2}_{\varepsilon})$$
 \newpage
-
 
 ## Code specification
 
 ```{r, eval = FALSE}
 
 library("mvtnorm")
+library(MASS)
 
-n <- 100   # number of people
-m <- 3     # number of time points per person
-Ddash <- 4 # number of ilr coordinates
-  
+n <- c(30, 50, 360, 1200)   # number of people
+k <- c(3, 5, 7, 14)     # number of time points per person
+Ddash <- c(2, 3, 4) # number of ilr coordinates
+rint_sd <- c(1, sqrt(.5), sqrt(1.5))
+res_sd <- c(1, sqrt(.5), sqrt(2))
 
-gamma_00 <- ... # some Ddash length vector of ilr population intercepts
-gamma_01 <- ... # some Ddash length vector of ilr population slopes
-x_ij <- ...     # n*m covariates
+gamma_00 <- groundtruth$b_Intercept # some Ddash length vector of ilr population intercepts
 
-0_Ddash <- rep(0, Ddash) # mean vector of random effects and error
-Omega_w  <- ... # some Ddash x Ddash matrix of variance covariance
-Omega_0b <- ... # some Ddash x Ddash matrix of variance covariance
-Omega_1b <- ... # some Ddash x Ddash matrix of variance covariance
+gamma_01 <- groundtruth$b_bilr1
+gamma_02 <- groundtruth$b_bilr2 
+gamma_03 <- groundtruth$b_bilr3 
+gamma_04 <- groundtruth$b_bilr4
+gamma_05 <- groundtruth$b_wilr1 
+gamma_06 <- groundtruth$b_wilr2
+gamma_07 <- groundtruth$b_wilr3
+gamma_09 <- groundtruth$b_wilr4
 
-  
+# x_ij <- ...     # n*m covariates
+
+# 0_Ddash <- 0 # mean vector of random effects and error
+
+Omega_w  <- res_sd # some Ddash x Ddash matrix of variance covariance
+Omega_0b <- rint_sd # some Ddash x Ddash matrix of variance covariance
+# Omega_1b <- ... # don't have random slope in the model atm :D
+
 u_0j <- 
-  rmvnorm(
+  rnorm(
     n = n, 
-    mean = 0_Ddash,
-    sigma = Omega_0b
+    mean = 0,
+    sd = Omega_0b
   )
   
-u_1j <- 
-  rmvnorm(
-    n = n, 
-    mean = 0_Ddash,
-    sigma = Omega_1b
-  )
+# u_1j <- 
+#   rmvnorm(
+#     n = n, 
+#     mean = 0,
+#     sigma = Omega_1b
+#   )
 
 e_ij <- 
-  rmvnorm(
-    n = n * m, 
-    mean = 0_Ddash,
-    sigma = Omega_w
+  rnorm(
+    n = n * k, 
+    mean = 0,
+    sd = Omega_w
   )
 
-z_ij <- ... # a linear combination of gamma_00, gamma_01, u_0j, u_1j, e_ij
+# y is sleepy
+# a linear combination of gamma_00, gamma_01, u_0j, u_1j, e_ij
+y <- gamma_00  +
+  (gamma_01 * bilr1) +
+  (gamma_02 * bilr2) +
+  (gamma_03 * bilr3) +
+  (gamma_04 * bilr4) +
+  (gamma_05 * wilr1) +
+  (gamma_06 * wilr2) +
+  (gamma_07 * wilr3) +
+  (gamma_08 * wilr4) +
+  u_0j + e_ij
 
+## the code we are currently using
+y <- rnorm(
+  n = nrow(dataset),
+  mean = groundtruth$b_Intercept  + rint +
+    (groundtruth$b_bilr1 * bilr1) +
+    (groundtruth$b_bilr2 * bilr2) +
+    (groundtruth$b_bilr3 * bilr3) +
+    (groundtruth$b_bilr4 * bilr4) +
+    (groundtruth$b_wilr1 * wilr1) +
+    (groundtruth$b_wilr2 * wilr2) +
+    (groundtruth$b_wilr3 * wilr3) +
+    (groundtruth$b_wilr4 * wilr4),
+  sd = res_sd)
+  
+# some other inputs for calculating ILRs
+sbp <- matrix(c(
+  1, 1, -1,-1, -1,
+  1, -1, 0, 0, 0,
+  0, 0, 1, -1, -1,
+  0, 0, 0, 1, -1), ncol = 5, byrow = TRUE) 
+# psi <- gsi.buildilrBase(t(sbp))
+parts <- c("TST", "WAKE", "MVPA", "LPA", "SB")
 ```
-
-
 
 \newpage
 # Model specification in `R/brms`
@@ -124,18 +222,25 @@ head(dataset, n = 10)
 
 # the "q" below allows the random intercepts to be correlated over outcome vars
 # e.g., `cor(ilr1, ilr2)` for the random intercepts within person id 
-bf1 <- bf(ilr1 ~ ... + (1 | q | id))
-bf2 <- bf(ilr2 ~ ... + (1 | q | id))
-bf3 <- bf(ilr3 ~ ... + (1 | q | id))
-bf4 <- bf(ilr4 ~ ... + (1 | q | id))
+bf1 <- brm(sleepy ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
+           data = dataset,
+           cores = 4,
+           chains = 4,
+           iter = 3000,
+           warmup = 500,
+           backend = "cmdstanr")
 
-brm(
-  mvbf(bf1, bf2, bf3, bf4, rescor = TRUE),
-  data = dataset,
-  iter = ..., 
-  ...
-)
+# or using multilevelcoda
+cilr <- compilr(dataset, sbp, parts, total = 1440, idvar = "ID")
 
+bf2 <- brmcoda(
+  cilr,
+  sleepy ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
+  cores = 4,
+  chains = 4,
+  iter = 3000,
+  warmup = 500,
+  backend = "cmdstanr")
 
 ```
 
