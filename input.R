@@ -192,7 +192,10 @@ simmodel <- function(database, parts, sbpbase, prefit = prefit) {
   
   # model --------    
   dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
-  fit <- update(prefit, newdata = dat, backend = "cmdstanr")
+  fit <- update(prefit, newdata = dat, 
+                cores = 4,
+                backend = "cmdstanr")
+  
   m <- structure(list(CompIlr = cilr,
                       Model = fit),
                  class = "brmcoda")
