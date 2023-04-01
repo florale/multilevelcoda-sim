@@ -46,102 +46,99 @@ ggthemr_reset()
 # Setup
 
 ```{r}
-groundtruth <- readRDS("groundtruth.RDS")
+source("input.R")
 meanscovs <- readRDS("meanscovs.RDS")
-out <- readRDS("out.RDS") # result
+out<- readRDS("out_foreach10_ll_brms.RDS") # result
 
-cond <- as.data.table(expand.grid(N = 50,
-                                  K = 5,
-                                  rint_sd = c(1, sqrt(.5), sqrt(1.5)),
-                                  res_sd = c(1, sqrt(.5), sqrt(1.5), sqrt(2)),
-                                  run = 1:1000))
-cond <- cond[
-    (rint_sd == 1 & res_sd == 1) |
-    (rint_sd == sqrt(.5) & res_sd == sqrt(1.5)) |
-    (rint_sd == sqrt(1.5) & res_sd == sqrt(.5)) |
-    (rint_sd == 1 & res_sd == sqrt(2)) |
-    (rint_sd == 1 & res_sd == sqrt(.5))]
-
-cond[, cond := 1:.N, .(run)]
-
-cond[, condition := NA]
-cond[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
-cond[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
-cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
-cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
-
+cond <- cond[1:500]
 ```
 
 # Extract results
 
+## Separated by no of parts
+
 ```{r}
-# inspect 1 model
-out[[1]]$Result$ModelSummary
+out3 <- list()
+out4 <-list()
+out5 <- list()
+for (i in 1:length(out)) {
+  if (identical(out[[i]][[8]], c("Sleep", "PA", "SB"))) out3[[i]] <- out[[i]]
+  if (identical(out[[i]][[8]], c("Sleep", "MVPA", "LPA", "SB"))) out4[[i]] <- out[[i]]
+  if (identical(out[[i]][[8]], c("TST", "WAKE", "MVPA", "LPA", "SB"))) out5[[i]] <- out[[i]]
+}
+allout <- list(out3, out4, out5)
+names(allout) <- c("out3", "out4", "out5")
+allout <- lapply(allout, function(x) {
+  x[!sapply(x, is.null)]})
 
-### estimates ###
-fe_results <- do.call(rbind, lapply(out, function(x) {
-  x$Result$ModelSummary$fixed$Estimate
-}))
-colnames(fe_results) <- paste0("b_", rownames(out[[1]]$Result$ModelSummary$fixed))
+```
 
-### SE ###
-se <- lci <- do.call(rbind, lapply(out, function(x) {
+## Extract results
+
+```{r}
+results <- lapply(allout, function(y) {
+  
+  ### estimates ###
+  est <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$fixed$Estimate
+  }))
+  colnames(est) <- paste0("b_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  
+  ### SE ###
+  se <- lci <- do.call(rbind, lapply(y, function(x) {
     x$Result$ModelSummary$fixed[["Est.Error"]]}))
-colnames(se) <- paste0("se_", rownames(out[[1]]$Result$ModelSummary$fixed))
-
-### CIs ###
-lci <- do.call(rbind, lapply(out, function(x) {
-  x$Result$ModelSummary$fixed[["l-95% CI"]]
-}))
-colnames(lci) <-
-  paste0("ll_", rownames(out[[1]]$Result$ModelSummary$fixed))
-
-uci <- do.call(rbind, lapply(out, function(x) {
-  x$Result$ModelSummary$fixed[["u-95% CI"]]
-}))
-colnames(uci) <-
-  paste0("ul_", rownames(out[[1]]$Result$ModelSummary$fixed))
-
-ci <- cbind(lci, uci)
-fe_results <- cbind(cond, fe_results, se, ci)
-
-### random ###
-re_results <- cbind(
-  sapply(out, function(x) {
-    x$Result$ModelSummary$random$ID$Estimate
-  }),
-  sapply(out, function(x) {
-    x$Result$ModelSummary$random$ID[["Est.Error"]]
-  }),
-  sapply(out, function(x) {
-    x$Result$ModelSummary$random$ID[["l-95% CI"]]
-  }),
-  sapply(out, function(x) {
-    x$Result$ModelSummary$random$ID[["u-95% CI"]]
-  })
-)
-colnames(re_results) <- c("u0", "se_u0", "ll_u0", "ul_u0")
-
-# res
-res_results <- cbind(
-  sapply(out, function(x) {
-    x$Result$ModelSummary$spec_pars$Estimate
-  }),
-  sapply(out, function(x) {
-    x$Result$ModelSummary$spec_pars[["Est.Error"]]
-  }),
-  sapply(out, function(x) {
-    x$Result$ModelSummary$spec_pars[["l-95% CI"]]
-  }),
-  sapply(out, function(x) {
-    x$Result$ModelSummary$spec_pars[["u-95% CI"]]
-  })
-)
-colnames(res_results) <-
-  c("sigma", "se_sigma", "ll_sigma", "ul_sigma")
-
-results <- cbind(fe_results, re_results, res_results)
+  colnames(se) <- paste0("se_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  
+  ### CIs ###
+  lci <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$fixed[["l-95% CI"]]
+  }))
+  colnames(lci) <- paste0("ll_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  
+  uci <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$fixed[["u-95% CI"]]
+  }))
+  colnames(uci) <- paste0("ul_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  
+  fe_results <- cbind(est, se, lci, uci)
+  
+  ### random ###
+  re_results <- cbind(
+    sapply(y, function(x) {
+      x$Result$ModelSummary$random$ID$Estimate
+    }),
+    sapply(y, function(x) {
+      x$Result$ModelSummary$random$ID[["Est.Error"]]
+    }),
+    sapply(y, function(x) {
+      x$Result$ModelSummary$random$ID[["l-95% CI"]]
+    }),
+    sapply(y, function(x) {
+      x$Result$ModelSummary$random$ID[["u-95% CI"]]
+    })
+  )
+  colnames(re_results) <- c("u0", "se_u0", "ll_u0", "ul_u0")
+  
+  ### residuals ###
+  res_results <- cbind(
+    sapply(y, function(x) {
+      x$Result$ModelSummary$spec_pars$Estimate
+    }),
+    sapply(y, function(x) {
+      x$Result$ModelSummary$spec_pars[["Est.Error"]]
+    }),
+    sapply(y, function(x) {
+      x$Result$ModelSummary$spec_pars[["l-95% CI"]]
+    }),
+    sapply(y, function(x) {
+      x$Result$ModelSummary$spec_pars[["u-95% CI"]]
+    })
+  )
+  colnames(res_results) <- c("sigma", "se_sigma", "ll_sigma", "ul_sigma")
+  
+  ### putting it all together
+  cbind(cond[n_parts == length(y[[1]][["parts"]])], fe_results, re_results, res_results)
+})
 ```
 
 # Checking performances manually
