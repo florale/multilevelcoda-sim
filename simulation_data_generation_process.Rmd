@@ -24,11 +24,12 @@ library(parallel)
 library(MASS)
 ```
 
+\newpage
+
 # Inputs 
 
 ```{r}
 meanscovs <- readRDS("meanscovs.RDS") # mean and covariance to generate data
-groundtruth <- readRDS("groundtruth.RDS") # based on real data study
 source("input.R") # conditions and functions to generate data and run models
 
 # sim model script
@@ -39,7 +40,7 @@ source("input.R") # conditions and functions to generate data and run models
 
 # Data generation process
 \textcolor{red}{The model we are using is a multilevel model with compositional predictors, 
-specifically daily 5-part sleep-wake behaviours predicting sleepiness. 
+specifically daily $D$-part sleep-wake behaviours predicting sleepiness. 
 It corresponds to the Multilevel models with compositional predictors section in the package paper.
 In this study, model includes random intercept, no random slopes}.
 
@@ -47,80 +48,97 @@ In this study, model includes random intercept, no random slopes}.
 To express a model for the time-varying $D$-part multilevel compositional predictor, 
 we first denote the repeated measure observed at time point $i$ for individual $j$ as $y_{ij}$. 
 The prediction of the outcome $y_{ij}$ is the linear combination of the between-person and 
-within-person effects of a $D$-part composition (expressed as a set of $(D - 1)$-part or $ilr$ coordinates). 
+within-person effects of a $D$-part composition (expressed as a set of $D-1$-part or $ilr$ coordinates). 
 We write
-$$y_{ij} = \beta_{0j} + \sum_{k = 1}^{D-1} \beta_k bz_{jk} + \sum_{k = 1}^{D-1}\beta_{(k + D - 1)j}\hspace{0.1cm} wz_{ijk} + \varepsilon_{ij}$$
+
+$$
+y_{ij} = \beta_{0j} + 
+  \overbrace{\sum_{k = 1}^{D-1} \beta_k bz_{jk}}^{\text{between}} + 
+  \underbrace{\sum_{k = 1}^{D-1}\beta_{(k + D - 1)j}\hspace{0.1cm} wz_{ijk}}_{\text{within}} +
+  \varepsilon_{ij}
+$$
 
 where 
-
-* ${y}_{ij}$ a repeated measure observed at time point $i$ for individual $j$. 
+${y}_{ij}$ a repeated measure observed at time point $i$ for individual $j$. 
 This was generated through the linear combination of the between-person and 
 within-person effects of a $D$-part composition (expressed as a set of $(D - 1)$-part or $ilr$ coordinates).
 
-and 
+with population level parameters: 
+$$\beta_{0j} = \gamma_{00} + u_{0j}$$
+
+and
 $$
 \begin{bmatrix}
-\beta_{0j} \\
-\beta_{1j} \\
+\beta_{1} \\
+\beta_{2} \\
 \vdots \\
-\beta_{(k + D - 1)j}
+\beta_{(k + D - 1)}
 \end{bmatrix} 
 = 
 \begin{bmatrix}
-\gamma_{00} \\
 \gamma_{01} \\
+\gamma_{02} \\
 \vdots \\
-\gamma_{0(k + D - 1)} 
-\end{bmatrix}
-+
-\begin{bmatrix}
-u_{0j} \\
-u_{1j} \\
-\vdots \\
-u_{(k + D - 1)j}
+\gamma_{(k + D - 1)}
 \end{bmatrix}
 $$
-with population level parameters: 
+person level random effects: 
 
-$$
-\begin{bmatrix}
-\gamma_{00} \\
-\gamma_{01} \\
-\vdots \\
-\gamma_{0(k + D - 1)} 
-\end{bmatrix}
-$$
+$$u_{0j} \sim \mathcal{N}(0, \sigma^{2}_{u})$$
 
-with person level random effects: 
 
-* $\boldsymbol{u}_{0j}^T \sim \mathcal{N}\left(\boldsymbol{0}, \Omega_{0B} \right)$ is a vector containing the person $j$ specific random intercepts for each *ilr* ($k=1,2,\ldots,D'$) [ that is, the random effects are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with between-person variance-covariance $\Omega_{0B}$] \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_{0B}$?)}
-* $\boldsymbol{u}_{1j}^T \sim \mathcal{N}\left(\boldsymbol{0}, \Omega_{1B} \right)$ is a vector containing the person $j$ specific random slopes for each *ilr* ($k=1,2, \ldots,D'$) [ that is, the random (slope-offset) effects are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with between-person variance-covariance $\Omega_{1B}$], \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_{1B}$?)}
-
-\textcolor{red}{we are thinking of skipping random slopes for simplicity and to save time running brm models, so would it just be:}
-
-$$
-\begin{bmatrix}
-u_{0j} \\
-u_{1j} \\
-\vdots \\
-u_{(k + D - 1)j}
-\end{bmatrix}
-\sim 
-\mathcal{N}(\boldsymbol{0}, 
-\boldsymbol{\Sigma})
-$$
-
-$$
-u_{0j}
-\sim
-\mathcal{N}(\boldsymbol{0}, 
-\boldsymbol{\sigma})
-$$
-with within-person random error:
-
-* $\boldsymbol{\epsilon}_{ij}^T \sim \mathcal{N}\left(\boldsymbol{0}_{D'{\times}1}, \Omega_W \right)$ is a independently and identically distributed random vector containing the person $j$ at time point $i$ random errors for each *ilr* ($k=1,2, \ldots,D'$) [ that is, the random errors are 0 centred ($\boldsymbol{0}$ is a $D'{\times}1$ matrix of 0s) with within-person variance-covariance matrix $\Omega_W$] \textcolor{red}{(what are $D'{\times}D'$ values in $\Omega_W$?)}
+and within-person random error:
 
 $$\varepsilon_{ij} \sim \mathcal{N}(0, \sigma^{2}_{\varepsilon})$$
+
+### Model specification for a 5-part compositional predictor
+
+$$
+y_{ij} = \beta_{0j} + 
+  \overbrace{\sum_{k = 1}^{4} \beta_k bz_{jk}}^{\text{between}} + 
+  \underbrace{\sum_{k = 1}^{4}\beta_{(k + 4)}\hspace{0.1cm} wz_{ijk}}_{\text{within}} +
+  \varepsilon_{ij}
+$$
+
+with: 
+$$\beta_{0j} = \gamma_{00} + u_{0j}$$
+
+and
+$$
+\begin{bmatrix}
+\beta_{1} \\
+\beta_{2} \\
+\vdots \\
+\beta_{8}
+\end{bmatrix} 
+= 
+\begin{bmatrix}
+\gamma_{01} \\
+\gamma_{02} \\
+\vdots \\
+\gamma_{08} 
+\end{bmatrix}
+$$
+
+with 
+
+$$u_{0j} \sim \mathcal{N}(0, \sigma^{2}_{u})$$
+
+
+and
+
+$$\varepsilon_{ij} \sim \mathcal{N}(0, \sigma^{2}_{\varepsilon})$$
+The between- and within-person components of the composition are $bz$ and $wz$, with 
+the subscripts denoting that the between component is unique to individual $j$ 
+and the within component is unique to time $i$ for individual $j$. 
+The between- and within-person components for the 
+relationship between composition and the outcome are $\beta_k$ and $\beta_{k + D - 1}$
+The subscript $k$ indicates the index of the $\beta$ for the composition predictor 
+(expressed as a set of $ilr$ coordinates).
+Because each $ilr$ coordinate is decomposed into its between- and within-person components, 
+the total number of the $\beta$ for the $ilr$ coordinates is double the number of the $ilr$ coordinates, 
+hence the subscript of the $\beta$ for $wz$ is $k + D - 1$.
+
 \newpage
 
 ## Code specification
@@ -133,9 +151,10 @@ library(MASS)
 n <- c(30, 50, 360, 1200)   # number of people
 k <- c(3, 5, 7, 14)     # number of time points per person
 Ddash <- c(2, 3, 4) # number of ilr coordinates
-rint_sd <- c(1, sqrt(.5), sqrt(1.5))
-res_sd <- c(1, sqrt(.5), sqrt(2))
+rint_sd <- c(1, sqrt(.5), sqrt(1.5)) # levels of random effect
+res_sd <- c(1, sqrt(.5), sqrt(2)) # levels of residual error
 
+# FOR 5-PART COMPOSITION
 gamma_00 <- groundtruth$b_Intercept # some Ddash length vector of ilr population intercepts
 
 gamma_01 <- groundtruth$b_bilr1
@@ -145,7 +164,7 @@ gamma_04 <- groundtruth$b_bilr4
 gamma_05 <- groundtruth$b_wilr1 
 gamma_06 <- groundtruth$b_wilr2
 gamma_07 <- groundtruth$b_wilr3
-gamma_09 <- groundtruth$b_wilr4
+gamma_08 <- groundtruth$b_wilr4
 
 # x_ij <- ...     # n*m covariates
 
@@ -188,20 +207,6 @@ y <- gamma_00  +
   (gamma_07 * wilr3) +
   (gamma_08 * wilr4) +
   u_0j + e_ij
-
-## the code we are currently using
-y <- rnorm(
-  n = nrow(dataset),
-  mean = groundtruth$b_Intercept  + rint +
-    (groundtruth$b_bilr1 * bilr1) +
-    (groundtruth$b_bilr2 * bilr2) +
-    (groundtruth$b_bilr3 * bilr3) +
-    (groundtruth$b_bilr4 * bilr4) +
-    (groundtruth$b_wilr1 * wilr1) +
-    (groundtruth$b_wilr2 * wilr2) +
-    (groundtruth$b_wilr3 * wilr3) +
-    (groundtruth$b_wilr4 * wilr4),
-  sd = res_sd)
   
 # some other inputs for calculating ILRs
 sbp <- matrix(c(
