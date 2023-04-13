@@ -11,6 +11,7 @@ library(doFuture)
 library(foreach)
 library(parallel)
 library(doRNG)
+library(future)
 
 ## input ---------
 meanscovs <- readRDS("meanscovs.RDS")
@@ -26,7 +27,9 @@ sampled_cond <- cond[c(1, 65, 129)]
 
 ## model -------------------
 registerDoFuture()
-plan(multisession, workers = 10L)
+# plan(list(tweak(multisession, workers = 20L),
+#           tweak(sequential)))
+plan(multisession, workers = 20L)
 
 starttime <- proc.time()
 out <- vector("list", length = nrow(sampled_cond))
@@ -106,10 +109,10 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
                      mean = groundtruth$b_Intercept  + rint +
                        (groundtruth$b_bilr1 * bilr1) +
                        (groundtruth$b_bilr2 * bilr2) +
-                       (groundtruth$b_bilr2 * bilr3) +
+                       (groundtruth$b_bilr3 * bilr3) +
                        (groundtruth$b_wilr1 * wilr1) +
                        (groundtruth$b_wilr2 * wilr2) +
-                       (groundtruth$b_wilr2 * wilr3),
+                       (groundtruth$b_wilr3 * wilr3),
                      sd = res_sd)]
                  }
                  
@@ -142,6 +145,7 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
                         rint_sd = rint_sd,
                         res_sd = res_sd,
                         run = run,
+                        n_parts = n_parts,
                         parts = parts)))
                } 
 
