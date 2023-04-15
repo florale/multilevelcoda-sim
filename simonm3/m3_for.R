@@ -18,7 +18,7 @@ source("input.R") # conditions and functions
 
 ## set different for each script -------
 set.seed(1) 
-sampled_cond <- cond[1:1] 
+sampled_cond <- cond[1:500] 
 
 ## model -------------------
 out <- vector("list", length = nrow(sampled_cond))
@@ -29,7 +29,6 @@ plan(multisession, workers = 4L)
 
 starttime <- proc.time()
 for (i in seq_len(nrow(sampled_cond))) {
-  
   N <- sampled_cond[i, N]
   K <- sampled_cond[i, K]
   rint_sd <- sampled_cond[i, rint_sd]
@@ -41,23 +40,23 @@ for (i in seq_len(nrow(sampled_cond))) {
       bm = BMeans, wm = WMeans,
       bcov = BCov, wcov = WCov,
       n = N, k = K, psi = psi)))
-
-    # ILR ---------------------------------------------------------------------
+  
+  # ILR ---------------------------------------------------------------------
   cilr <- compilr(
     data = simd,
     sbp = meanscovs$sbp,
     parts = c("TST", "WAKE", "MVPA", "LPA", "SB"), idvar = "ID")
-
+  
   tmp <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR, 
                cilr$TotalILR)
-
+  
   # random effects ----------------------------------------------------------
   redat <- data.table(ID = unique(tmp$ID),
                       rint = rnorm(n = length(unique(tmp$ID)),
                                    mean = 0, sd = rint_sd))
   
   tmp <- merge(tmp, redat, by = "ID")
-
+  
   # outcome - simulated based on ml regression  -----------------------------
   tmp[, sleepy :=  rnorm(
     n = nrow(simd),
@@ -72,19 +71,18 @@ for (i in seq_len(nrow(sampled_cond))) {
       (groundtruth$b_wilr4 * wilr4),
     sd = res_sd
   )]
-
+  
   simd$sleepy <- tmp$sleepy
-
+  
+  outcome <- c(grep("sleepy", names(simd), value = T))
+  
   if (i == 1) {
     out[[i]] <- simmodel(database = simd, sbpbase = meanscovs$sbp)
-    } else {
-      prefit <- out[[1]]$Result$brmsfit
-      out[[i]] <- simmodel(database = simd, sbpbase = meanscovs$sbp, prefit = prefit)
-      }
+  } else {
+    prefit <- out[[1]]$Result$brmsfit
+    out[[i]] <- simmodel(database = simd, sbpbase = meanscovs$sbp, prefit = prefit)
+  }
 }
 endtime <- proc.time()
 endtime - starttime ## time to complete
 saveRDS(out, "out.RDS", compress = "xz")
-
-prefit <- out[[1]]$Result$brmsfit
-saveRDS(prefit, "prefit.RDS", compress = "xz")

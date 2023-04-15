@@ -1,21 +1,87 @@
+library(compositions)
 
-# sb
-sbp <- matrix(c(
+# sbp --------------------
+sbp5 <- matrix(c(
   1, 1, -1,-1, -1,
   1, -1, 0, 0, 0,
   0, 0, 1, -1, -1,
   0, 0, 0, 1, -1), ncol = 5, byrow = TRUE)
-psi <- gsi.buildilrBase(t(sbp))
+
+sbp4 <- matrix(c(
+  1, -1, -1,-1,
+  0, 1, -1, -1,
+  0, 0, 1, -1), ncol = 4, byrow = TRUE)
+
+sbp3 <- matrix(c(
+  1, -1,-1, 
+  0, 1, -1),ncol = 3, byrow = TRUE)
+
+## groundtruth----------------------
+groundtruth5 <- data.table(
+  b_Intercept  = 2.20,
+  b_bilr1      = -0.20,
+  b_bilr2      = -0.01,
+  b_bilr3      = -0.02,
+  b_bilr4      = 0.05,
+  b_wilr1      = +0.15,
+  b_wilr2      = 0.25,
+  b_wilr3      = 0.01,
+  b_wilr4      = -0.15,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(1.5),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
+)
+
+groundtruth4 <- data.table(
+  b_Intercept  = 2.50,
+  b_bilr1      = -0.30,
+  b_bilr2      = -0.02,
+  b_bilr3      = 0.01,
+  b_wilr1      = +0.20,
+  b_wilr2      = 0.00,
+  b_wilr3      = -0.15,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(1.5),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
+)
+
+groundtruth3 <- data.table(
+  b_Intercept  = 2.40,
+  b_bilr1      = -0.30,
+  b_bilr2      = -0.10,
+  b_wilr1      = +0.25,
+  b_wilr2      = -0.20,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(1.5),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
+)
 
 ## conditions --------
 # 4*4*5
-cond <- as.data.table(expand.grid(N = c(30, 50, 360, 1200),
-                                  K = c(3, 5, 7, 14),
-                                  rint_sd = c(1, sqrt(.5), sqrt(1.5)),
-                                  res_sd = c(1, sqrt(.5), sqrt(2)),
-                                  run = 1:1000))
+cond <- as.data.table(
+  expand.grid(N = c(30, 50, 360, 1200),
+              K = c(3, 5, 7, 14),
+              rint_sd = c(1, sqrt(.5), sqrt(1.5)),
+              res_sd = c(1, sqrt(.5), sqrt(2)),
+              n_parts = c(3, 4, 5),
+              run = 1:1000))
 cond <- cond[
-  (rint_sd == 1 & res_sd == 1) |
+    (rint_sd == 1 & res_sd == 1) |
     (rint_sd == sqrt(.5) & res_sd == sqrt(1.5)) |
     (rint_sd == sqrt(1.5) & res_sd == sqrt(.5)) |
     (rint_sd == 1 & res_sd == sqrt(2)) |
@@ -27,6 +93,26 @@ cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_R
 cond[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+cond[, sbp := NA]
+cond[, sbp := ifelse(n_parts == 3, "sbp3", sbp)]
+cond[, sbp := ifelse(n_parts == 4, "sbp4", sbp)]
+cond[, sbp := ifelse(n_parts == 5, "sbp5", sbp)]
+
+cond[, prefit := NA]
+cond[, prefit := ifelse(n_parts == 3, "prefit3", prefit)]
+cond[, prefit := ifelse(n_parts == 4, "prefit4", prefit)]
+cond[, prefit := ifelse(n_parts == 5, "prefit5", prefit)]
+
+cond[, parts := NA]
+cond[, parts := ifelse(n_parts == 3, "Sleep PA SB", parts)]
+cond[, parts := ifelse(n_parts == 4, "Sleep MVPA LPA SB", parts)]
+cond[, parts := ifelse(n_parts == 5, "TST WAKE MVPA LPA SB", parts)]
+
+cond[, groundtruth := NA]
+cond[, groundtruth := ifelse(n_parts == 3, "groundtruth3", groundtruth)]
+cond[, groundtruth := ifelse(n_parts == 4, "groundtruth4", groundtruth)]
+cond[, groundtruth := ifelse(n_parts == 5, "groundtruth5", groundtruth)]
 
 ## functions ---------
 ## SIM DATA USING ILR
@@ -98,63 +184,34 @@ simulateData.acomp <- function(bm, wm, bcov, wcov, n, k, psi) {
 }
 
 ## SIM MODEL
-simmodel <- function(database, sbpbase, prefit = NULL) {
-  psub <- basesub(c("TST", "WAKE", "MVPA", "LPA", "SB"))
-  parts <- colnames(psub)
-  
+simmodel <- function(database, parts, sbpbase, prefit = prefit) {
+  model <- list()
+  psub <- basesub(parts)
   cilr <-
     compilr(database, sbpbase, parts, total = 1440, idvar = "ID")
   
-  model <- list()
-  # model --------
-  if (isTRUE(is.null(prefit))) {
-    m <-
-      brmcoda(
-        cilr,
-        sleepy ~ bilr1 + bilr2 + bilr3 + bilr4 + wilr1 + wilr2 + wilr3 + wilr4 + (1 | ID),
-        cores = 4,
-        chains = 4,
-        iter = 3000,
-        warmup = 500,
-        backend = "cmdstanr"
-      )
-    
-    submodel <- substitution(
-      m,
-      delta = c(10, 20, 30, 60),
-      level = c("between", "within"),
-      type = "conditional"
-    )
-    
-    model <- list(
-      ModelSummary = summary(m$Model),
-      Substitution = submodel,
-      ndt = sum(subset( # number of divergent transitions
-        nuts_params(m$Model), Parameter == "divergent__")$Value),
-      brmsfit = m$Model
-    )
-    
-  } else {
-    dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
-    fit <- update(prefit, newdata = dat, recompile = FALSE)
-    m <- structure(list(CompIlr = cilr,
-                        Model = fit),
-                   class = "brmcoda")
-    
-    submodel <- substitution(
-      m,
-      delta = c(10, 20, 30, 60),
-      level = c("between", "within"),
-      type = "conditional"
-    )
-    
-    model <- list(
-      ModelSummary = summary(m$Model),
-      Substitution = submodel,
-      ndt = sum(subset(
-        nuts_params(m$Model), Parameter == "divergent__")$Value)
-    )
-  }
+  # model --------    
+  dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
+  fit <- update(prefit, newdata = dat, 
+                cores = 4,
+                backend = "cmdstanr")
+  
+  m <- structure(list(CompIlr = cilr,
+                      Model = fit),
+                 class = "brmcoda")
+  
+  submodel <- substitution(
+    m,
+    delta = c(10, 20, 30, 60),
+    level = c("between", "within"),
+    type = "conditional"
+  )
+  
+  model <- list(
+    ModelSummary = summary(m$Model),
+    Substitution = submodel,
+    ndt = sum(subset(
+      nuts_params(m$Model), Parameter == "divergent__")$Value))
   
   list(
     CompILR = cilr,

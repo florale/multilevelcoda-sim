@@ -1,0 +1,19 @@
+  m3_foreach20_ll_brms
+    user   system  elapsed 
+ 556.879   16.488 4272.166 
+ 
+   m3_foreach10_ll_brms
+     user   system  elapsed 
+ 888.924   12.551 7444.886 
+ 
+ m3_for
+      user    system   elapsed 
+49138.842  1537.822 54286.881 
+
+m3_foreach20
+    user   system  elapsed 
+ 590.965   20.216 5146.991 
+ 
+ m3_foreach10
+     user   system  elapsed 
+903.492   27.874 8257.685
