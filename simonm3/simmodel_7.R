@@ -14,29 +14,29 @@ library(doRNG)
 library(future)
 
 ## input ---------
-meanscovs <- readRDS("meanscovs.RDS")
-prefit5 <- readRDS("prefit5.RDS")
-prefit4 <- readRDS("prefit4.RDS")
-prefit3 <- readRDS("prefit3.RDS")
+input <- readRDS("input.RDS")
+meanscovs <- input$meanscovs
+prefit5 <- input$prefit5
+prefit4 <- input$prefit4
+prefit3 <- input$prefit3
 
 source("input.R") # groundtruth, conditions and functions
 
 ## set different for each script -------
-set.seed(1) 
-sampled_cond <- cond[1:500] 
+set.seed(7) 
+sampled_cond <- cond[144001:168000] 
 
 ## model -------------------
 registerDoFuture()
-# plan(list(
-#   tweak(batchjobs_slurm, resources = list(walltime = 1440, memory = "10gb", ncpus = 5L, ntasks = 1)),
-#   multisession))
+# plan(list(tweak(multisession, workers = 20L),
+#           tweak(sequential)))
 plan(multisession, workers = 20L)
 
 starttime <- proc.time()
-out <- vector("list", length = nrow(sampled_cond))
+out7 <- vector("list", length = nrow(sampled_cond))
 sim_model <- list()
 
-out <- foreach(i = seq_len(nrow(sampled_cond)),
+out7 <- foreach(i = seq_len(nrow(sampled_cond)),
                .combine = c, .export = ls(globalenv())) %dorng% {
                  
                  N             <- sampled_cond[i, N]
@@ -110,10 +110,10 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
                      mean = groundtruth$b_Intercept  + rint +
                        (groundtruth$b_bilr1 * bilr1) +
                        (groundtruth$b_bilr2 * bilr2) +
-                       (groundtruth$b_bilr2 * bilr3) +
+                       (groundtruth$b_bilr3 * bilr3) +
                        (groundtruth$b_wilr1 * wilr1) +
                        (groundtruth$b_wilr2 * wilr2) +
-                       (groundtruth$b_wilr2 * wilr3),
+                       (groundtruth$b_wilr3 * wilr3),
                      sd = res_sd)]
                  }
                  
@@ -149,7 +149,7 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
                         n_parts = n_parts,
                         parts = parts)))
                } 
-out_m3_foreach20_ll_brms <- out
+
 endtime <- proc.time()
 endtime - starttime ## time to complete
-saveRDS(out_m3_foreach20_ll_brms, "out_m3_foreach20_ll_brms.RDS", compress = "xz")
+saveRDS(out7, "out7.RDS", compress = "xz")
