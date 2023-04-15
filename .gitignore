@@ -48,3 +48,9 @@ multilevelcoda-sim.Rproj
 *.clo
 
 *.cls
+
+.RDataTmp
+
+*.tex
+
+*.log
