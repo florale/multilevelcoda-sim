@@ -14,10 +14,11 @@ library(doRNG)
 library(future)
 
 ## input ---------
-meanscovs <- readRDS("meanscovs.RDS")
-prefit5 <- readRDS("prefit5.RDS")
-prefit4 <- readRDS("prefit4.RDS")
-prefit3 <- readRDS("prefit3.RDS")
+input <- readRDS("input.RDS")
+meanscovs <- input$meanscovs
+prefit5 <- input$prefit5
+prefit4 <- input$prefit4
+prefit3 <- input$prefit3
 
 source("input.R") # groundtruth, conditions and functions
 

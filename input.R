@@ -1,7 +1,7 @@
 library(compositions)
 
 # sbp --------------------
-sbp <- matrix(c(
+sbp5 <- matrix(c(
   1, 1, -1,-1, -1,
   1, -1, 0, 0, 0,
   0, 0, 1, -1, -1,
@@ -72,7 +72,6 @@ groundtruth3 <- data.table(
 )
 
 ## conditions --------
-# 4*4*5
 cond <- as.data.table(
   expand.grid(N = c(30, 50, 360, 1200),
               K = c(3, 5, 7, 14),
@@ -192,7 +191,8 @@ simmodel <- function(database, parts, sbpbase, prefit = prefit) {
   
   # model --------    
   dat <- cbind(cilr$data, cilr$BetweenILR, cilr$WithinILR)
-  fit <- update(prefit, newdata = dat, 
+  fit <- update(prefit, 
+                newdata = dat, 
                 cores = 4,
                 backend = "cmdstanr")
   
