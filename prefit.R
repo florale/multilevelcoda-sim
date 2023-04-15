@@ -355,3 +355,11 @@ for (i in seq_len(nrow(sampled_cond))) {
 
 prefit5 <- out5[[1]]$Result$brmsfit
 saveRDS(prefit5, "prefit5.RDS", compress = "xz")
+
+input <- list(
+  meanscovs = meanscovs,
+  prefit5 = prefit5,
+  prefit4 = prefit4,
+  prefit3 = prefit3
+)
+saveRDS(input, "input.RDS", compress = "xz")
