@@ -54,3 +54,5 @@ multilevelcoda-sim.Rproj
 *.tex
 
 *.log
+
+.RDataTmp1
