@@ -37,9 +37,15 @@ aces <- readRDS("/Volumes/shared/Behavioral-med-lab/ACESStudy/Data/aces_daily_gg
 
 parts5 <- c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg")
 
-d <- rbind(shs[, .(ID, UID = paste0("S", ID), SurveyDay, SLEEPYNextDay, Sleepg, WAKEg, MVPAg, LPAg, SBg)],
-           destress[, .(ID, UID = paste0("D", ID), SurveyDay, SLEEPYNextDay, Sleepg, WAKEg, MVPAg, LPAg, SBg)],
-           aces[, .(ID, UID = paste0("A", ID), SurveyDay, SLEEPYNextDay, Sleepg, WAKEg, MVPAg, LPAg, SBg)])
+d <- rbind(shs[, .(ID, UID = paste0("S", ID), SurveyDay, Survey, 
+                   COPE_Appr, SLEEPY, SLEEPYNextDay, 
+                   Sleepg, WAKEg, MVPAg, LPAg, SBg)],
+           destress[, .(ID, UID = paste0("D", ID), SurveyDay, Survey, 
+                   COPE_Appr, SLEEPY, SLEEPYNextDay,
+                   Sleepg, WAKEg, MVPAg, LPAg, SBg)],
+           aces[, .(ID, UID = paste0("A", ID), SurveyDay, Survey, 
+                   COPE_Appr, SLEEPY, SLEEPYNextDay,
+                   Sleepg, WAKEg, MVPAg, LPAg, SBg)])
 d <- d[complete.cases(d[, .(Sleepg, WAKEg, MVPAg, LPAg, SBg)])]
 
 composition_imp <- lrEM(d[, parts5, with = FALSE], label = 0,dl = rep(1,5), ini.cov = "multRepl")
@@ -51,7 +57,6 @@ sbp <- matrix(c(
   1, -1, 0, 0, 0,
   0, 0, 1, -1, -1,
   0, 0, 0, 1, -1), ncol = 5, byrow = TRUE)
-psi <- gsi.buildilrBase(t(sbp))
 
 # check NA and 0
 # d[which(is.na(d$Sleepg)), "ID"]
@@ -83,25 +88,22 @@ d[Survey == "Evening", COPE_ApprNextDay :=
     .SD[.(ID = ID, USURVEYID = USURVEYID + 1), .(COPE_Appr),
         on = c("ID", "USURVEYID")]]
 
-# d.daily[,
-# c("WSTRESSNextDay", "STRESSNextDay",
-# "WNegAffNextDay", "WNegAffHANextDay", "WNegAffLANextDay", "NegAffNextDay", "NegAffHANextDay", "NegAffLANextDay", "WPosAffNextDay", "WPosAffHANextDay", "WPosAffLANextDay", "PosAffNextDay", "PosAffHANextDay", "PosAffLANextDay", "WSLEEPYNextDay", "SLEEPYNextDay") :=
-# .SD[.(UserID = UserID, USURVEYID = USURVEYID + 1), .(WSTRESSDay, STRESSDay,
-#           WNegAffDay, WNegAffHADay, WNegAffLADay,
-#           NegAffDay, NegAffHADay, NegAffLADay,
-#           WPosAffDay, WPosAffHADay, WPosAffLADay,
-#           PosAffDay, PosAffHADay, PosAffLADay,
-#           WSLEEPYDay, SLEEPYDay),
-# on = c("UserID", "USURVEYID")]]
+d[, c("COPE_Appr_NextDay") :=
+    .SD[.(UID = UID, Survey = Survey, SurveyDay = SurveyDay + 1),
+        .(COPE_Appr),
+        on = c("UID", "SurveyDay", "Survey")]]
 ```
 
-## 5-part composition
-
+## 5-part wake-wake composition
 ```{r}
 cilr5 <- compilr(d, sbp = sbp5,
                  parts = parts5, idvar = "UID")
+```
 
-m5 <- brmcoda(cilr5,
+#### Sleep-sleep composition - Next Day Sleepiness
+
+```{r}
+m5_d1 <- brmcoda(cilr5,
               SLEEPYNextDay ~ bilr1 + bilr2 + bilr3 + bilr4 +
                wilr1 + wilr2 + wilr3 + wilr4 + (1 | UID), 
              cores = 4,
@@ -111,28 +113,61 @@ m5 <- brmcoda(cilr5,
              seed = 123,
              backend = "cmdstanr"
 )
-summary(m5$Model)
-m5mod <- m5$Model
-bayesplot::pp_check(m5$Model, ndraws = 5)
-launch_shinystan(m5mod)
+summary(m5_d1$Model)
+# bayesplot::pp_check(m5$Model, ndraws = 5)
+# launch_shinystan(m5mod)
 
-submodel5 <- substitution(
-  m5,
+submodel5_d1 <- substitution(
+  m5_d1,
   delta = c(1:30),
   level = c("between", "within"),
   type = "conditional")
 
-plotsub(submodel5$BetweenSub$Sleepg, "Sleep", "Sleepiness")
-plotsub(submodel5$BetweenSub$WAKEg, "WAKEg", "Sleepiness")
-plotsub(submodel5$BetweenSub$MVPAg, "MVPAg", "Sleepiness")
-plotsub(submodel5$BetweenSub$LPAg, "LPAg", "Sleepiness")
-plotsub(submodel5$BetweenSub$SBg, "SBg", "Sleepiness")
+plotsub(submodel5_d1$BetweenSub$Sleepg, "Sleep", "Sleepiness")
+plotsub(submodel5_d1$BetweenSub$WAKEg, "WAKEg", "Sleepiness")
+plotsub(submodel5_d1$BetweenSub$MVPAg, "MVPAg", "Sleepiness")
+plotsub(submodel5_d1$BetweenSub$LPAg, "LPAg", "Sleepiness")
+plotsub(submodel5_d1$BetweenSub$SBg, "SBg", "Sleepiness")
 
-plotsub(submodel5$WithinSub$Sleepg, "Sleep", "Sleepiness")
-plotsub(submodel5$WithinSub$WAKEg, "WAKEg", "Sleepiness")
-plotsub(submodel5$WithinSub$MVPAg, "MVPAg", "Sleepiness")
-plotsub(submodel5$WithinSub$LPAg, "LPAg", "Sleepiness")
-plotsub(submodel5$WithinSub$SBg, "SBg", "Sleepiness")
+plotsub(submodel5_d1$WithinSub$Sleepg, "Sleep", "Sleepiness")
+plotsub(submodel5_d1$WithinSub$WAKEg, "WAKEg", "Sleepiness")
+plotsub(submodel5_d1$WithinSub$MVPAg, "MVPAg", "Sleepiness")
+plotsub(submodel5_d1$WithinSub$LPAg, "LPAg", "Sleepiness")
+plotsub(submodel5_d1$WithinSub$SBg, "SBg", "Sleepiness")
+
+```
+
+#### Sleep-sleep composition - Same Day Sleepiness
+```{r}
+m5_d0 <- brmcoda(cilr5,
+              SLEEPY ~ bilr1 + bilr2 + bilr3 + bilr4 +
+               wilr1 + wilr2 + wilr3 + wilr4 + (1 | UID), 
+             cores = 4,
+             chains = 4,
+             iter = 3000,
+             warmup = 500,
+             seed = 123,
+             backend = "cmdstanr"
+)
+summary(m5_d0$Model)
+
+submodel5_d0 <- substitution(
+  m5_d0,
+  delta = c(1:30),
+  level = c("between", "within"),
+  type = "conditional")
+
+plotsub(submodel5_d0$BetweenSub$Sleepg, "Sleep", "Sleepiness")
+plotsub(submodel5_d0$BetweenSub$WAKEg, "WAKEg", "Sleepiness")
+plotsub(submodel5_d0$BetweenSub$MVPAg, "MVPAg", "Sleepiness")
+plotsub(submodel5_d0$BetweenSub$LPAg, "LPAg", "Sleepiness")
+plotsub(submodel5_d0$BetweenSub$SBg, "SBg", "Sleepiness")
+
+plotsub(submodel5_d0$WithinSub$Sleepg, "Sleep", "Sleepiness")
+plotsub(submodel5_d0$WithinSub$WAKEg, "WAKEg", "Sleepiness")
+plotsub(submodel5_d0$WithinSub$MVPAg, "MVPAg", "Sleepiness")
+plotsub(submodel5_d0$WithinSub$LPAg, "LPAg", "Sleepiness")
+plotsub(submodel5_d0$WithinSub$SBg, "SBg", "Sleepiness")
 
 ```
 
