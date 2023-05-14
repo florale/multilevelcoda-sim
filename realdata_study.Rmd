@@ -1,0 +1,138 @@
+---
+title: "Real Data Study"
+author: "Flora Le (flora.le@monash.edu)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(data.table)
+library(extraoperators)
+library(compositions)
+library(zCompositions)
+library(multilevelcoda)
+library(brms)
+library(cmdstanr)
+library(insight)
+library(MASS)
+library(bayestestR)
+
+library(doFuture)
+library(foreach)
+library(parallel)
+library(doRNG)
+library(future)
+library(multilevelTools)
+library(JWileymisc)
+library(bayesplot)
+
+```
+
+## Data scoring
+
+```{r}
+shs <- as.data.table(readRDS("/Volumes/shared/Behavioral-med-lab/StressHealthStudy/SHS Research Interns/Data/shs_daily_ggir.RDS"))
+destress <- readRDS("/Volumes/shared/Behavioral-med-lab/DESTRESSStudy/Data/destress_daily_ggir.RDS")
+aces <- readRDS("/Volumes/shared/Behavioral-med-lab/ACESStudy/Data/aces_daily_ggir.RDS")
+
+parts5 <- c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg")
+
+d <- rbind(shs[, .(ID, UID = paste0("S", ID), SurveyDay, SLEEPYNextDay, Sleepg, WAKEg, MVPAg, LPAg, SBg)],
+           destress[, .(ID, UID = paste0("D", ID), SurveyDay, SLEEPYNextDay, Sleepg, WAKEg, MVPAg, LPAg, SBg)],
+           aces[, .(ID, UID = paste0("A", ID), SurveyDay, SLEEPYNextDay, Sleepg, WAKEg, MVPAg, LPAg, SBg)])
+d <- d[complete.cases(d[, .(Sleepg, WAKEg, MVPAg, LPAg, SBg)])]
+
+composition_imp <- lrEM(d[, parts5, with = FALSE], label = 0,dl = rep(1,5), ini.cov = "multRepl")
+d <- cbind(d[, -parts5, with = FALSE], composition_imp)
+
+# make composition
+sbp <- matrix(c(
+  1, 1, -1,-1, -1,
+  1, -1, 0, 0, 0,
+  0, 0, 1, -1, -1,
+  0, 0, 0, 1, -1), ncol = 5, byrow = TRUE)
+psi <- gsi.buildilrBase(t(sbp))
+
+# check NA and 0
+# d[which(is.na(d$Sleepg)), "ID"]
+# d[which(is.na(d$WAKEg)), "ID"]
+# d[which(is.na(d$SBg)), "ID"]
+# d[which(is.na(d$LPAg)), "ID"]
+# d[which(is.na(d$MVPAg)), "ID"]
+# d[which(is.na(d$SLEEPY)), "ID"]
+
+# any(apply(d[, parts, with = FALSE], 2, function(x) x == 0))
+# any(apply(d[, parts, with = FALSE], 2, function(x) is.na(x)))
+
+mean(d$Sleepg)
+mean(d$WAKEg)
+mean(d$MVPAg)
+mean(d$LPAg)
+mean(d$SBg)
+
+for (v in parts) {
+  plot(testDistribution(d[Survey == "Evening", get(v)]), varlab = v)
+}
+ilrd <- as.data.table(cbind(cilr5$BetweenILR, cilr5$WithinILR))
+
+#outcome
+# COPE_Appr
+# COPE_Avoi
+
+d[Survey == "Evening", COPE_ApprNextDay := 
+    .SD[.(ID = ID, USURVEYID = USURVEYID + 1), .(COPE_Appr),
+        on = c("ID", "USURVEYID")]]
+
+# d.daily[,
+# c("WSTRESSNextDay", "STRESSNextDay",
+# "WNegAffNextDay", "WNegAffHANextDay", "WNegAffLANextDay", "NegAffNextDay", "NegAffHANextDay", "NegAffLANextDay", "WPosAffNextDay", "WPosAffHANextDay", "WPosAffLANextDay", "PosAffNextDay", "PosAffHANextDay", "PosAffLANextDay", "WSLEEPYNextDay", "SLEEPYNextDay") :=
+# .SD[.(UserID = UserID, USURVEYID = USURVEYID + 1), .(WSTRESSDay, STRESSDay,
+#           WNegAffDay, WNegAffHADay, WNegAffLADay,
+#           NegAffDay, NegAffHADay, NegAffLADay,
+#           WPosAffDay, WPosAffHADay, WPosAffLADay,
+#           PosAffDay, PosAffHADay, PosAffLADay,
+#           WSLEEPYDay, SLEEPYDay),
+# on = c("UserID", "USURVEYID")]]
+```
+
+## 5-part composition
+
+```{r}
+cilr5 <- compilr(d, sbp = sbp5,
+                 parts = parts5, idvar = "UID")
+
+m5 <- brmcoda(cilr5,
+              SLEEPYNextDay ~ bilr1 + bilr2 + bilr3 + bilr4 +
+               wilr1 + wilr2 + wilr3 + wilr4 + (1 | UID), 
+             cores = 4,
+             chains = 4,
+             iter = 3000,
+             warmup = 500,
+             seed = 123,
+             backend = "cmdstanr"
+)
+summary(m5$Model)
+m5mod <- m5$Model
+bayesplot::pp_check(m5$Model, ndraws = 5)
+launch_shinystan(m5mod)
+
+submodel5 <- substitution(
+  m5,
+  delta = c(1:30),
+  level = c("between", "within"),
+  type = "conditional")
+
+plotsub(submodel5$BetweenSub$Sleepg, "Sleep", "Sleepiness")
+plotsub(submodel5$BetweenSub$WAKEg, "WAKEg", "Sleepiness")
+plotsub(submodel5$BetweenSub$MVPAg, "MVPAg", "Sleepiness")
+plotsub(submodel5$BetweenSub$LPAg, "LPAg", "Sleepiness")
+plotsub(submodel5$BetweenSub$SBg, "SBg", "Sleepiness")
+
+plotsub(submodel5$WithinSub$Sleepg, "Sleep", "Sleepiness")
+plotsub(submodel5$WithinSub$WAKEg, "WAKEg", "Sleepiness")
+plotsub(submodel5$WithinSub$MVPAg, "MVPAg", "Sleepiness")
+plotsub(submodel5$WithinSub$LPAg, "LPAg", "Sleepiness")
+plotsub(submodel5$WithinSub$SBg, "SBg", "Sleepiness")
+
+```
+
