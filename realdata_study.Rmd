@@ -47,11 +47,12 @@ d <- rbind(shs[, .(ID, UID = paste0("S", ID), SurveyDay, Survey, USURVEYID,
                    COPE_Appr, SLEEPY, SLEEPYNextDay,
                    TIBg, Sleepg, WAKEg, MVPAg, LPAg, SBg)])
 
+parts <- c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg")
+
 # remove NAs and 0s
 any(apply(d[, parts, with = FALSE], 2, function(x) x == 0))
 any(apply(d[, parts, with = FALSE], 2, function(x) is.na(x)))
 d <- d[complete.cases(d[, .(Sleepg, WAKEg, MVPAg, LPAg, SBg)])]
-
 d <- d[WAKEg > 0]
 
 # composition_imp <- lrEM(d[, parts5, with = FALSE], label = 0, dl = rep(1,5), ini.cov = "multRepl")
