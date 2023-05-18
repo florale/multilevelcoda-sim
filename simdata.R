@@ -29,51 +29,45 @@ sbp3 <- matrix(c(
   0, 1, -1),ncol = 3, byrow = TRUE)
 
 # read data ----------------------------------------------------------------------------------------
-if (Sys.info()[["sysname"]] %in% "Windows") {
-  loc.base <- "g:"
-} else if (Sys.info()[["sysname"]] %in% "Darwin") {
-  loc.base <- "/Volumes/GoogleDrive"
-}
+shs <- as.data.table(readRDS("/Volumes/shared/Behavioral-med-lab/StressHealthStudy/SHS Research Interns/Data/shs_daily_ggir.RDS"))
+destress <- readRDS("/Volumes/shared/Behavioral-med-lab/DESTRESSStudy/Data/destress_daily_ggir.RDS")
+aces <- readRDS("/Volumes/shared/Behavioral-med-lab/ACESStudy/Data/aces_daily_ggir.RDS")
 
-d <- as.data.table(readRDS("/Users/florale/Library/CloudStorage/GoogleDrive-flora.le@monash.edu/Shared drives/EMA_Studies/ema_studies.RDS"))
+d <- rbind(shs[, .(ID, UID = paste0("S", ID), SurveyDay, Survey, USURVEYID,
+                   COPE_Appr, SLEEPY, SLEEPYNextDay, 
+                   TIBg, Sleepg, WAKEg, MVPAg, LPAg, SBg)],
+           destress[, .(ID, UID = paste0("D", ID), SurveyDay, Survey, USURVEYID,
+                        COPE_Appr, SLEEPY, SLEEPYNextDay,
+                        TIBg, Sleepg, WAKEg, MVPAg, LPAg, SBg)],
+           aces[, .(ID, UID = paste0("A", ID), SurveyDay, Survey, USURVEYID,
+                    COPE_Appr, SLEEPY, SLEEPYNextDay,
+                    TIBg, Sleepg, WAKEg, MVPAg, LPAg, SBg)])
 
-setnames(d, "TSTacti", "TST")
-setnames(d, "MVPAPERCacti", "MVPA")
-setnames(d, "LIGHTPERCacti", "LPA")
-setnames(d, "SEDPERCacti", "SB")
+parts <- c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg")
 
-d <- d[!is.na(TST) & !is.na(MVPA) & !is.na(SOLRAWacti)] ## exclude surveys without sleep/acti data
+d <- d[complete.cases(d[, .(Sleepg, WAKEg, MVPAg, LPAg, SBg)])]
+d <- d[WAKEg > 0]
 
-d[, TST := TST * 60]
-d[, WAKE := SOLRAWacti + WASORAWacti]
-d[, timeawake := (24 * 60) - TST - WAKE]
-d[, SB   := (SB   / 100) * timeawake]
-d[, LPA  := (LPA  / 100) * timeawake]
-d[, MVPA := (MVPA / 100) * timeawake]
-d[, totalhours := TST + WAKE + SB + LPA + MVPA]
-
-d[, c("BMVPA", "WMVPA") := meanDeviations(MVPA), by = UID]
-d[, c("BLPA", "WLPA") := meanDeviations(LPA), by = UID]
-d[, c("BSB", "WSB") := meanDeviations(SB), by = UID]
-d[, c("BWAKE", "WWAKE") := meanDeviations(WAKE), by = UID]
-d[, c("BTST", "WTST") := meanDeviations(TST), by = UID]
-d[, c("BSTRESS", "WSTRESS") := meanDeviations(STRESS), by = UID]
+d[, c("BMVPAg") := mean(MVPAg, na.rm = TRUE), by = UID]
+d[, c("BLPAg") := mean(LPAg, na.rm = TRUE), by = UID]
+d[, c("BSBg") := mean(SBg, na.rm = TRUE), by = UID]
+d[, c("BWAKEg") := mean(WAKEg, na.rm = TRUE), by = UID]
+d[, c("BSleepg") := mean(Sleepg, na.rm = TRUE), by = UID]
+d[, c("BTIBg") := mean(TIBg, na.rm = TRUE), by = UID]
 
 ## make within variable ratio of total to between
-d[, WMVPA := MVPA / BMVPA]
-d[, WLPA := LPA / BLPA]
-d[, WSB := SB / BSB]
-d[, WWAKE := WAKE / BWAKE]
-d[, WTST := TST / BTST]
-d[, total := TST + WAKE + MVPA + LPA + SB]
+d[, WMVPAg := MVPAg / BMVPAg]
+d[, WLPAg := LPAg / BLPAg]
+d[, WSBg := SBg / BSBg]
+d[, WWAKEg := WAKEg / BWAKEg]
+d[, WSleepg := Sleepg / BSleepg]
+d[, WTIBg := TIBg / BTIBg]
 
 ## hist(d[!duplicated(UID)]$Age)
 ## table(d[!duplicated(UID)]$Female)
 ## between sim comp  -------------------------------------------------------------------------------
-bd <- d[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]
 
-# sim ilr
-bd_ilr <- ilr(acomp(bd[, .(BTST, BWAKE, BMVPA, BLPA, BSB)]), V = psi)
+bd_ilr <- ilr(acomp(d[, .(BSleepg, BWAKEg, BMVPAg, BLPAg, BSBg)]), V = psi)
 means.b <- colMeans(bd_ilr, na.rm = TRUE)
 cov.b <- cov(bd_ilr, use = "complete.obs")
 
@@ -83,10 +77,8 @@ cov.b <- cov(bd_ilr, use = "complete.obs")
 # (v_bd <- var.acomp(bd))
 
 ## within sim comp  --------------------------------------------------------------------------------
-wd <- d[, .(WTST, WWAKE, WMVPA, WLPA, WSB)]
-
 # sim ilr
-wd_ilr <- ilr(acomp(wd[, . (WTST, WWAKE, WMVPA, WLPA, WSB)]), V = psi)
+wd_ilr <- ilr(acomp(d[, .(WSleepg, WWAKEg, WMVPAg, WLPAg, WSBg)]), V = psi)
 means.w <- colMeans(wd_ilr, na.rm = TRUE)
 cov.w <- cov(as.matrix(wd_ilr), use = "complete.obs")
 
@@ -103,9 +95,10 @@ meanscovs <- list(
   BCov = cov.b,
   WMeans = means.w,
   WCov = cov.w,
-  compvars = c("TST", "WAKE", "MVPA", "LPA", "SB"),
+  compvars =  c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg"),
   sbp = sbp,
   psi = psi,
+  sbp = sbp,
   sbp5 = sbp5,
   sbp4 = sbp4,
   sbp3 = sbp3
@@ -116,7 +109,7 @@ meanscovs <- list(
 #   BCov = v_bd,
 #   WMeans = m_wd,
 #   WCov = v_wd,
-#   compvars = c("TST", "WAKE", "MVPA", "LPA", "SB"),
+#   compvars = c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg"),
 #   sbp = sbp,
 #   psi = psi)
 
