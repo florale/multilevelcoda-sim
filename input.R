@@ -18,15 +18,15 @@ sbp3 <- matrix(c(
 
 ## groundtruth----------------------
 groundtruth5 <- data.table(
-  b_Intercept  = 2.20,
-  b_bilr1      = -0.20,
+  b_Intercept  = 2.30,
+  b_bilr1      = 0.15,
   b_bilr2      = -0.01,
-  b_bilr3      = -0.02,
+  b_bilr3      = 0.15,
   b_bilr4      = 0.05,
-  b_wilr1      = +0.15,
-  b_wilr2      = 0.25,
-  b_wilr3      = 0.01,
-  b_wilr4      = -0.15,
+  b_wilr1      = -0.60,
+  b_wilr2      = -0.45,
+  b_wilr3      = -0.30,
+  b_wilr4      = -0.20,
   
   u0           = 1,
   u0_small     = sqrt(.5),
@@ -38,13 +38,13 @@ groundtruth5 <- data.table(
 )
 
 groundtruth4 <- data.table(
-  b_Intercept  = 2.50,
-  b_bilr1      = -0.30,
-  b_bilr2      = -0.02,
-  b_bilr3      = 0.01,
-  b_wilr1      = +0.20,
-  b_wilr2      = 0.00,
-  b_wilr3      = -0.15,
+  b_Intercept  = 2.10,
+  b_bilr1      = 0.15,
+  b_bilr2      = 0.15,
+  b_bilr3      = 0.02,
+  b_wilr1      = -0.75,
+  b_wilr2      = -0.30,
+  b_wilr3      = -0.20,
   
   u0           = 1,
   u0_small     = sqrt(.5),
@@ -56,11 +56,11 @@ groundtruth4 <- data.table(
 )
 
 groundtruth3 <- data.table(
-  b_Intercept  = 2.40,
-  b_bilr1      = -0.30,
+  b_Intercept  = 2.10,
+  b_bilr1      = 0.15,
   b_bilr2      = -0.10,
-  b_wilr1      = +0.25,
-  b_wilr2      = -0.20,
+  b_wilr1      = -0.80,
+  b_wilr2      = -0.25,
   
   u0           = 1,
   u0_small     = sqrt(.5),
@@ -202,7 +202,7 @@ simmodel <- function(database, parts, sbpbase, prefit = prefit) {
   
   submodel <- substitution(
     m,
-    delta = c(10, 20, 30, 60),
+    delta = c(10, 20, 30),
     level = c("between", "within"),
     type = "conditional"
   )
