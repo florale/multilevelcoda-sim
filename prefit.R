@@ -15,6 +15,8 @@ library(MASS)
 meanscovs <- readRDS("meanscovs.RDS")
 source("input.R") # groundtruth, conditions and functions
 set.seed(2023)
+source("input.R")
+sampled_cond <- cond[1]
 
 ## SIM MODEL
 simmodel5 <- function(database, sbpbase, prefit = NULL) {
@@ -39,7 +41,7 @@ simmodel5 <- function(database, sbpbase, prefit = NULL) {
     
     submodel <- substitution(
       m,
-      delta = c(10, 20, 30, 60),
+      delta = c(10, 20, 30),
       level = c("between", "within"),
       type = "conditional"
     )
@@ -80,7 +82,7 @@ simmodel4 <- function(database, sbpbase, prefit = NULL) {
     
     submodel <- substitution(
       m,
-      delta = c(10, 20, 30, 60),
+      delta = c(10, 20, 30),
       level = c("between", "within"),
       type = "conditional"
     )
@@ -121,7 +123,7 @@ simmodel3 <- function(database, sbpbase, prefit = NULL) {
     
     submodel <- substitution(
       m,
-      delta = c(10, 20, 30, 60),
+      delta = c(10, 20, 30),
       level = c("between", "within"),
       type = "conditional"
     )
@@ -143,9 +145,8 @@ simmodel3 <- function(database, sbpbase, prefit = NULL) {
 ### prefit 3 class classification --------------
 registerDoFuture()
 plan(multisession, workers = 4L)
-out3 <- vector("list", length = nrow(sampled_cond))
-sampled_cond <- cond[1]
 starttime <- proc.time()
+out3 <- vector("list", length = nrow(sampled_cond))
 
 for (i in seq_len(nrow(sampled_cond))) {
   
@@ -217,7 +218,6 @@ saveRDS(prefit3, "prefit3.RDS", compress = "xz")
 registerDoFuture()
 plan(multisession, workers = 4L)
 out4 <- vector("list", length = nrow(sampled_cond))
-sampled_cond <- cond[1]
 starttime <- proc.time()
 
 for (i in seq_len(nrow(sampled_cond))) {
