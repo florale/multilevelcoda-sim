@@ -26,6 +26,8 @@ library(multilevelTools)
 library(JWileymisc)
 library(bayesplot)
 
+options(digits = 2)
+
 source("input.R")
 
 ```
@@ -47,13 +49,15 @@ d <- rbind(shs[, .(ID, UID = paste0("S", ID), SurveyDay, Survey, USURVEYID,
                    COPE_Appr, SLEEPY, SLEEPYNextDay,
                    TIBg, Sleepg, WAKEg, MVPAg, LPAg, SBg)])
 
+d <- d[complete.cases(d[, .(Sleepg, WAKEg, MVPAg, LPAg, SBg)])]
+d <- d[WAKEg > 0] # make sure there is no 0s
+d <- d[Survey == "Evening"] # select only when SLEEPYNextDay is avail
+
 parts <- c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg")
 
 # remove NAs and 0s
 any(apply(d[, parts, with = FALSE], 2, function(x) x == 0))
 any(apply(d[, parts, with = FALSE], 2, function(x) is.na(x)))
-d <- d[complete.cases(d[, .(Sleepg, WAKEg, MVPAg, LPAg, SBg)])]
-d <- d[WAKEg > 0]
 
 # composition_imp <- lrEM(d[, parts5, with = FALSE], label = 0, dl = rep(1,5), ini.cov = "multRepl")
 # d <- cbind(d[, -parts5, with = FALSE], composition_imp)
@@ -65,24 +69,24 @@ d <- d[WAKEg > 0]
 # d[which(is.na(d$MVPAg)), "ID"]
 # d[which(is.na(d$SLEEPY)), "ID"]
 
-mean(d$Sleepg)
-mean(d$WAKEg)
-mean(d$MVPAg)
-mean(d$LPAg)
-mean(d$SBg)
-
-for (v in parts) {
-  plot(testDistribution(d[Survey == "Evening", get(v)]), varlab = v)
-}
-
-d[Survey == "Evening", COPE_ApprNextDay := 
-    .SD[.(ID = ID, USURVEYID = USURVEYID + 1), .(COPE_Appr),
-        on = c("ID", "USURVEYID")]]
-
-d[, c("COPE_Appr_NextDay") :=
-    .SD[.(UID = UID, Survey = Survey, SurveyDay = SurveyDay + 1),
-        .(COPE_Appr),
-        on = c("UID", "SurveyDay", "Survey")]]
+# mean(d$Sleepg)
+# mean(d$WAKEg)
+# mean(d$MVPAg)
+# mean(d$LPAg)
+# mean(d$SBg)
+# 
+# for (v in parts) {
+#   plot(testDistribution(d[Survey == "Evening", get(v)]), varlab = v)
+# }
+# 
+# d[Survey == "Evening", COPE_ApprNextDay := 
+#     .SD[.(ID = ID, USURVEYID = USURVEYID + 1), .(COPE_Appr),
+#         on = c("ID", "USURVEYID")]]
+# 
+# d[, c("COPE_Appr_NextDay") :=
+#     .SD[.(UID = UID, Survey = Survey, SurveyDay = SurveyDay + 1),
+#         .(COPE_Appr),
+#         on = c("UID", "SurveyDay", "Survey")]]
 ```
 
 ## 5-part wake-wake composition model
@@ -108,9 +112,11 @@ summary(m5$Model)
 
 submodel5 <- substitution(
   m5,
-  delta = c(1:30),
+  delta = c(1:60),
   level = c("between", "within"),
-  type = "conditional")
+  ref = "grandmean")
+
+thirty <- summary(submodel5, delta = 30)
 
 plotsub(submodel5$BetweenSub$Sleepg, "Between-person Sleep", "Sleepiness")
 plotsub(submodel5$BetweenSub$WAKEg, "Between-person WAKE", "Sleepiness")
@@ -136,7 +142,7 @@ cilr4 <- compilr(d, sbp = sbp4,
 
 m4 <- brmcoda(cilr4,
               SLEEPYNextDay ~ bilr1 + bilr2 + bilr3 +
-               wilr1 + wilr2 + wilr3  + (1 | UID), 
+               wilr1 + wilr2 + wilr3  + (1 | UID),
              cores = 4,
              chains = 4,
              iter = 3000,
@@ -152,7 +158,7 @@ submodel4 <- substitution(
   m4,
   delta = c(1:30),
   level = c("between", "within"),
-  type = "conditional")
+  ref = "grandmean")
 
 plotsub(submodel4$BetweenSub$TIBg, "Between-person TIB", "Sleepiness")
 plotsub(submodel4$BetweenSub$MVPAg, "Between-person MVPA", "Sleepiness")
@@ -177,7 +183,7 @@ cilr3 <- compilr(d, sbp = sbp3,
 
 m3 <- brmcoda(cilr3,
               SLEEPYNextDay ~ bilr1 + bilr2 +
-               wilr1 + wilr2  + (1 | UID), 
+               wilr1 + wilr2  + (1 | UID),
              cores = 4,
              chains = 4,
              iter = 3000,
@@ -193,7 +199,7 @@ submodel3 <- substitution(
   m3,
   delta = c(1:30),
   level = c("between", "within"),
-  type = "conditional")
+  ref = "grandmean")
 
 plotsub(submodel3$BetweenSub$TIBg, "Between-person TIB", "Sleepiness")
 plotsub(submodel3$BetweenSub$PAg, "Between-person PA", "Sleepiness")
