@@ -43,7 +43,7 @@ simmodel5 <- function(database, sbpbase, prefit = NULL) {
       m,
       delta = c(10, 20, 30),
       level = c("between", "within"),
-      type = "conditional"
+      ref = "grandmean"
     )
     
     model <- list(
@@ -84,7 +84,7 @@ simmodel4 <- function(database, sbpbase, prefit = NULL) {
       m,
       delta = c(10, 20, 30),
       level = c("between", "within"),
-      type = "conditional"
+      ref = "grandmean"
     )
     
     model <- list(
@@ -125,7 +125,7 @@ simmodel3 <- function(database, sbpbase, prefit = NULL) {
       m,
       delta = c(10, 20, 30),
       level = c("between", "within"),
-      type = "conditional"
+      ref = "grandmean"
     )
     
     model <- list(

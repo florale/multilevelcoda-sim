@@ -204,7 +204,7 @@ simmodel <- function(database, parts, sbpbase, prefit = prefit) {
     m,
     delta = c(10, 20, 30),
     level = c("between", "within"),
-    type = "conditional"
+    ref = "grandmean"
   )
   
   model <- list(
