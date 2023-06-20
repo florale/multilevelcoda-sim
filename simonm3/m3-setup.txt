@@ -1,0 +1,23 @@
+
+## log in
+ssh floral m3.massive.org.au
+ssh floral@m3.massive.org.au
+
+# wd sim study
+/fs02/ft29/simonm3
+
+## dataset url
+sftp://floral@m3-dtn.massive.org.au/fs02/ft29/ukbiobank/biobank_selected_variables_and_acc.csv
+
+## check VScode connection to M3
+ssh -l floral VSCode -o ProxyCommand="ssh floral@m3.massive.org.au /usr/local/sv2/sshnc.sh"
+
+## cancel
+scancel -u floral
+
+## check
+sacct -u 
+
+## check module
+module avail 
+module load
