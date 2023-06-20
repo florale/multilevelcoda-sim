@@ -196,7 +196,7 @@ simmodel <- function(database, parts, sbpbase, prefit = prefit) {
                 cores = 4,
                 backend = "cmdstanr")
   
-  m <- structure(list(CompIlr = cilr,
+  m <- structure(list(CompILR = cilr,
                       Model = fit),
                  class = "brmcoda")
   
@@ -205,7 +205,7 @@ simmodel <- function(database, parts, sbpbase, prefit = prefit) {
     delta = c(10, 20, 30),
     level = c("between", "within"),
     ref = "grandmean"
-  )
+    )
   
   model <- list(
     ModelSummary = summary(m$Model),
