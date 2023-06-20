@@ -58,7 +58,7 @@ groundtruth4 <- data.table(
 groundtruth3 <- data.table(
   b_Intercept  = 2.10,
   b_bilr1      = 0.15,
-  b_bilr2      = -0.10,
+  b_bilr2      = 0.10,
   b_wilr1      = -0.80,
   b_wilr2      = -0.25,
   
