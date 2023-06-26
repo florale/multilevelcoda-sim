@@ -2,7 +2,7 @@
 #SBATCH --job-name=sim_summary
 #SBATCH --time=2-00:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem-per-cpu=100GB
+#SBATCH --mem-per-cpu=50GB
 #SBATCH --cpus-per-task=2
 #SBATCH --partition=comp
 
