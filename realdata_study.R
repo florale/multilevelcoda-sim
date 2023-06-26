@@ -19,12 +19,11 @@ library(JWileymisc)
 d <- as.data.table(readRDS("/Volumes/shared/Behavioral-med-lab/StressHealthStudy/SHS Research Interns/Data/shs_daily_ggir.RDS"))
 
 # make composition
-sbp <- matrix(c(
+sbp5 <- matrix(c(
   1, 1, -1,-1, -1,
   1, -1, 0, 0, 0,
   0, 0, 1, -1, -1,
   0, 0, 0, 1, -1), ncol = 5, byrow = TRUE)
-psi <- gsi.buildilrBase(t(sbp))
 
 # check NA and 0
 # d[which(is.na(d$Sleepg)), "ID"]
@@ -71,7 +70,7 @@ submodel5 <- substitution(
   m5,
   delta = c(1:10),
   level = c("between", "within"),
-  type = "conditional")
+  ref = "conditional")
 registerDoSEQ()
 
 plotsub(submodel5$BetweenpersonSub$Sleepg, x = "Sleep", y = "Sleepy")
@@ -124,11 +123,7 @@ sbp4 <- matrix(c(
   1, -1, -1,-1,
   0, 1, -1, -1,
   0, 0, 1, -1), ncol = 4, byrow = TRUE)
-# psi4 <- gsi.buildilrBase(t(sbp4))
 
-d[, TIBRAWg := TIBg]
-
-d[, TIBg := Sleepg + WAKEg]
 cilr4 <- compilr(d, sbp = sbp4, 
                 parts = c("TIBg", "MVPAg", "LPAg", "SBg"), idvar = "ID")
 
@@ -155,7 +150,6 @@ sbp3 <- matrix(c(
   1, -1,-1, 
   0, 1, -1), 
   ncol = 3, byrow = TRUE)
-psi3 <- gsi.buildilrBase(t(sbp3))
 
 d[, PAg := MVPAg + LPAg]
 cilr3 <- compilr(d, sbp = sbp3, 
@@ -186,3 +180,9 @@ submodel3 <- substitution(
 #                      level = c("between", "within"), type = c("conditional", "marginal"))
 # 
 # registerDoSEQ()
+brmcoda_gt <- list(
+  m5 = m5,
+  m4 = m4,
+  m3 = m3
+)
+saveRDS(brmcoda_gt, "brmcoda_gt.RDS", compress = "xz")
