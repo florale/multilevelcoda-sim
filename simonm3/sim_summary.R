@@ -1,7 +1,5 @@
 library(knitr)
-library(kableExtra)
 
-library(MASS)
 library(data.table)
 library(extraoperators)
 library(compositions)
@@ -17,9 +15,6 @@ library(parallel)
 library(ggplot2)
 library(ggsci)
 library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
-library(heatmaply)
-library(ggthemes)
-library(bayesplot)
 
 input <- readRDS("input.RDS")
 meanscovs <- input$meanscovs
