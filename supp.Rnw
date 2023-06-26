@@ -1,0 +1,1403 @@
+%%% Knitr template
+
+\documentclass[11pt]{article}
+
+\usepackage[margin=3cm,a4paper]{geometry}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[scaled=.7]{beramono}
+\usepackage[T1]{fontenc}
+
+\usepackage[hang,small,bf]{caption}
+%\usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage[titletoc,toc,title]{appendix}
+
+\usepackage{tikz}
+\usepackage[autostyle]{csquotes}
+
+
+\usepackage{sectsty}
+\usepackage{colortbl}
+
+% default font.
+% can be \rmdefault, \sfdefault or \ttdefault
+\renewcommand*{\familydefault}{\sfdefault}
+
+%%%%%%%%%%%%%%%%%%%%% CREATE COMMANDS HERE %%%%%%%%%%%%%%%%%%%%%%
+
+
+%  good colour triples:
+%RoyalPurple,Plum,DarkOrchid
+%RubineRed,VioletRed,Lavender
+%ForestGreen,LimeGreen,YellowGreen
+%Brown,BrickRed,Bittersweet
+%NavyBlue,ProcessBlue,Emerald
+
+
+\definecolor{linkblue}{rgb}{0.192,0.494,0.675}
+\definecolor{lghtGrey}{gray}{0.5}
+\definecolor{lghtGrey0}{gray}{0.3}
+\definecolor{lghtGrey1}{gray}{0.6}
+\definecolor{lghtGrey2}{gray}{0.8}
+\definecolor{lghtGrey3}{gray}{0.9}
+
+\newcolumntype{g}{>{\columncolor{lghtGrey3}}c}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+
+\definecolor{brwn}{rgb}{0.545, 0.271, 0.075}
+\definecolor{lbtred}{rgb}{0.698, 0.133, 0.133}
+
+\colorlet{LightOrange}{Red!30}
+\colorlet{LightBlue}{SeaGreen!30}
+
+
+\newcommand{\ilr}{\textit{\textrm{ilr}}}
+\newcommand{\HRule}{\rule{\linewidth}{0.1mm}}
+\newcommand{\webtext}[1]{\textcolor{linkblue}{\texttt{\footnotesize{#1}}}}
+
+
+
+%TiKZ outlined box, good for highlighting important text/tables etc
+\tikzstyle{custbox} = [draw=black, fill=black!5,
+	very thick, rectangle, rounded corners, inner sep=6pt, inner ysep=6pt]
+\def\tikzbox#1{\vskip3pt\begin{center}\begin{tikzpicture}\node[custbox](box){%
+\begin{minipage}{0.85\textwidth}#1\end{minipage}};\end{tikzpicture}\end{center}\vskip3pt}
+
+
+%%%%%%%%%%%%%%%%%%%%% PACKAGE OPTIONS %%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%% caption
+\setlength{\captionmargin}{30pt}
+
+%%%%%%%%%%%%%%%% natbib
+\bibpunct{(}{)}{;}{a}{,}{,}
+
+%%%%%%%%%%%%%%%% enumitem
+\setenumerate[1]{label=(\arabic*)}
+\setenumerate[2]{label=(\alph*)}
+\setenumerate[3]{label=(\roman*)}
+% alternatives: \usepackage{wasysym} \APLlog \astrosun \hexagon
+\setitemize[1]{label=\textcolor{lghtGrey}{{\scriptsize \textbullet}}}
+\setitemize[2]{label=\textcolor{lghtGrey2}{{\scriptsize \textbullet}}}
+%[label={\ifgooditem\color{green}\else\color{red}\fi\textbullet}]
+
+%%%%%%%%%%%%%%%% hyperref
+\hypersetup{pdfpagemode=UseNone} % don't show bookmarks on initial view
+\hypersetup{%
+  colorlinks = true,
+  linkcolor  = {linkblue},
+  urlcolor={linkblue},
+  citecolor=magenta
+}
+
+%%%%%%%%%%%%%%%% subcaption
+%\captionsetup[subfigure]{labelformat=simple}
+%\renewcommand\thesubfigure{(\alph{subfigure})}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+%%%%%%%%%%%%%%%%% sectsty
+
+
+
+\sectionfont{\color{black}\sffamily}
+\subsectionfont{\color{lghtGrey0}\sffamily}
+\subsubsectionfont{\color{lghtGrey1}\sffamily}
+%\allsectionsfont{\sffamily}
+
+
+%%%%%%%%%%%%%%%%%%%%% START DOC %%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+%{\textasciitilde}
+%{\textasciicircum}
+
+
+%%%%%%%%%%%%%%%%%%%%% CHUNK OPTIONS %%%%%%%%%%%%%%%%%%%%%%
+%, cache=TRUE
+%, eval=FALSE
+%, echo=FALSE
+%, comment=NA
+%, results=c('hide','hold')
+%, include=TRUE
+%, comment='##'
+%, size='footnotesize'
+
+%, fig.width=6
+%, fig.height=6
+%, out.width='0.8\\textwidth'
+%, fig.cap='This is the figure caption'
+%, fig.show='asis'
+%, fig.pos='h!'
+
+
+%%%%%%%%%%%%%%%%%%%%% R SETUP (NOT SHOWN) %%%%%%%%%%%%%%%%%%%%%%
+
+
+<<knitr_options, include=FALSE>>=
+options(width = 90)
+opts_chunk$set(
+  fig.width = 6, fig.height = 9,
+  fig.path = "fig/knitr/", out.width = "0.6\\textwidth",
+  fig.pos = "h!", fig.show = "hold", fig.align = "center",
+  warning = FALSE, message = FALSE, tidy = FALSE,
+  size = "footnotesize"
+)
+### see:
+# https://rclickhandbuch.files.wordpress.com/2014/09/knitrthemesoverview.pdf
+# knit_theme$set("moe")
+# knit_theme$set("fine_blue")
+# knit_theme$set("acid")
+# knit_theme$set("fruit")
+knit_theme$set("bclear")
+
+set.seed(53079239)
+# install R/qtl package if necessary:
+if (!require("qtl")) {
+  install.packages("qtl", repos = "http://cran.us.r-project.org")
+}
+par(mar = c(4, 4, 0, 0) + 0.1) # make plot margins thinner
+@
+
+%%% If you want to import an R script to call:
+%<<knitr_options2, include=FALSE>>=
+%knitr::read_chunk('XXXX.R')
+%@
+
+
+
+
+% %%%%%%%%%%%%%%%%%%%%% SECOND CODE CHUNK %%%%%%%%%%%%%%%%%%%%%%
+% <<code1, include = FALSE>>=
+% 1
+% @
+
+
+\begin{center}
+\LARGE
+\textbf{\textsf{\textcolor{black}{Derivation of reallocation of time-use on change in outcome:}}} \\
+\vspace{6mm}
+\large
+\textbf{\textsf{\textcolor{black}{linear mixed effect models with isometric log ratio predictors}}} \\
+\vspace{10mm}
+\normalsize
+\textbf{\textsf{\textcolor{black!30}{Ty Stanford, Flora Le, Josh Wiley, Dot Dumuid}}}
+\end{center}
+
+
+\tableofcontents
+
+
+
+\newpage
+
+\section{Preliminaries}
+
+
+
+
+
+
+\subsection{{\ilr} transform}
+
+
+
+Let the number of \textit{compositional parts} be $D > 2$ and define $D_* = D - 1$. Note $D_*$ will be used in place of $D-1$ when required to avoid index ambiguity caused by multiple subscripts of a variable.
+
+
+Define an arbitrary, valid sequential binary partition matrix (\citet{egozcue2005}, \citet{dumuid2019}, sign-binary or signory matrix, \citet{boogaart2013} [p91--92]),
+
+$$
+\begin{aligned}
+P & = & 
+\begin{bmatrix}
+\boldsymbol{p}_1 \\
+\boldsymbol{p}_2 \\
+\vdots \\
+\boldsymbol{p}_{D-1} 
+\end{bmatrix},
+\end{aligned}
+$$
+
+where $P$ is a $(D-1){\times}D$ matrix and 
+
+$$
+\begin{aligned}
+&\boldsymbol{p}_k =  
+\begin{bmatrix}
+{e}_{k1} &
+{e}_{k2} &
+\ldots &
+{e}_{kD} 
+\end{bmatrix},&
+k = 1, 2, \ldots, D-1,\\
+&e_{kj} \in \left\{-1, 0, +1 \right\},& j = 1, 2, \ldots, D.
+\end{aligned}
+$$ 
+
+The corresponding $k=1,2,\ldots, D-1$ {\ilr} coordinates can be defined through the transformation
+
+
+$$
+\begin{aligned}
+&\boldsymbol{z}_k =  
+\boldsymbol{v}_k^T \ln \left( \boldsymbol{x} \right)
+\end{aligned}
+$$
+
+where $\boldsymbol{x} \in \mathbb{S}^D = \left\{\boldsymbol{x} = (x_1, x_2, \ldots, x_D) \left| \right. \sum_{i=1}^{D} x_i = \kappa; x_i > 0 \right\}$ is a composition in the $D$-simplex,
+
+$$
+\begin{aligned}
+\boldsymbol{v}_k =  
+\begin{bmatrix}
+{a}_{k1} \\
+{a}_{k2}\\
+\vdots \\
+{a}_{kD} 
+\end{bmatrix}
+\text{ with }
+a_{kj} = 
+\begin{cases}
+\frac{\sqrt{s_k}}{\sqrt{r_k ( r_k + s_k)}} & \text{if } e_{kj} = +1 \\
+\frac{-\sqrt{r_k}}{\sqrt{s_k ( r_k + s_k)}} & \text{if } e_{kj} = -1 \\
+0 & \text{otherwise } (e_{kj} = 0)
+\end{cases}, 
+\text{ }
+\end{aligned}
+$$
+
+$r_k = \sum_{j=1}^{D} \textrm{I} (e_{kj} = +1)$, $s_k = \sum_{j=1}^{D} \textrm{I} (e_{kj} = -1)$, $\textrm{I} (.)$ is the indicator function equal to 1 when its argument is true (0 otherwise), and
+$\ln(\boldsymbol{a})$ is defined as an element-wise natural logarithm operation on $\boldsymbol{a}$.
+
+Therefore, the $1-1$ transformation of $\boldsymbol{x} \in \mathbb{S}^D$ to the {\ilr} coordinates ($\in \mathbb{R}^{D-1}$) based on the sequential binary partition $P$, can be expressed as
+
+
+
+$$
+\begin{aligned}
+\boldsymbol{z} =
+\begin{bmatrix}
+{z}_{1} \\
+{z}_{2}\\
+\vdots \\
+{z}_{D-1} 
+\end{bmatrix}
+&=
+{\ilr}(\boldsymbol{x}) 
+\\
+&=
+V^T\ln(\boldsymbol{x})
+\\
+&=
+\begin{bmatrix}
+\boldsymbol{v}_{1}^T \\
+\boldsymbol{v}_{2}^T\\
+\vdots \\
+\boldsymbol{v}_{D-1}^T
+\end{bmatrix}\ln(\boldsymbol{x}).
+\end{aligned}
+$$
+
+
+Also note that the inverse transformation is defined as
+
+$$
+\boldsymbol{x} 
+= 
+{\ilr}^{-1} (\boldsymbol{z}) 
+= 
+\mathcal{C}_{\kappa} \left( \exp \left( V \boldsymbol{z} \right)   \right)
+$$
+where
+$$
+\begin{aligned}
+\mathcal{C}_{\kappa} \left( \boldsymbol{a} \right) 
+&= \mathcal{C}_{\kappa} \left( (a_1, a_2, \ldots, a_n) \right) \\
+&= (c{\times} a_1, c{\times}a_2, \ldots, c{\times}a_n )
+\end{aligned}
+$$
+
+with $c = \frac{\kappa}{\sum_{i=1}^{n} a_i}$ is the \textit{closure} (to $\kappa$) operation.
+
+As the {\ilr} transformation and the original composition have a $1-1$ relationship, the following holds
+
+$$
+\begin{aligned}
+\boldsymbol{z} = {\ilr} ({\ilr}^{-1} (\boldsymbol{z}) ), \text{ and } 
+\boldsymbol{x} = {\ilr}^{-1} ({\ilr} (\boldsymbol{x}) ).
+\end{aligned}
+$$
+
+
+
+
+\subsection{Simplex operations}
+
+The perturbation of two vectors $\boldsymbol{x}$ and $\boldsymbol{y}$ on the simplex is defined as the dot product under closure \citep{egozcue2005},
+
+$$
+\boldsymbol{x} {\oplus} \boldsymbol{y} = 
+\mathcal{C}_{\kappa} 
+\left( 
+\boldsymbol{x} {\cdot} \boldsymbol{y}
+\right).
+$$
+
+Also note that neutral (identity) element on the $D$-simplex is $\boldsymbol{1}_D = \mathcal{C}_{\kappa} 
+\left( 1, 1, \ldots, 1\right)$ and the inverse element of $\boldsymbol{x}$ on the $D$-simplex is $\ominus \boldsymbol{x} = \mathcal{C}_{\kappa} \left( 1/ x_1, 1/x_2, \ldots, 1/x_D\right)$ such that
+
+
+$$
+\begin{aligned}
+\boldsymbol{x} {\oplus} (\ominus \boldsymbol{x}) =(\ominus \boldsymbol{x}) {\oplus}\boldsymbol{x}   = \boldsymbol{1}_D, \text{ and} \\
+\boldsymbol{x} {\oplus} \boldsymbol{1}_D = \boldsymbol{1}_D {\oplus}\boldsymbol{x}   = \boldsymbol{x}.
+\end{aligned}
+$$
+
+
+Finally note the \textit{powering} operation,
+
+$$
+\lambda \odot \boldsymbol{x} = 
+\mathcal{C}_{\kappa} 
+\left(  x_1^{\lambda}, x_2^{\lambda}, \ldots, x_D^{\lambda} 
+\right),
+$$
+
+so that the inverse element of $\boldsymbol{x}$, namely $(\ominus\boldsymbol{x})$, can equivalently be written $(-1) \odot \boldsymbol{x}$.
+
+\subsection{Between and within compositions in hierarchical data}
+
+
+Consider a composition $\boldsymbol{x}_{ij} \in \mathbb{S}^D$ for individual $j$ and time point $i=1,2,\ldots,I_j$. The composition $\boldsymbol{x}_{ij}$ can be decomposed as
+
+
+$$
+\begin{aligned}
+\boldsymbol{x}_{ij}
+&=
+\boldsymbol{x}_{{\bullet}j}^{(b)} {\oplus} \boldsymbol{x}_{ij}^{(w)} 
+\\
+&=
+\mathcal{C}_{\kappa} \left(
+\boldsymbol{x}_{{\bullet}j}^{(b)} {\cdot} \boldsymbol{x}_{ij}^{(w)} 
+\right).
+\end{aligned}
+$$
+
+The between individual composition is calculated as the compositional mean (geometric mean under closure) of the $I_j$ compositions observed for individual $j$:
+
+$$
+\begin{aligned}
+\boldsymbol{x}_{{\bullet}j}^{(b)} 
+&=\mathcal{C}_{\kappa} \left(
+\prod_{i=1}^{I_j} \boldsymbol{x}_{1j}^{1/I_j}
+\right)
+\\
+&=
+\frac{1}{I_j} {\odot} \left( \boldsymbol{x}_{1j} {\oplus} \boldsymbol{x}_{2j}{\oplus} \ldots {\oplus} \boldsymbol{x}_{I_jj} \right)
+\\
+&=
+\frac{1}{I_j} {\odot} \left({\bigoplus}_{i=1}^{I_j} \boldsymbol{x}_{ij}  \right) .
+\end{aligned}
+$$
+
+
+The within individual composition for individual $j$ at time $i$ can therefore be expressed as
+$$
+\begin{aligned}
+\boldsymbol{x}_{ij}^{(w)} 
+&=
+\boldsymbol{x}_{ij} {\ominus} \left( \frac{1}{I_j} {\odot} \left({\bigoplus}_{i=1}^{I_j} \boldsymbol{x}_{ij}  \right) \right) .
+\end{aligned}
+$$
+as
+$$
+\begin{aligned}
+\boldsymbol{x}_{{\bullet}j}^{(b)} {\oplus} \boldsymbol{x}_{ij}^{(w)} 
+&=
+\frac{1}{I_j} {\odot} \left({\bigoplus}_{i=1}^{I_j} \boldsymbol{x}_{ij}  \right) 
+{\oplus} 
+\boldsymbol{x}_{ij} {\ominus} \left( \frac{1}{I_j} {\odot} \left({\bigoplus}_{i=1}^{I_j} \boldsymbol{x}_{ij}  \right) \right) \\
+&=
+\boldsymbol{x}_{ij} {\oplus} 
+\frac{1}{I_j} {\odot} \left({\bigoplus}_{i=1}^{I_j} \boldsymbol{x}_{ij}  \right) 
+{\ominus} \left( \frac{1}{I_j} {\odot} \left({\bigoplus}_{i=1}^{I_j} \boldsymbol{x}_{ij}  \right) \right) \\
+&=
+\boldsymbol{x}_{ij} {\oplus} \boldsymbol{1}_D \\
+&=
+\boldsymbol{x}_{ij} 
+.
+\end{aligned}
+$$
+
+
+\subsection{Correspondence of hierarchical compositions and {\ilr} transformed values}
+
+
+As given in \citep{egozcue2005}, for any $\boldsymbol{x}$ and $\boldsymbol{y}$ on the simplex the following holds for any {\ilr} transformation,
+
+\begin{equation}
+{\ilr} \left(\boldsymbol{x} {\oplus} \boldsymbol{y} \right) = \boldsymbol{x}^* + \boldsymbol{y}^* \label{eq:ilr}
+\end{equation}
+
+where $\boldsymbol{x}^*= {\ilr} (\boldsymbol{x})$ and $\boldsymbol{y}^*= {\ilr} (\boldsymbol{y})$.
+
+Therefore an {\ilr}-transformed composition $\boldsymbol{x}_{ij}$ for individual $j$ and time point $i$ is given as
+
+
+$$
+\begin{aligned}
+\boldsymbol{z}_{ij} 
+&=
+{\ilr}(\boldsymbol{x}_{ij}) 
+\\
+&=
+{\ilr} \left( \boldsymbol{x}_{{\bullet}j}^{(b)} {\oplus} \boldsymbol{x}_{ij}^{(w)}   \right) 
+\\
+&=
+{\ilr} \left( \boldsymbol{x}_{{\bullet}j}^{(b)} \right)   +{\ilr} \left(  \boldsymbol{x}_{ij}^{(w)}   \right) \;\;\;\;\; \text{ from Eq. (\ref{eq:ilr})}
+\\
+&=
+V^T  \ln \left( \boldsymbol{x}_{{\bullet}j}^{(b)} \right)   + V^T \ln \left(  \boldsymbol{x}_{ij}^{(w)}   \right) 
+\\
+&=
+ \boldsymbol{z}_{{\bullet}j}^{(b)} + \boldsymbol{z}_{ij}^{(w)} .
+\end{aligned}
+$$
+
+Also note that for the between individual composition $\boldsymbol{x}_{{\bullet}j}^{(b)}$ has $\boldsymbol{z}_{ij}^{(w)} = \boldsymbol{0}$ as
+
+
+$$
+\begin{aligned}
+{\ilr}(\boldsymbol{x}_{{\bullet}j}^{(b)}) 
+&=
+{\ilr}(\boldsymbol{x}_{{\bullet}j}^{(b)} \oplus \boldsymbol{1}_D ) 
+\\
+&=
+{\ilr} \left( \boldsymbol{x}_{{\bullet}j}^{(b)} \right)   +{\ilr} \left(  \boldsymbol{1}_D   \right) 
+\\
+&=
+ \boldsymbol{z}_{{\bullet}j}^{(b)} + \boldsymbol{0} .
+\end{aligned}
+$$
+
+
+
+
+\newpage
+
+\section{Compositional reallocations}
+
+\subsection{Linear mixed effect models with isometric log ratio predictors}
+
+The model is defined as
+
+\begin{equation}
+\begin{aligned}
+Y_{ij} 
+&= 
+\gamma_{0} + u_{0j} + 
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k{\bullet}j} + 
+  \sum_{k = 1}^{D-1} (\gamma_{k + D - 1} + u_{kj}) z^{(w)}_{kij} +
+  \varepsilon_{ij}
+\\
+&= 
+ \left( \gamma_{0} +  
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k{\bullet}j} + 
+  \sum_{k = 1}^{D-1} \gamma_{k + D - 1}  z^{(w)}_{kij}  \right) +
+  \left( u_{0j} + \sum_{k = 1}^{D-1} u_{kj} z^{(w)}_{kij} \right) +
+  \varepsilon_{ij}  
+  \label{eq:regress}
+\end{aligned}
+\end{equation}
+
+\newpage
+
+
+\subsection{\textit{Between} individual one-for-one substitution}
+
+
+Here we will consider the predicted change in outcome, $\Delta \hat{y}^{(b)}$, evaluated at two different compositions, $\boldsymbol{x}^{(b)}_{0} \oplus \boldsymbol{1}_D$ and $\boldsymbol{x}^{(b)'}_{0} \oplus \boldsymbol{1}_D$, with the restriction that the two compositions only differ in two compositional parts by the reallocated amount $t$. In this scenario, the interpretation of $\Delta \hat{y}^{(b)}$ is the model predicted \textit{marginal} change in the outcome if a given composition has a one-for-one substitution of $t$ between two compositional parts. In the following, we assume the first composition, $\boldsymbol{x}^{(b)}_{0}$, is naturally the compositional mean of all individual's/between compositional means, however, in practice another sensible representative composition could be chosen.
+
+
+To start, let
+
+$$
+\begin{aligned}
+{Y}_0^{(b)} 
+&= 
+ Y_{ij} \left|_{\boldsymbol{x}^{(b)}_0 \oplus \boldsymbol{x}^{(w)}_0 =  \boldsymbol{x}^{(b)}_{{\bullet}{\bullet}}\oplus \boldsymbol{1}_D}  \right. ,
+\end{aligned}
+$$
+
+that is, $Y_{ij}$ evaluated at $\boldsymbol{x}_0 = \boldsymbol{x}^{(b)}_0 \oplus \boldsymbol{x}^{(w)}_0 =  \boldsymbol{x}^{(b)}_{{\bullet}{\bullet}}\oplus \boldsymbol{1}_D = \boldsymbol{x}^{(b)}_{{\bullet}{\bullet}}$ where
+
+$$
+\boldsymbol{x}^{(b)}_{{\bullet}{\bullet}} = 
+\frac{1}{J} {\odot} \left({\bigoplus}_{j=1}^{J} \boldsymbol{x}^{(b)}_{{\bullet}j}  \right)
+$$
+is the compositional mean of $J$ between individual compositional means.
+
+Therefore
+
+$$
+\begin{aligned}
+{Y}_0^{(b)} 
+&= 
+  \left( \gamma_{0} +  
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k{\bullet}j}  
+   \right) +
+   u_{0j}  +
+  \varepsilon_{ij}
+  \;\;\;\;\;\; \text{ from Eq. (\ref{eq:regress})},
+\end{aligned}
+$$
+as all within {\ilr} coordinates are 0.
+
+So the expected value of ${Y}_0^{(b)}$ can be written
+$$
+\begin{aligned}
+\text{E} \left[ Y_0^{(b)} \right]
+&= 
+\text{E} \left[   \left( \gamma_{0} +  
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k{\bullet}{\bullet}}  
+   \right) +
+   u_{0j} +
+  \varepsilon_{ij}   \right]
+  \\
+  &= 
+ \gamma_{0} +  
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k{\bullet}{\bullet}} 
+  \;\;\;\;\;\;\;\;\; \text{ as } 
+  \text{E} \left[ u_{0j} \right] = \text{E} \left[ \varepsilon_{ij} \right] = 0
+  \\
+  &= 
+ \gamma_{0} +  
+ \begin{bmatrix}
+\gamma_1 & \gamma_2 & \ldots & \gamma_{D_*}
+\end{bmatrix}
+ \begin{bmatrix}
+z^{(b)}_{1{\bullet}{\bullet}}  \\
+z^{(b)}_{2{\bullet}{\bullet}} \\
+\vdots \\
+z^{(b)}_{D_*{\bullet}{\bullet}} 
+\end{bmatrix}
+  \\
+  &= 
+ \gamma_{0} +  
+\boldsymbol{\gamma}^T
+\boldsymbol{z}^{(b)}_{{\bullet}{\bullet}}  
+  \\
+  &= 
+ \gamma_{0} +  
+\boldsymbol{\gamma}^T
+V^T
+\ln \left(
+\boldsymbol{x}^{(b)}_{{\bullet}{\bullet}}  
+\right)
+\end{aligned}
+$$
+
+Therefore, predicted difference between the outcome variable for the grouped compositional mean, $\boldsymbol{x}^{(b)}_{{\bullet}{\bullet}}$, and the same composition with $t$ time reallocated from compositional part $d$ to compositional part $d'$, namely
+
+$$
+\boldsymbol{x}^{(b)'}_{{\bullet}{\bullet}} 
+=
+\begin{bmatrix}
+x^{(b)}_{1{\bullet}{\bullet}}  \\
+x^{(b)}_{2{\bullet}{\bullet}} \\
+\vdots \\
+x^{(b)}_{d{\bullet}{\bullet}} - t \\
+\vdots \\
+x^{(b)}_{d'{\bullet}{\bullet}} + t \\
+\vdots \\
+x^{(b)}_{D{\bullet}{\bullet}} 
+\end{bmatrix}
+,
+$$
+
+is
+
+$$
+\begin{aligned}
+\Delta \hat{y}^{(b)} 
+&= 
+\hat{y}^{(b)}_0 -  
+\hat{y}^{(b)'}_0 
+\\
+&= 
+\left(
+ \hat{\gamma}_{0} +  
+\hat{\boldsymbol{\gamma}}^T
+V^T
+\ln \left(
+\boldsymbol{x}^{(b)}_{{\bullet}{\bullet}}
+\right)
+\right)
+-  
+\left(
+ \hat{\gamma}_{0} +  
+\hat{\boldsymbol{\gamma}}^T
+V^T
+\ln \left(
+\boldsymbol{x}^{(b)'}_{{\bullet}{\bullet}}  
+\right)
+\right)
+\\
+&= 
+\hat{\boldsymbol{\gamma}}^T
+V^T
+\left(
+\ln \left(
+\boldsymbol{x}^{(b)}_{{\bullet}{\bullet}}
+\right)
+-
+\ln \left(
+\boldsymbol{x}^{(b)'}_{{\bullet}{\bullet}}  
+\right)
+\right)
+\\
+&= 
+\hat{\boldsymbol{\gamma}}^T
+V^T
+L^{(b)},
+\end{aligned}
+$$
+
+where 
+
+$$
+\begin{aligned}
+L^{(b)}
+&= 
+\begin{bmatrix}
+\ln ( x^{(b)}_{1{\bullet}{\bullet}} )  \\
+\ln ( x^{(b)}_{2{\bullet}{\bullet}} ) \\
+\vdots \\
+\ln ( x^{(b)}_{d{\bullet}{\bullet}} ) \\
+\vdots \\
+\ln ( x^{(b)}_{d'{\bullet}{\bullet}} ) \\
+\vdots \\
+\ln ( x^{(b)}_{D{\bullet}{\bullet}}  )
+\end{bmatrix}
+-
+\begin{bmatrix}
+\ln ( x^{(b)}_{1{\bullet}{\bullet}} )  \\
+\ln ( x^{(b)}_{2{\bullet}{\bullet}} ) \\
+\vdots \\
+\ln ( x^{(b)}_{d{\bullet}{\bullet}} - t ) \\
+\vdots \\
+\ln ( x^{(b)}_{d'{\bullet}{\bullet}} + t ) \\
+\vdots \\
+\ln ( x^{(b)}_{D{\bullet}{\bullet}}  )
+\end{bmatrix}
+= 
+\begin{bmatrix}
+0  \\
+0 \\
+\vdots \\
+\ln \left( 
+\frac{ x^{(b)}_{d{\bullet}{\bullet}} }{ x^{(b)}_{d{\bullet}{\bullet}} - t } 
+\right) \\
+\vdots \\
+\ln \left( 
+\frac{ x^{(b)}_{d'{\bullet}{\bullet}} }{ x^{(b)}_{d'{\bullet}{\bullet}} + t } 
+\right) \\
+\vdots \\
+0
+\end{bmatrix}= 
+\begin{bmatrix}
+0  \\
+0 \\
+\vdots \\
+- \ln \left( 
+{ 1 - \frac{t}{x^{(b)}_{d{\bullet}{\bullet}}} } 
+\right) \\
+\vdots \\
+- \ln \left( 
+{ 1 + \frac{t}{x^{(b)}_{d'{\bullet}{\bullet}}} } 
+\right) \\
+\vdots \\
+0
+\end{bmatrix}.
+\end{aligned}
+$$
+
+Therefore as $L^{(b)}$ only has two non-zero elements, 
+
+$$
+\begin{aligned}
+\Delta \hat{y}^{(b)} 
+&= 
+- \hat{\boldsymbol{\gamma}}^T
+\begin{bmatrix}
+\boldsymbol{v}_{1}^T \\
+\boldsymbol{v}_{2}^T\\
+\vdots \\
+\boldsymbol{v}_{D-1}^T
+\end{bmatrix}
+\begin{bmatrix}
+0  \\
+0 \\
+\vdots \\
+ \ln \left( 
+{ 1 - \frac{t}{x^{(b)}_{d{\bullet}{\bullet}}} } 
+\right) \\
+\vdots \\
+ \ln \left( 
+{ 1 + \frac{t}{x^{(b)}_{d'{\bullet}{\bullet}}} } 
+\right) \\
+\vdots \\
+0
+\end{bmatrix}
+\\
+&= 
+ -  \begin{bmatrix}
+\hat{\gamma}_1 & \hat{\gamma}_2 & \ldots & \hat{\gamma}_{D_*}
+\end{bmatrix}
+\begin{bmatrix}
+a_{1d} \ln \left( 1 - \frac{t}{x^{(b)}_{d{\bullet}{\bullet}}}  \right) +
+a_{1d'} \ln \left( 1 + \frac{t}{x^{(b)}_{d'{\bullet}{\bullet}}}  \right) 
+\\
+a_{2d} \ln \left( 1 - \frac{t}{x^{(b)}_{d{\bullet}{\bullet}}}  \right) +
+a_{2d'} \ln \left( 1 + \frac{t}{x^{(b)}_{d'{\bullet}{\bullet}}}  \right) 
+\\
+\vdots 
+\\
+a_{D_*d} \ln \left( 1 - \frac{t}{x^{(b)}_{d{\bullet}{\bullet}}}  \right) +
+a_{D_*d'} \ln \left( 1 + \frac{t}{x^{(b)}_{d'{\bullet}{\bullet}}}  \right) 
+\end{bmatrix}
+\\
+&= 
+- \sum_{k=1}^{D-1} \hat{\gamma}_k 
+\left( 
+a_{kd} \ln \left( 1 - \frac{t}{x^{(b)}_{d{\bullet}{\bullet}}}  \right) +
+a_{kd'} \ln \left( 1 + \frac{t}{x^{(b)}_{d'{\bullet}{\bullet}}}  \right) 
+\right)
+\\
+&= 
+- \ln \left( 1 - \frac{t}{x^{(b)}_{d{\bullet}{\bullet}}}  \right)
+\sum_{k=1}^{D-1} \hat{\gamma}_k a_{kd}  
+- \ln \left( 1 + \frac{t}{x^{(b)}_{d'{\bullet}{\bullet}}}  \right) 
+\sum_{k=1}^{D-1} \hat{\gamma}_k  a_{kd'} 
+\end{aligned}
+$$
+
+for values of $t < \min \left\{ x^{(b)}_{d{\bullet}{\bullet}}, \kappa - x^{(b)}_{d{\bullet}{\bullet}}, x^{(b)}_{d'{\bullet}{\bullet}}, \kappa - x^{(b)}_{d'{\bullet}{\bullet}} \right\}$ as no compositional part may have values outside the range $[0, \kappa]$.
+
+
+\newpage
+
+
+
+\subsection{\textit{Within} individual one-for-one substitution}
+
+Here we will consider the predicted change in outcome, $\Delta \hat{y}^{(w)}$, evaluated at two different compositions, $\boldsymbol{x}^{(b)}_{0} \oplus \boldsymbol{x}^{(w)}_{0}$ and $\boldsymbol{x}^{(b)}_{0} \oplus \boldsymbol{x}^{(w)'}_{0}$, with the restriction that the two within compositions only differ in two compositional parts by the reallocated amount $t$. In this scenario, the interpretation of $\Delta \hat{y}^{(w)}$ is the model predicted \textit{conditional} change in the outcome if a given composition for individual $j$ has a one-for-one substitution of $t$ between two compositional parts. The between individual composition $\boldsymbol{x}^{(b)}_{0}$ is set to the compositional mean of individual $j$, so the compositions $\boldsymbol{x}^{(b)}_{0} \oplus \boldsymbol{x}^{(w)}_{0}$ and $\boldsymbol{x}^{(b)}_{0} \oplus \boldsymbol{x}^{(w)'}_{0}$ are the compositional mean of individual $j$ with a "geometric offsets" $\boldsymbol{x}^{(w)}_{0}$ and $\boldsymbol{x}^{(w)'}_{0}$, respectively.
+
+
+Let
+
+$$
+\begin{aligned}
+{Y}_{0j}^{(w)} 
+&= 
+ Y_{ij}  \left|_{\boldsymbol{x}^{(b)}_0 \oplus \boldsymbol{x}^{(w)}_0 =  \boldsymbol{x}^{(b)}_{{\bullet}j} \oplus \boldsymbol{x}^{(w)}_0 }  \right. ,
+\end{aligned}
+$$
+
+that is, $Y_{ij}$ evaluated at $\boldsymbol{x}_0 = \boldsymbol{x}^{(b)}_0 \oplus \boldsymbol{x}^{(w)}_0 =  \boldsymbol{x}^{(b)}_{{\bullet}j} \oplus \boldsymbol{x}^{(w)}_0 $ where
+
+$$
+\boldsymbol{x}^{(b)}_{{\bullet}j} = 
+\frac{1}{I_j} {\odot} \left({\bigoplus}_{i=1}^{I_j} \boldsymbol{x}^{(w)}_{ij}  \right)
+$$
+is the compositional mean of individual $j$, and 
+$$
+\boldsymbol{x}^{(w)}_0 = 
+\begin{bmatrix}
+x^{(w)}_{10j} \\
+x^{(w)}_{20j} \\
+\vdots \\
+x^{(w)}_{D0j} 
+\end{bmatrix}
+$$
+is some "geometric offset" for individual $j$.
+
+Therefore the model predicted (expected) outcome for individual $j$ and the compositional predictors $\boldsymbol{x}^{(b)}_0 \oplus \boldsymbol{x}^{(w)}_0$ is
+
+$$
+\begin{aligned}
+\text{E}\left[{Y}_{0j}^{(w)}\right]
+&= 
+\gamma_{0} + u_{0j} + 
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k0j} + 
+  \sum_{k = 1}^{D-1} (\gamma_{k + D - 1} + u_{kj}) z^{(w)}_{k0j} 
+  \;\;\;\;\;\; \text{ from Eq. (\ref{eq:regress})}.
+\end{aligned}
+$$
+
+Similarly, the predicted (expected) outcome for individual $j$ and the compositional predictors $\boldsymbol{x}^{(b)}_0 \oplus \boldsymbol{x}^{(w)'}_0$, where
+
+$$
+\boldsymbol{x}^{(w)'}_0 = 
+\begin{bmatrix}
+x^{(w)}_{10j} \\
+x^{(w)}_{20j} \\
+\vdots \\
+x^{(w)}_{d0j} - t \\
+\vdots \\
+x^{(w)}_{d'0j} + t \\
+\vdots \\
+x^{(w)}_{D0j} 
+\end{bmatrix}
+$$
+
+is
+
+$$
+\begin{aligned}
+\text{E}\left[{Y}_{0j}^{(w)'}\right]
+&= 
+\gamma_{0} + u_{0j} + 
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k0j} + 
+  \sum_{k = 1}^{D-1} (\gamma_{k + D - 1} + u_{kj}) z^{(w)'}_{k0j} .
+\end{aligned}
+$$
+
+Therefore,
+
+$$
+\begin{aligned}
+\Delta \hat{y}^{(w)}
+& =
+\text{E}\left[{Y}_{0j}^{(w)} - {Y}_{0j}^{(w)'}\right] 
+\\
+& =
+\gamma_{0} + u_{0j} + 
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k0j} + 
+  \sum_{k = 1}^{D-1} (\gamma_{k + D - 1} + u_{kj}) z^{(w)}_{k0j} 
+  - 
+  \\
+  & 
+  \;\;\;\;\;\;\;\;\;\;\;\;\;
+  \left(
+  \gamma_{0} + u_{0j} + 
+  \sum_{k = 1}^{D-1} \gamma_k z^{(b)}_{k0j} + 
+  \sum_{k = 1}^{D-1} (\gamma_{k + D - 1} + u_{kj}) z^{(w)'}_{k0j} 
+  \right)
+  \\
+  & =
+  \sum_{k = 1}^{D-1}   
+  \left( \gamma_{k + D - 1} +  u_{kj} \right) \left( z^{(w)}_{k0j} -z^{(w)'}_{k0j} \right) 
+  \\
+  & =
+    \left( 
+ \begin{bmatrix}
+\gamma_{D_*+1} & \gamma_{D_*+2} & \ldots & \gamma_{2D_*}
+\end{bmatrix} +
+ \begin{bmatrix}
+u_{1j} & \gamma_{2j} & \ldots & \gamma_{D_*j}
+\end{bmatrix}
+\right) 
+    \left( 
+ \begin{bmatrix}
+z^{(w)}_{10j}  \\
+z^{(w)}_{20j} \\
+\vdots \\
+z^{(w)}_{D_*0j} 
+\end{bmatrix}
+-
+ \begin{bmatrix}
+z^{(w)'}_{10j}  \\
+z^{(w)'}_{20j} \\
+\vdots \\
+z^{(w)'}_{D_*0j} 
+\end{bmatrix}
+\right) 
+  \\
+  &= 
+(\boldsymbol{\gamma}_2 + \boldsymbol{u}_j)^T
+\left(
+\boldsymbol{z}^{(w)}_{0}  
+-
+\boldsymbol{z}^{(w)'}_{0}  
+\right)
+  \\
+  &= 
+(\boldsymbol{\gamma}_2 + \boldsymbol{u}_j)^T
+V^T
+\left(
+\ln \left(
+\boldsymbol{x}^{(w)}_{0}  
+\right)
+-
+\ln \left(
+\boldsymbol{x}^{(w)'}_{0}  
+\right)
+\right)  
+\\
+  &= 
+(\boldsymbol{\gamma}_2 + \boldsymbol{u}_j)^T
+V^T
+L^{(w)}
+\end{aligned}
+$$
+
+
+
+where 
+
+$$
+\begin{aligned}
+L^{(w)}
+&= 
+\begin{bmatrix}
+\ln ( x^{(w}_{10j} )  \\
+\ln ( x^{(w)}_{20j} ) \\
+\vdots \\
+\ln ( x^{(w)}_{d0j} ) \\
+\vdots \\
+\ln ( x^{(w)}_{d'0j} ) \\
+\vdots \\
+\ln ( x^{(w)}_{D0j}  )
+\end{bmatrix}
+-
+\begin{bmatrix}
+\ln ( x^{(w)}_{10j} )  \\
+\ln ( x^{(w)}_{20j} ) \\
+\vdots \\
+\ln ( x^{(w)}_{d0j} - t ) \\
+\vdots \\
+\ln ( x^{(w)}_{d'0j} + t ) \\
+\vdots \\
+\ln ( x^{(w)}_{D0j}  )
+\end{bmatrix}
+= 
+\begin{bmatrix}
+0  \\
+0 \\
+\vdots \\
+\ln \left( 
+\frac{ x^{(w)}_{d0j} }{ x^{(w)}_{d0j} - t } 
+\right) \\
+\vdots \\
+\ln \left( 
+\frac{ x^{(w)}_{d'0j} }{ x^{(w)}_{d'0j} + t } 
+\right) \\
+\vdots \\
+0
+\end{bmatrix}= 
+\begin{bmatrix}
+0  \\
+0 \\
+\vdots \\
+- \ln \left( 
+{ 1 - \frac{t}{x^{(w)}_{d0j}} } 
+\right) \\
+\vdots \\
+- \ln \left( 
+{ 1 + \frac{t}{x^{(w)}_{d'0j}} } 
+\right) \\
+\vdots \\
+0
+\end{bmatrix}.
+\end{aligned}
+$$
+
+Therefore as $L^{(w)}$ only has two non-zero elements, 
+
+
+
+$$
+\begin{aligned}
+\Delta \hat{y}^{(w)} 
+&= 
+- (\hat{\boldsymbol{\gamma}_2} - \boldsymbol{u}_j)^T
+\begin{bmatrix}
+\boldsymbol{v}_{1}^T \\
+\boldsymbol{v}_{2}^T\\
+\vdots \\
+\boldsymbol{v}_{D-1}^T
+\end{bmatrix}
+\begin{bmatrix}
+0  \\
+0 \\
+\vdots \\
+ \ln \left( 
+{ 1 - \frac{t}{x^{(w)}_{d0j}} } 
+\right) \\
+\vdots \\
+ \ln \left( 
+{ 1 + \frac{t}{x^{(w)}_{d'0j}} } 
+\right) \\
+\vdots \\
+0
+\end{bmatrix}
+\\
+&= 
+ -      \left( 
+ \begin{bmatrix}
+\gamma_{D_*+1} & \gamma_{D_*+2} & \ldots & \gamma_{2D_*}
+\end{bmatrix} +
+ \begin{bmatrix}
+u_{1j} & \gamma_{2j} & \ldots & \gamma_{D_*j}
+\end{bmatrix}
+\right)
+\begin{bmatrix}
+a_{1d} \ln \left( 1 - \frac{t}{x^{(w)}_{d0j}}  \right) +
+a_{1d'} \ln \left( 1 + \frac{t}{x^{(w)}_{d'0j}}  \right) 
+\\
+a_{2d} \ln \left( 1 - \frac{t}{x^{(w)}_{d0j}}  \right) +
+a_{2d'} \ln \left( 1 + \frac{t}{x^{(w)}_{d'0j}}  \right) 
+\\
+\vdots 
+\\
+a_{D_*d} \ln \left( 1 - \frac{t}{x^{(w)}_{d0j}}  \right) +
+a_{D_*d'} \ln \left( 1 + \frac{t}{x^{(w)}_{d'0j}}  \right) 
+\end{bmatrix}
+\\
+&= 
+- \sum_{k=1}^{D-1} \hat{\gamma}_k 
+\left( 
+a_{kd} \ln \left( 1 - \frac{t}{x^{(w)}_{d0j}}  \right) +
+a_{kd'} \ln \left( 1 + \frac{t}{x^{(w)}_{d'0j}}  \right) 
+\right)
+\\
+&= 
+- \ln \left( 1 - \frac{t}{x^{(w)}_{d0j}}  \right)
+\sum_{k=1}^{D-1} \hat{\gamma}_k a_{kd}  
+- \ln \left( 1 + \frac{t}{x^{(w)}_{d'0j}}  \right) 
+\sum_{k=1}^{D-1} \hat{\gamma}_k  a_{kd'} 
+\end{aligned}
+$$
+
+for values of $t < \min \left\{ x^{(b)}_{d0j}, \kappa - x^{(b)}_{d0j}, x^{(b)}_{d'0j}, \kappa - x^{(b)}_{d'0j} \right\}$ as no compositional part may have values outside the range $[0, \kappa]$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\newpage
+
+\section{Example}
+
+\subsection{Calculations in \texttt{multilevelcoda::brmcoda()}}
+
+
+
+
+<<include = TRUE>>=
+
+library("multilevelcoda")
+library("compositions")
+library("brms")
+library("magrittr")
+library("dplyr")
+library("purrr")
+
+
+data("mcompd")
+data("sbp")
+data("psub")
+
+head(mcompd)
+
+# row numbers of first ID occurance (for calcs later on)
+unique_id_row <- match(unique(mcompd$ID), mcompd$ID)
+
+
+comp_parts <- c("TST", "WAKE", "MVPA", "LPA", "SB")
+
+dimnames(sbp) <- list(paste0("z", 1:4), comp_parts)
+sbp
+
+
+cilr <- 
+  compilr(
+    data = mcompd,
+    sbp = sbp,
+    parts = comp_parts, 
+    idvar = "ID"
+  )
+
+
+@
+
+
+
+<<include = FALSE>>=
+
+# saveRDS(m, file = "m.RDS")
+# saveRDS(m_rslope, file = "m_rslope.RDS")
+m <- readRDS("m.RDS")
+m_rslope <- readRDS("m_rslope.RDS")
+
+
+@
+
+
+<<eval = FALSE>>=
+
+m <- 
+  brmcoda(
+    compilr = cilr,
+    formula = 
+      STRESS ~ bilr1 + bilr2 + bilr3 + bilr4 +
+               wilr1 + wilr2 + wilr3 + wilr4 + 
+              (1 | ID),
+    warmup = 1000, iter = 2000, seed = 123, chains = 4, cores = 4
+  )
+
+m_rslope <- 
+  update(
+    object = m,
+    formula. = 
+      ~ .                                        # same except:
+      - (1 | ID)                                 # remove
+      + (1 + wilr1 + wilr2 + wilr3 + wilr4 | ID) # add
+  )
+
+@
+
+
+
+
+<<include = TRUE>>=
+# summary(m$Model)
+summary(m_rslope$Model)
+
+
+# subm1 <- 
+#   substitution(
+#     object = m_rslope, 
+#     delta = 10,
+#     type = "conditional",
+#     level = c("between", "within")
+#   )
+
+subm1 <-
+  substitution(
+    object = m_rslope,
+    delta = 10,
+    type = "conditional",
+    level = "between"
+  )
+
+
+subm1 %>%
+  extract2("BetweenpersonSub") %>%
+  extract2("MVPA") %>%
+  dplyr::filter(Delta == 10, From == "SB")
+
+
+
+@
+
+
+
+
+\newpage
+
+
+\subsection{Comparison to manual calculations \textsf{R}}
+
+
+
+<<>>=
+
+(V <- cilr$psi)
+V_t <- t(V)
+
+slice_acomp <- function(df, rows_vec) acomp(df[rows_vec, ])
+slice_rmult <- function(df, rows_vec) rmult(df[rows_vec, ])
+
+# marginal compositional mean (geo mean to closure)
+{x_b_dotdot <-
+  cilr %>%
+  extract2("BetweenComp") %>%
+  # slice_acomp(., unique_id_row) %>%
+  mean.acomp(.)} %>%                 # geometric mean on simplex
+  unclass(.) %>%
+  kable(., digits = 3)
+  
+# marginal compositional mean check: ilr arithmetic mean back transformed
+z_b_dotdot <-
+  cilr %>%
+  extract2("BetweenILR") %>%
+  # slice_rmult(., unique_id_row) %>%
+  mean(.)                            # arithmetic mean
+
+z_b_dotdot
+V_t %*% matrix(log(unclass(x_b_dotdot)), ncol = 1) # check 
+
+z_b_dotdot %>%                        
+  ilrInv(., V = V) %>%
+  unclass(.) %>%
+  kable(., digits = 3)
+
+
+
+z_w_ilrs <- rep(0, 4)
+names(z_w_ilrs) <- paste0("wilr", 1:length(z_w_ilrs))
+z_w_ilrs <- rmult(z_w_ilrs)
+
+x_bdash_dotdot <- unclass(x_b_dotdot)
+x_bdash_dotdot <- x_bdash_dotdot + c(0, 0, 10, 0, -10) / 1440
+
+z_bdash_ilrs <- V_t %*% matrix(log(x_bdash_dotdot), ncol = 1) %>% c(.)
+names(z_bdash_ilrs) <- paste0("bilr", 1:length(z_bdash_ilrs))
+
+
+pred_newdat <- t(as.matrix(c(z_b_dotdot, z_w_ilrs)))
+pred_newdat <- rbind(pred_newdat, t(as.matrix(c(z_bdash_ilrs, z_w_ilrs))))
+pred_newdat
+
+
+fixef(m_rslope$Model)
+ranef(m_rslope$Model)$ID[1, , ] # first ID ranefs
+
+predict(
+  m_rslope$Model,
+  newdata = pred_newdat,
+  re_formula = NA # marginal
+)
+
+
+gamma1_hat <- as.matrix(fixef(m_rslope$Model)[, "Estimate"])
+z_0 <- cbind(Intercept = 1, pred_newdat)
+all(colnames(z_0) == rownames(gamma1_hat))
+(delta_y_b_manual <- z_0 %*% gamma1_hat)
+delta_y_b_manual[2] - delta_y_b_manual[1]
+
+
+(delta_y_b <- 
+  predict(
+    m_rslope$Model,
+    newdata = pred_newdat,
+    re_formula = NA # marginal
+  )
+)
+
+diff(delta_y_b[, "Estimate"])
+
+@
+
+
+
+
+
+
+
+\newpage
+
+
+
+%%%%%%%%%%%%%%%%%%%%% REFENCES %%%%%%%%%%%%%%%%%%%%%%
+% \bibliographystyle{plainnat}
+\bibliographystyle{apalike}
+\bibliography{refs.bib}
+
+
+
+\end{document}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%% QUOTES %%%%%%%%%%%%%%%%%%%%%%
+
+%\begin{displayquote}
+%\textsl{Some quote.}
+%\end{displayquote}
+
+
+%%%%%%%%%%%%%%%%%%%%% FIGURE %%%%%%%%%%%%%%%%%%%%%%
+
+%\begin{figure}[h!]
+%  \centering
+%    \includegraphics[width=\textwidth]{/relativefileloc/file.pdf}
+%  \caption{Figure. Words.}
+%\end{figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%% SUB-FIGURES %%%%%%%%%%%%%%%%%%%%%%
+
+%\begin{figure}[h!]
+%\centering
+%	\begin{subfigure}[b]{0.49\textwidth}
+%	\centering
+%		\includegraphics[width=1\textwidth]{.....pdf}
+%		\caption{Subcap1. } \label{sf1}
+%	\end{subfigure}
+%	\begin{subfigure}[b]{0.49\textwidth}
+%	\centering
+%		\raisebox{0.3\height}{
+%			\includegraphics[width=1\textwidth]{....pdf}
+%		}
+%		\caption{Subcap2. } \label{sf2}
+%	\end{subfigure}
+%\caption{Bottom caption.} \label{sf2}
+%\end{figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%% TABLE %%%%%%%%%%%%%%%%%%%%%%
+%\begin{table}[ht]
+%\centering
+%\caption{Table. Words.}
+%\begin{tabular}{rr}
+%  \hline
+%location & p.value \\
+%  \hline
+%57 & 0.0013 \\
+%   \hline
+%\end{tabular}
+%\end{table}
+
+
+
+%%%%%%%%%%%%%%%%%%%%% TABLE WITH SHADING %%%%%%%%%%%%%%%%%%%%%%
+%\begin{center}
+%\begin{tabular}{rC{5cm}}
+% \hline
+%location & p.value \\
+% \hline
+%\rowcolor{lghtGrey3} 57 & 0.0013 \newline 0.16558 \\
+%  \hline
+%\end{tabular}
+%\end{center}
+
+
+%%%%%%%%%%%%%%%%%%%%% APPENDIX %%%%%%%%%%%%%%%%%%%%%%
+%\titleformat{\section}{\large\bfseries}{\appendixname~\thesection .}{0.5em}{}
+%\begin{appendices}
+%\section{Some Appendix}
+%The contents...
+%\end{appendices}
