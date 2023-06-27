@@ -34,7 +34,9 @@ out7 <- readRDS("/fs04/ft29/simonm3/out7.RDS")
 out8 <- readRDS("/fs04/ft29/simonm3/out8.RDS")
 
 ## extract -------------------
-for (j in 1:8) {
+registerDoFuture()
+plan(multisession, workers = 8)
+results <- foreach (j = 1:8, .combine = c) %dopar% {
   out <- get(paste0("out", j))
   
   out3 <- list()
@@ -52,7 +54,7 @@ for (j in 1:8) {
     x[!sapply(x, is.null)]})
   
   # results
-  results[[j]] <- lapply(allout, function(y) {
+  lapply(allout, function(y) {
     
     ### estimates ###
     est <- do.call(rbind, lapply(y, function(x) {

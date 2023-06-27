@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=sim_summary
-#SBATCH --time=2-00:00:00
+#SBATCH --time=0-05:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem-per-cpu=50GB
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=10
 #SBATCH --partition=comp
 
 cd /fs04/ft29/simonm3
