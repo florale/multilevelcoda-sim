@@ -1,15 +1,15 @@
 #!/bin/bash
-#SBATCH --job-name=sim_summary
-#SBATCH --time=0-05:00:00
+#SBATCH --job-name=simsum_brmcoda_1
+#SBATCH --time=0-5:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem-per-cpu=50GB
-#SBATCH --cpus-per-task=10
+#SBATCH --cpus-per-task=1
 #SBATCH --partition=comp
 
 cd /fs04/ft29/simonm3
 
 module load R/4.2.2-mkl
 
-Rscript sim_summary.R
+Rscript simsum_brmcoda_1.R
 
 echo 'Completed by' $USER
