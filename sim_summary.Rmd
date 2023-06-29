@@ -1,0 +1,2970 @@
+---
+title: "Simulation Study for multilevelcoda"
+author: "Flora Le (flora.le@monash.edu)"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: sandstone
+    highlight: zenburn
+    toc: yes
+    toc_float: yes
+    collapsed: no
+    smooth_scroll: no
+    toc_depth: 4
+    fig_width: 6
+    fig_height: 4.5
+    fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(knitr)
+library(kableExtra)
+
+library(MASS)
+library(data.table)
+library(extraoperators)
+library(compositions)
+library(multilevelcoda)
+library(brms)
+library(cmdstanr)
+
+library(doFuture)
+library(foreach)
+library(doRNG)
+library(parallel)
+
+library(ggplot2)
+library(ggsci)
+library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
+library(heatmaply)
+library(ggthemes)
+library(bayesplot)
+# library(ggthemr)
+
+# library(minted)
+# opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+# options(formatR.arrow=TRUE,width=90, digits = 3)
+data.table::setDTthreads(10)
+
+input <- readRDS("input.RDS")
+meanscovs <- input$meanscovs
+prefit5 <- input$prefit5
+prefit4 <- input$prefit4
+prefit3 <- input$prefit3
+
+source("input.R") # groundtruth, conditions and functions
+substutitution_gt <- readRDS("substutitution_gt.RDS")
+
+### Heat plot
+.heat_plot <- function(data, methodvar, by, stats) {
+  ### Create a .dgm column
+  if (!is.null(by)) {
+    tmp <- lapply(by, function(x) data[[x]])
+    data[[".dgm"]] <- do.call(paste, c(tmp, sep = ", "))
+  } else {
+    data[[".dgm"]] <- "Single DGM"
+  }
+  ### Build basic plot
+  if (!is.null(methodvar)) {
+    methodvar <- rlang::sym(methodvar)
+    gg <- ggplot2::ggplot(data = data, ggplot2::aes(x = {{methodvar}}, y = .dgm, fill = est))
+  } else {
+    gg <- ggplot2::ggplot(data = data, ggplot2::aes(x = "Single Method", y = .dgm, fill = est)) +
+      ggplot2::labs(x = "")
+  }
+  gg <- gg +
+    ggplot2::geom_raster() +
+    ggplot2::labs(y = "", fill = stats) +
+    geom_text(data = data, aes(y = .dgm, label = round(est, digits = 2)), color = "black")
+
+  ### Return plot
+  return(gg)
+}
+```
+
+# brmcoda Simulation Summary
+## brmcodan() results data
+
+```{r brmcoda-dat}
+
+simsum_brmcoda_1 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_1.RDS")
+simsum_brmcoda_2 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_2.RDS")
+simsum_brmcoda_3 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_3.RDS")
+simsum_brmcoda_4 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_4.RDS")
+simsum_brmcoda_5 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_5.RDS")
+simsum_brmcoda_6 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_6.RDS")
+simsum_brmcoda_7 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_7.RDS")
+simsum_brmcoda_8 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_8.RDS")
+
+## separate by parts
+simsum_brmcoda_d3 <- list()
+simsum_brmcoda_d4 <- list()
+simsum_brmcoda_d5 <- list()
+
+for (j in 1:6) {
+  simsum_brmcoda_d3[[j]] <- get(paste0("simsum_brmcoda_", j))[["out3"]]
+  simsum_brmcoda_d4[[j]] <- get(paste0("simsum_brmcoda_", j))[["out4"]]
+  simsum_brmcoda_d5[[j]] <- get(paste0("simsum_brmcoda_", j))[["out5"]]
+}
+
+simsum_brmcoda_d3 <- as.data.table(do.call(rbind, simsum_brmcoda_d3))
+simsum_brmcoda_d4 <- as.data.table(do.call(rbind, simsum_brmcoda_d4))
+simsum_brmcoda_d5 <- as.data.table(do.call(rbind, simsum_brmcoda_d5))
+                                 
+# add condition
+simsum_brmcoda_d3[, condition := NA]
+simsum_brmcoda_d3[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
+simsum_brmcoda_d3[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_brmcoda_d3[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_brmcoda_d3[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+simsum_brmcoda_d3[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+simsum_brmcoda_d4[, condition := NA]
+simsum_brmcoda_d4[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
+simsum_brmcoda_d4[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_brmcoda_d4[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_brmcoda_d4[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+simsum_brmcoda_d4[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+simsum_brmcoda_d5[, condition := NA]
+simsum_brmcoda_d5[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
+simsum_brmcoda_d5[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_brmcoda_d5[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_brmcoda_d5[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+simsum_brmcoda_d5[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+```
+
+## 3-part composition
+
+```{r brmcoda-sum-b0-d3}
+s_b0_d3 <- simsum(
+  simsum_brmcoda_d3,
+  estvarname = "b_Intercept",
+  true = groundtruth3$b_Intercept,
+  se = "se_Intercept",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_Intercept", "ul_Intercept")
+)
+summary(s_b0_d3)
+# knitr::kable(tidy(summary(s_b0_d3)))
+
+# plot
+autoplot(summary(s_b0_d3), type = "lolly", stats = "bias")
+autoplot(summary(s_b0_d3), type = "lolly", stats = "cover")
+
+autoplot(summary(s_b0_d3), type = "forest", stats = "bias")
+autoplot(summary(s_b0_d3), type = "forest", stats = "cover")
+
+bias_b0_d3 <- tidy(s_b0_d3, stats = "bias")
+# bias_b0_d3$grp <- ifelse(bias_b0_d3$est < -0.5, "low",
+#                          ifelse(bias_b0_d3$est > 0.5, "high", "medium"))
+
+.heat_plot(
+  data = tidy(s_b0_d3, stats = "bias"),
+  methodvar = s_b0_d3$methodvar,
+  by = s_b0_d3$by,
+  stats = tidy(s_b0_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr1-d3}
+s_bilr1_d3 <- simsum(
+  simsum_brmcoda_d3,
+  estvarname = "b_bilr1",
+  true = groundtruth3$b_bilr1,
+  se = "se_bilr1",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr1", "ul_bilr1")
+)
+summary(s_bilr1_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr1_d3, stats = "bias"),
+  methodvar = s_bilr1_d3$methodvar,
+  by = s_bilr1_d3$by,
+  stats = tidy(s_bilr1_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr2-d3}
+s_bilr2_d3 <- simsum(
+  simsum_brmcoda_d3,
+  estvarname = "b_bilr2",
+  true = groundtruth3$b_bilr2,
+  se = "se_bilr2",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr2", "ul_bilr2")
+)
+summary(s_bilr2_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr2_d3, stats = "bias"),
+  methodvar = s_bilr2_d3$methodvar,
+  by = s_bilr2_d3$by,
+  stats = tidy(s_bilr2_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr1-d3}
+s_wilr1_d3 <- simsum(
+  simsum_brmcoda_d3,
+  estvarname = "b_wilr1",
+  true = groundtruth3$b_wilr1,
+  se = "se_wilr1",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr1", "ul_wilr1")
+)
+summary(s_wilr1_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr1_d3, stats = "bias"),
+  methodvar = s_wilr1_d3$methodvar,
+  by = s_wilr1_d3$by,
+  stats = tidy(s_wilr1_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr2-d3}
+s_wilr2_d3 <- simsum(
+  simsum_brmcoda_d3,
+  estvarname = "b_wilr2",
+  true = groundtruth3$b_wilr2,
+  se = "se_wilr2",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr2", "ul_wilr2")
+)
+summary(s_wilr2_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr2_d3, stats = "bias"),
+  methodvar = s_wilr2_d3$methodvar,
+  by = s_wilr2_d3$by,
+  stats = tidy(s_wilr2_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+## 4-part composition
+
+```{r brmcoda-sum-b0-d4}
+s_b0_d4 <- simsum(
+  simsum_brmcoda_d4,
+  estvarname = "b_Intercept",
+  true = groundtruth4$b_Intercept,
+  se = "se_Intercept",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_Intercept", "ul_Intercept")
+)
+summary(s_b0_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_b0_d4, stats = "bias"),
+  methodvar = s_b0_d4$methodvar,
+  by = s_b0_d4$by,
+  stats = tidy(s_b0_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr1-d4}
+s_bilr1_d4 <- simsum(
+  simsum_brmcoda_d4,
+  estvarname = "b_bilr1",
+  true = groundtruth4$b_bilr1,
+  se = "se_bilr1",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr1", "ul_bilr1")
+)
+summary(s_bilr1_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr1_d4, stats = "bias"),
+  methodvar = s_bilr1_d4$methodvar,
+  by = s_bilr1_d4$by,
+  stats = tidy(s_bilr1_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr2-d4}
+s_bilr2_d4 <- simsum(
+  simsum_brmcoda_d4,
+  estvarname = "b_bilr2",
+  true = groundtruth4$b_bilr2,
+  se = "se_bilr2",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr2", "ul_bilr2")
+)
+summary(s_bilr2_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr2_d4, stats = "bias"),
+  methodvar = s_bilr2_d4$methodvar,
+  by = s_bilr2_d4$by,
+  stats = tidy(s_bilr2_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr3-d4}
+s_bilr3_d4 <- simsum(
+  simsum_brmcoda_d4,
+  estvarname = "b_bilr3",
+  true = groundtruth4$b_bilr3,
+  se = "se_bilr3",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr3", "ul_bilr3")
+)
+summary(s_bilr3_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr3_d4, stats = "bias"),
+  methodvar = s_bilr3_d4$methodvar,
+  by = s_bilr3_d4$by,
+  stats = tidy(s_bilr3_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr1-d4}
+s_wilr1_d4 <- simsum(
+  simsum_brmcoda_d4,
+  estvarname = "b_wilr1",
+  true = groundtruth4$b_wilr1,
+  se = "se_wilr1",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr1", "ul_wilr1")
+)
+summary(s_wilr1_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr1_d4, stats = "bias"),
+  methodvar = s_wilr1_d4$methodvar,
+  by = s_wilr1_d4$by,
+  stats = tidy(s_wilr1_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr2-d4}
+s_wilr2_d4 <- simsum(
+  simsum_brmcoda_d4,
+  estvarname = "b_wilr2",
+  true = groundtruth4$b_wilr2,
+  se = "se_wilr2",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr2", "ul_wilr2")
+)
+summary(s_wilr2_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr2_d4, stats = "bias"),
+  methodvar = s_wilr2_d4$methodvar,
+  by = s_wilr2_d4$by,
+  stats = tidy(s_wilr2_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr3-d4}
+s_wilr3_d4 <- simsum(
+  simsum_brmcoda_d4,
+  estvarname = "b_wilr3",
+  true = groundtruth4$b_wilr3,
+  se = "se_wilr3",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr3", "ul_wilr3")
+)
+summary(s_wilr3_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr3_d4, stats = "bias"),
+  methodvar = s_wilr3_d4$methodvar,
+  by = s_wilr3_d4$by,
+  stats = tidy(s_wilr3_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+## 5-part composition
+
+```{r brmcoda-sum-b0-d5}
+s_b0_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_Intercept",
+  true = groundtruth5$b_Intercept,
+  se = "se_Intercept",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_Intercept", "ul_Intercept")
+)
+summary(s_b0_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_b0_d5, stats = "bias"),
+  methodvar = s_b0_d5$methodvar,
+  by = s_b0_d5$by,
+  stats = tidy(s_b0_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr1-d5}
+s_bilr1_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_bilr1",
+  true = groundtruth5$b_bilr1,
+  se = "se_bilr1",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr1", "ul_bilr1")
+)
+summary(s_bilr1_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr1_d5, stats = "bias"),
+  methodvar = s_bilr1_d5$methodvar,
+  by = s_bilr1_d5$by,
+  stats = tidy(s_bilr1_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr2-d5}
+s_bilr2_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_bilr2",
+  true = groundtruth5$b_bilr2,
+  se = "se_bilr2",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr2", "ul_bilr2")
+)
+summary(s_bilr2_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr2_d5, stats = "bias"),
+  methodvar = s_bilr2_d5$methodvar,
+  by = s_bilr2_d5$by,
+  stats = tidy(s_bilr2_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr3-d5}
+s_bilr3_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_bilr3",
+  true = groundtruth5$b_bilr3,
+  se = "se_bilr3",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr3", "ul_bilr3")
+)
+summary(s_bilr3_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr3_d5, stats = "bias"),
+  methodvar = s_bilr3_d5$methodvar,
+  by = s_bilr3_d5$by,
+  stats = tidy(s_bilr3_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-bilr4-d5}
+s_bilr4_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_bilr4",
+  true = groundtruth5$b_bilr4,
+  se = "se_bilr4",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_bilr4", "ul_bilr4")
+)
+summary(s_bilr4_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bilr4_d5, stats = "bias"),
+  methodvar = s_bilr4_d5$methodvar,
+  by = s_bilr4_d5$by,
+  stats = tidy(s_bilr4_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr1-d5}
+s_wilr1_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_wilr1",
+  true = groundtruth5$b_wilr1,
+  se = "se_wilr1",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr1", "ul_wilr1")
+)
+summary(s_wilr1_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr1_d5, stats = "bias"),
+  methodvar = s_wilr1_d5$methodvar,
+  by = s_wilr1_d5$by,
+  stats = tidy(s_wilr1_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr2-d5}
+s_wilr2_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_wilr2",
+  true = groundtruth5$b_wilr2,
+  se = "se_wilr2",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr2", "ul_wilr2")
+)
+summary(s_wilr2_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr2_d5, stats = "bias"),
+  methodvar = s_wilr2_d5$methodvar,
+  by = s_wilr2_d5$by,
+  stats = tidy(s_wilr2_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr3-d5}
+s_wilr3_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_wilr3",
+  true = groundtruth5$b_wilr3,
+  se = "se_wilr3",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr3", "ul_wilr3")
+)
+summary(s_wilr3_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr3_d5, stats = "bias"),
+  methodvar = s_wilr3_d5$methodvar,
+  by = s_wilr3_d5$by,
+  stats = tidy(s_wilr3_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r brmcoda-sum-wilr4-d5}
+s_wilr4_d5 <- simsum(
+  simsum_brmcoda_d5,
+  estvarname = "b_wilr4",
+  true = groundtruth5$b_wilr4,
+  se = "se_wilr4",
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("ll_wilr4", "ul_wilr4")
+)
+summary(s_wilr4_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wilr4_d5, stats = "bias"),
+  methodvar = s_wilr4_d5$methodvar,
+  by = s_wilr4_d5$by,
+  stats = tidy(s_wilr4_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient(low = "#6D8B74",
+                      high = "#FAF7F3",
+                      na.value = NA) +
+  hrbrthemes::theme_ipsum()
+```
+
+## brmcoda sim plot
+
+```{r}
+
+# foreach (d = seq_along(3:5),
+#          ) {
+# .heat_plot(
+#   data = df,
+#   methodvar = s_bilr1$methodvar,
+#   by = s_bilr1$by,
+#   stats = df$stat[[1]]
+# ) +
+#   scale_fill_gradient(low = "#6D8B74",
+#                       high = "#FAF7F3",
+#                       na.value = NA) +
+#   hrbrthemes::theme_ipsum()
+# }
+```
+
+# substitution() Simulation Summary
+## substitution() results data
+
+```{r sub-dat}
+
+simsum_sub_1 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_1.RDS")
+simsum_sub_2 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_2.RDS")
+simsum_sub_3 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_3.RDS")
+simsum_sub_4 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_4.RDS")
+simsum_sub_5 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_5.RDS")
+simsum_sub_6 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_6.RDS")
+simsum_sub_7 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_7.RDS")
+simsum_sub_8 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_8.RDS")
+
+## separate by parts
+simsum_sub_d3 <- list()
+simsum_sub_d4 <- list()
+simsum_sub_d5 <- list()
+
+for (j in 1:8) {
+  simsum_sub_d3[[j]] <- get(paste0("simsum_sub_", j))[[1]]
+  simsum_sub_d4[[j]] <- get(paste0("simsum_sub_", j))[[2]]
+  simsum_sub_d5[[j]] <- get(paste0("simsum_sub_", j))[[3]]
+}
+
+simsum_sub_d3 <- as.data.table(do.call(rbind, simsum_sub_d3))
+simsum_sub_d4 <- as.data.table(do.call(rbind, simsum_sub_d4))
+simsum_sub_d5 <- as.data.table(do.call(rbind, simsum_sub_d5))
+                                 
+# add condition
+simsum_sub_d3[, condition := NA]
+simsum_sub_d3[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
+simsum_sub_d3[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_sub_d3[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_sub_d3[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+simsum_sub_d3[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+simsum_sub_d4[, condition := NA]
+simsum_sub_d4[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
+simsum_sub_d4[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_sub_d4[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_sub_d4[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+simsum_sub_d4[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+simsum_sub_d5[, condition := NA]
+simsum_sub_d5[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
+simsum_sub_d5[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_sub_d5[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_sub_d5[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+simsum_sub_d5[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
+
+substutitution_gt_d3 <- substutitution_gt[[1]]
+substutitution_gt_d4 <- substutitution_gt[[2]]
+substutitution_gt_d5 <- substutitution_gt[[3]]
+
+substutitution_gt_d3[, To := NA]
+substutitution_gt_d3[, To := ifelse(Sleep == 30, "Sleep", To)]
+substutitution_gt_d3[, To := ifelse(PA == 30, "PA", To)]
+substutitution_gt_d3[, To := ifelse(SB == 30, "SB", To)]
+
+substutitution_gt_d3[, From := NA]
+substutitution_gt_d3[, From := ifelse(Sleep == -30, "Sleep", From)]
+substutitution_gt_d3[, From := ifelse(PA == -30, "PA", From)]
+substutitution_gt_d3[, From := ifelse(SB == -30, "SB", From)]
+
+substutitution_gt_d4[, To := NA]
+substutitution_gt_d4[, To := ifelse(Sleep == 30, "Sleep", To)]
+substutitution_gt_d4[, To := ifelse(MVPA == 30, "MVPA", To)]
+substutitution_gt_d4[, To := ifelse(LPA == 30, "LPA", To)]
+substutitution_gt_d4[, To := ifelse(SB == 30, "SB", To)]
+
+substutitution_gt_d4[, From := NA]
+substutitution_gt_d4[, From := ifelse(Sleep == -30, "Sleep", From)]
+substutitution_gt_d4[, From := ifelse(MVPA == -30, "MVPA", From)]
+substutitution_gt_d4[, From := ifelse(LPA == -30, "LPA", From)]
+substutitution_gt_d4[, From := ifelse(SB == -30, "SB", From)]
+
+substutitution_gt_d5[, To := NA]
+substutitution_gt_d5[, To := ifelse(TST == 30, "TST", To)]
+substutitution_gt_d5[, To := ifelse(WAKE == 30, "WAKE", To)]
+substutitution_gt_d5[, To := ifelse(MVPA == 30, "MVPA", To)]
+substutitution_gt_d5[, To := ifelse(LPA == 30, "LPA", To)]
+substutitution_gt_d5[, To := ifelse(SB == 30, "SB", To)]
+
+substutitution_gt_d5[, From := NA]
+substutitution_gt_d5[, From := ifelse(TST == -30, "TST", From)]
+substutitution_gt_d5[, From := ifelse(WAKE == -30, "WAKE", From)]
+substutitution_gt_d5[, From := ifelse(MVPA == -30, "MVPA", From)]
+substutitution_gt_d5[, From := ifelse(LPA == -30, "LPA", From)]
+substutitution_gt_d5[, From := ifelse(SB == -30, "SB", From)]
+
+```
+
+## between 3-part composition
+
+```{r bsub-sum-sleep-pa-d3}
+s_bsub_sleep_pa_d3 <- simsum(
+  simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sleep_pa_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sleep_pa_d3, stats = "bias"),
+  methodvar = s_bsub_sleep_pa_d3$methodvar,
+  by = s_bsub_sleep_pa_d3$by,
+  stats = tidy(s_bsub_sleep_pa_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sleep-sb-d3}
+s_bsub_sleep_sb_d3 <- simsum(
+  simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sleep_sb_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sleep_sb_d3, stats = "bias"),
+  methodvar = s_bsub_sleep_sb_d3$methodvar,
+  by = s_bsub_sleep_sb_d3$by,
+  stats = tidy(s_bsub_sleep_sb_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-pa-sleep-d3}
+s_bsub_pa_sleep_d3 <- simsum(
+  simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_pa_sleep_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_pa_sleep_d3, stats = "bias"),
+  methodvar = s_bsub_pa_sleep_d3$methodvar,
+  by = s_bsub_pa_sleep_d3$by,
+  stats = tidy(s_bsub_pa_sleep_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-pa-sb-d3}
+s_bsub_pa_sb_d3 <- simsum(
+  simsum_sub_d3[To == "PA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_pa_sb_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_pa_sb_d3, stats = "bias"),
+  methodvar = s_bsub_pa_sb_d3$methodvar,
+  by = s_bsub_pa_sb_d3$by,
+  stats = tidy(s_bsub_pa_sb_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-sleep-d3}
+s_bsub_sb_sleep_d3 <- simsum(
+  simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_sleep_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sb_sleep_d3, stats = "bias"),
+  methodvar = s_bsub_sb_sleep_d3$methodvar,
+  by = s_bsub_sb_sleep_d3$by,
+  stats = tidy(s_bsub_sb_sleep_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-pa-d3}
+s_bsub_sb_pa_d3 <- simsum(
+  simsum_sub_d3[To == "SB" & From == "PA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_pa_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sb_pa_d3, stats = "bias"),
+  methodvar = s_bsub_sb_pa_d3$methodvar,
+  by = s_bsub_sb_pa_d3$by,
+  stats = tidy(s_bsub_sb_pa_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+## between 4-part composition
+
+```{r bsub-sum-sleep-mvpa-d4}
+s_bsub_sleep_mvpa_d4 <- simsum(
+  simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sleep_mvpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sleep_mvpa_d4, stats = "bias"),
+  methodvar = s_bsub_sleep_mvpa_d4$methodvar,
+  by = s_bsub_sleep_mvpa_d4$by,
+  stats = tidy(s_bsub_sleep_mvpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sleep-lpa-d4}
+s_bsub_sleep_lpa_d4 <- simsum(
+  simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sleep_lpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sleep_lpa_d4, stats = "bias"),
+  methodvar = s_bsub_sleep_lpa_d4$methodvar,
+  by = s_bsub_sleep_lpa_d4$by,
+  stats = tidy(s_bsub_sleep_lpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+```{r bsub-sum-sleep-sb-d4}
+s_bsub_sleep_sb_d4 <- simsum(
+  simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sleep_sb_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sleep_sb_d4, stats = "bias"),
+  methodvar = s_bsub_sleep_sb_d4$methodvar,
+  by = s_bsub_sleep_sb_d4$by,
+  stats = tidy(s_bsub_sleep_sb_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-mvpa-sleep-d4}
+s_bsub_mvpa_sleep_d4 <- simsum(
+  simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_mvpa_sleep_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_mvpa_sleep_d4, stats = "bias"),
+  methodvar = s_bsub_mvpa_sleep_d4$methodvar,
+  by = s_bsub_mvpa_sleep_d4$by,
+  stats = tidy(s_bsub_mvpa_sleep_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-mvpa-lpa-d4}
+s_bsub_mvpa_lpa_d4 <- simsum(
+  simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_mvpa_lpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_mvpa_lpa_d4, stats = "bias"),
+  methodvar = s_bsub_mvpa_lpa_d4$methodvar,
+  by = s_bsub_mvpa_lpa_d4$by,
+  stats = tidy(s_bsub_mvpa_lpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+```{r bsub-sum-mvpa-sb-d4}
+s_bsub_mvpa_sb_d4 <- simsum(
+  simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_mvpa_sb_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_mvpa_sb_d4, stats = "bias"),
+  methodvar = s_bsub_mvpa_sb_d4$methodvar,
+  by = s_bsub_mvpa_sb_d4$by,
+  stats = tidy(s_bsub_mvpa_sb_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-lpa-sleep-d4}
+s_bsub_lpa_sleep_d4 <- simsum(
+  simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_lpa_sleep_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_lpa_sleep_d4, stats = "bias"),
+  methodvar = s_bsub_lpa_sleep_d4$methodvar,
+  by = s_bsub_lpa_sleep_d4$by,
+  stats = tidy(s_bsub_lpa_sleep_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-lpa-mvpa-d4}
+s_bsub_lpa_mvpa_d4 <- simsum(
+  simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_lpa_mvpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_lpa_mvpa_d4, stats = "bias"),
+  methodvar = s_bsub_lpa_mvpa_d4$methodvar,
+  by = s_bsub_lpa_mvpa_d4$by,
+  stats = tidy(s_bsub_lpa_mvpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-lpa-sb-d4}
+s_bsub_lpa_sb_d4 <- simsum(
+  simsum_sub_d4[To == "LPA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_lpa_sb_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_lpa_sb_d4, stats = "bias"),
+  methodvar = s_bsub_lpa_sb_d4$methodvar,
+  by = s_bsub_lpa_sb_d4$by,
+  stats = tidy(s_bsub_lpa_sb_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-sleep-d4}
+s_bsub_sb_sleep_d4 <- simsum(
+  simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_sleep_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sb_sleep_d4, stats = "bias"),
+  methodvar = s_bsub_sb_sleep_d4$methodvar,
+  by = s_bsub_sb_sleep_d4$by,
+  stats = tidy(s_bsub_sb_sleep_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-mvpa-d4}
+s_bsub_sb_mvpa_d4 <- simsum(
+  simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_mvpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sb_mvpa_d4, stats = "bias"),
+  methodvar = s_bsub_sb_mvpa_d4$methodvar,
+  by = s_bsub_sb_mvpa_d4$by,
+  stats = tidy(s_bsub_sb_mvpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-lpa-d4}
+s_bsub_sb_lpa_d4 <- simsum(
+  simsum_sub_d4[To == "SB" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_lpa_d4)
+
+# plot
+
+.heat_plot(
+  data = tidy(s_bsub_sb_lpa_d4, stats = "bias"),
+  methodvar = s_bsub_sb_lpa_d4$methodvar,
+  by = s_bsub_sb_lpa_d4$by,
+  stats = tidy(s_bsub_sb_lpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+## between 5-part composition
+
+
+```{r bsub-sum-tst-wake-d5}
+s_bsub_tst_wake_d5 <- simsum(
+  simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_tst_wake_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_tst_wake_d5, stats = "bias"),
+  methodvar = s_bsub_tst_wake_d5$methodvar,
+  by = s_bsub_tst_wake_d5$by,
+  stats = tidy(s_bsub_tst_wake_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-tst-mvpa-d5}
+s_bsub_tst_mvpa_d5 <- simsum(
+  simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_tst_mvpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_tst_mvpa_d5, stats = "bias"),
+  methodvar = s_bsub_tst_mvpa_d5$methodvar,
+  by = s_bsub_tst_mvpa_d5$by,
+  stats = tidy(s_bsub_tst_mvpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-tst-lpa-d5}
+s_bsub_tst_lpa_d5 <- simsum(
+  simsum_sub_d5[To == "TST" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_tst_lpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_tst_lpa_d5, stats = "bias"),
+  methodvar = s_bsub_tst_lpa_d5$methodvar,
+  by = s_bsub_tst_lpa_d5$by,
+  stats = tidy(s_bsub_tst_lpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-tst-sb-d5}
+s_bsub_tst_sb_d5 <- simsum(
+  simsum_sub_d5[To == "TST" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_tst_sb_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_tst_sb_d5, stats = "bias"),
+  methodvar = s_bsub_tst_sb_d5$methodvar,
+  by = s_bsub_tst_sb_d5$by,
+  stats = tidy(s_bsub_tst_sb_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-wake-tst-d5}
+s_bsub_wake_tst_d5 <- simsum(
+  simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_wake_tst_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_wake_tst_d5, stats = "bias"),
+  methodvar = s_bsub_wake_tst_d5$methodvar,
+  by = s_bsub_wake_tst_d5$by,
+  stats = tidy(s_bsub_wake_tst_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-wake-mvpa-d5}
+s_bsub_wake_mvpa_d5 <- simsum(
+  simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_wake_mvpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_wake_mvpa_d5, stats = "bias"),
+  methodvar = s_bsub_wake_mvpa_d5$methodvar,
+  by = s_bsub_wake_mvpa_d5$by,
+  stats = tidy(s_bsub_wake_mvpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-wake-lpa-d5}
+s_bsub_wake_lpa_d5 <- simsum(
+  simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_wake_lpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_wake_lpa_d5, stats = "bias"),
+  methodvar = s_bsub_wake_lpa_d5$methodvar,
+  by = s_bsub_wake_lpa_d5$by,
+  stats = tidy(s_bsub_wake_lpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-wake-sb-d5}
+s_bsub_wake_sb_d5 <- simsum(
+  simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_wake_sb_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_wake_sb_d5, stats = "bias"),
+  methodvar = s_bsub_wake_sb_d5$methodvar,
+  by = s_bsub_wake_sb_d5$by,
+  stats = tidy(s_bsub_wake_sb_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-mvpa-tst-d5}
+s_bsub_mvpa_tst_d5 <- simsum(
+  simsum_sub_d5[To == "MVPA" & From == "TST" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "TST"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_mvpa_tst_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_mvpa_tst_d5, stats = "bias"),
+  methodvar = s_bsub_mvpa_tst_d5$methodvar,
+  by = s_bsub_mvpa_tst_d5$by,
+  stats = tidy(s_bsub_mvpa_tst_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-mvpa-wake-d5}
+s_bsub_mvpa_wake_d5 <- simsum(
+  simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_mvpa_wake_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_mvpa_wake_d5, stats = "bias"),
+  methodvar = s_bsub_mvpa_wake_d5$methodvar,
+  by = s_bsub_mvpa_wake_d5$by,
+  stats = tidy(s_bsub_mvpa_wake_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-mvpa-lpa-d5}
+s_bsub_mvpa_lpa_d5 <- simsum(
+  simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_mvpa_lpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_mvpa_lpa_d5, stats = "bias"),
+  methodvar = s_bsub_mvpa_lpa_d5$methodvar,
+  by = s_bsub_mvpa_lpa_d5$by,
+  stats = tidy(s_bsub_mvpa_lpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-mvpa-sb-d5}
+s_bsub_mvpa_sb_d5 <- simsum(
+  simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_mvpa_sb_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_mvpa_sb_d5, stats = "bias"),
+  methodvar = s_bsub_mvpa_sb_d5$methodvar,
+  by = s_bsub_mvpa_sb_d5$by,
+  stats = tidy(s_bsub_mvpa_sb_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-lpa-tst-d5}
+s_bsub_lpa_tst_d5 <- simsum(
+  simsum_sub_d5[To == "LPA" & From == "TST" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_lpa_tst_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_lpa_tst_d5, stats = "bias"),
+  methodvar = s_bsub_lpa_tst_d5$methodvar,
+  by = s_bsub_lpa_tst_d5$by,
+  stats = tidy(s_bsub_lpa_tst_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-lpa-wake-d5}
+s_bsub_lpa_wake_d5 <- simsum(
+  simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_lpa_wake_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_lpa_wake_d5, stats = "bias"),
+  methodvar = s_bsub_lpa_wake_d5$methodvar,
+  by = s_bsub_lpa_wake_d5$by,
+  stats = tidy(s_bsub_lpa_wake_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-lpa-mvpa-d5}
+s_bsub_lpa_mvpa_d5 <- simsum(
+  simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_lpa_mvpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_lpa_mvpa_d5, stats = "bias"),
+  methodvar = s_bsub_lpa_mvpa_d5$methodvar,
+  by = s_bsub_lpa_mvpa_d5$by,
+  stats = tidy(s_bsub_lpa_mvpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-lpa-sb-d5}
+s_bsub_lpa_sb_d5 <- simsum(
+  simsum_sub_d5[To == "LPA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_lpa_sb_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_lpa_sb_d5, stats = "bias"),
+  methodvar = s_bsub_lpa_sb_d5$methodvar,
+  by = s_bsub_lpa_sb_d5$by,
+  stats = tidy(s_bsub_lpa_sb_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-tst-d5}
+s_bsub_sb_tst_d5 <- simsum(
+  simsum_sub_d5[To == "SB" & From == "TST" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_tst_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sb_tst_d5, stats = "bias"),
+  methodvar = s_bsub_sb_tst_d5$methodvar,
+  by = s_bsub_sb_tst_d5$by,
+  stats = tidy(s_bsub_sb_tst_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-wake-d5}
+s_bsub_sb_wake_d5 <- simsum(
+  simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_wake_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sb_wake_d5, stats = "bias"),
+  methodvar = s_bsub_sb_wake_d5$methodvar,
+  by = s_bsub_sb_wake_d5$by,
+  stats = tidy(s_bsub_sb_wake_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-mvpa-d5}
+s_bsub_sb_mvpa_d5 <- simsum(
+  simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_mvpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sb_mvpa_d5, stats = "bias"),
+  methodvar = s_bsub_sb_mvpa_d5$methodvar,
+  by = s_bsub_sb_mvpa_d5$by,
+  stats = tidy(s_bsub_sb_mvpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r bsub-sum-sb-lpa-d5}
+s_bsub_sb_lpa_d5 <- simsum(
+  simsum_sub_d5[To == "SB" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_b,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_bsub_sb_lpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_bsub_sb_lpa_d5, stats = "bias"),
+  methodvar = s_bsub_sb_lpa_d5$methodvar,
+  by = s_bsub_sb_lpa_d5$by,
+  stats = tidy(s_bsub_sb_lpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+## within 3-part composition
+
+```{r wsub-sum-sleep-pa-d3}
+s_wsub_sleep_pa_d3 <- simsum(
+  simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sleep_pa_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sleep_pa_d3, stats = "bias"),
+  methodvar = s_wsub_sleep_pa_d3$methodvar,
+  by = s_wsub_sleep_pa_d3$by,
+  stats = tidy(s_wsub_sleep_pa_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sleep-sb-d3}
+s_wsub_sleep_sb_d3 <- simsum(
+  simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sleep_sb_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sleep_sb_d3, stats = "bias"),
+  methodvar = s_wsub_sleep_sb_d3$methodvar,
+  by = s_wsub_sleep_sb_d3$by,
+  stats = tidy(s_wsub_sleep_sb_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-pa-sleep-d3}
+s_wsub_pa_sleep_d3 <- simsum(
+  simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_pa_sleep_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_pa_sleep_d3, stats = "bias"),
+  methodvar = s_wsub_pa_sleep_d3$methodvar,
+  by = s_wsub_pa_sleep_d3$by,
+  stats = tidy(s_wsub_pa_sleep_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-pa-sb-d3}
+s_wsub_pa_sb_d3 <- simsum(
+  simsum_sub_d3[To == "PA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_pa_sb_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_pa_sb_d3, stats = "bias"),
+  methodvar = s_wsub_pa_sb_d3$methodvar,
+  by = s_wsub_pa_sb_d3$by,
+  stats = tidy(s_wsub_pa_sb_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-sleep-d3}
+s_wsub_sb_sleep_d3 <- simsum(
+  simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_sleep_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sb_sleep_d3, stats = "bias"),
+  methodvar = s_wsub_sb_sleep_d3$methodvar,
+  by = s_wsub_sb_sleep_d3$by,
+  stats = tidy(s_wsub_sb_sleep_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-pa-d3}
+s_wsub_sb_pa_d3 <- simsum(
+  simsum_sub_d3[To == "SB" & From == "PA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_pa_d3)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sb_pa_d3, stats = "bias"),
+  methodvar = s_wsub_sb_pa_d3$methodvar,
+  by = s_wsub_sb_pa_d3$by,
+  stats = tidy(s_wsub_sb_pa_d3, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+## within 4-part composition
+
+```{r wsub-sum-sleep-mvpa-d4}
+s_wsub_sleep_mvpa_d4 <- simsum(
+  simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sleep_mvpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sleep_mvpa_d4, stats = "bias"),
+  methodvar = s_wsub_sleep_mvpa_d4$methodvar,
+  by = s_wsub_sleep_mvpa_d4$by,
+  stats = tidy(s_wsub_sleep_mvpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sleep-lpa-d4}
+s_wsub_sleep_lpa_d4 <- simsum(
+  simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sleep_lpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sleep_lpa_d4, stats = "bias"),
+  methodvar = s_wsub_sleep_lpa_d4$methodvar,
+  by = s_wsub_sleep_lpa_d4$by,
+  stats = tidy(s_wsub_sleep_lpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+```{r wsub-sum-sleep-sb-d4}
+s_wsub_sleep_sb_d4 <- simsum(
+  simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sleep_sb_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sleep_sb_d4, stats = "bias"),
+  methodvar = s_wsub_sleep_sb_d4$methodvar,
+  by = s_wsub_sleep_sb_d4$by,
+  stats = tidy(s_wsub_sleep_sb_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-mvpa-sleep-d4}
+s_wsub_mvpa_sleep_d4 <- simsum(
+  simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_mvpa_sleep_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_mvpa_sleep_d4, stats = "bias"),
+  methodvar = s_wsub_mvpa_sleep_d4$methodvar,
+  by = s_wsub_mvpa_sleep_d4$by,
+  stats = tidy(s_wsub_mvpa_sleep_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-mvpa-lpa-d4}
+s_wsub_mvpa_lpa_d4 <- simsum(
+  simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_mvpa_lpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_mvpa_lpa_d4, stats = "bias"),
+  methodvar = s_wsub_mvpa_lpa_d4$methodvar,
+  by = s_wsub_mvpa_lpa_d4$by,
+  stats = tidy(s_wsub_mvpa_lpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+```{r wsub-sum-mvpa-sb-d4}
+s_wsub_mvpa_sb_d4 <- simsum(
+  simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_mvpa_sb_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_mvpa_sb_d4, stats = "bias"),
+  methodvar = s_wsub_mvpa_sb_d4$methodvar,
+  by = s_wsub_mvpa_sb_d4$by,
+  stats = tidy(s_wsub_mvpa_sb_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-lpa-sleep-d4}
+s_wsub_lpa_sleep_d4 <- simsum(
+  simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_lpa_sleep_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_lpa_sleep_d4, stats = "bias"),
+  methodvar = s_wsub_lpa_sleep_d4$methodvar,
+  by = s_wsub_lpa_sleep_d4$by,
+  stats = tidy(s_wsub_lpa_sleep_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-lpa-mvpa-d4}
+s_wsub_lpa_mvpa_d4 <- simsum(
+  simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_lpa_mvpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_lpa_mvpa_d4, stats = "bias"),
+  methodvar = s_wsub_lpa_mvpa_d4$methodvar,
+  by = s_wsub_lpa_mvpa_d4$by,
+  stats = tidy(s_wsub_lpa_mvpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-lpa-sb-d4}
+s_wsub_lpa_sb_d4 <- simsum(
+  simsum_sub_d4[To == "LPA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_lpa_sb_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_lpa_sb_d4, stats = "bias"),
+  methodvar = s_wsub_lpa_sb_d4$methodvar,
+  by = s_wsub_lpa_sb_d4$by,
+  stats = tidy(s_wsub_lpa_sb_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-sleep-d4}
+s_wsub_sb_sleep_d4 <- simsum(
+  simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_sleep_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sb_sleep_d4, stats = "bias"),
+  methodvar = s_wsub_sb_sleep_d4$methodvar,
+  by = s_wsub_sb_sleep_d4$by,
+  stats = tidy(s_wsub_sb_sleep_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-mvpa-d4}
+s_wsub_sb_mvpa_d4 <- simsum(
+  simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_mvpa_d4)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sb_mvpa_d4, stats = "bias"),
+  methodvar = s_wsub_sb_mvpa_d4$methodvar,
+  by = s_wsub_sb_mvpa_d4$by,
+  stats = tidy(s_wsub_sb_mvpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-lpa-d4}
+s_wsub_sb_lpa_d4 <- simsum(
+  simsum_sub_d4[To == "SB" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_lpa_d4)
+
+# plot
+
+.heat_plot(
+  data = tidy(s_wsub_sb_lpa_d4, stats = "bias"),
+  methodvar = s_wsub_sb_lpa_d4$methodvar,
+  by = s_wsub_sb_lpa_d4$by,
+  stats = tidy(s_wsub_sb_lpa_d4, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+## within 5-part composition
+
+
+```{r wsub-sum-tst-wake-d5}
+s_wsub_tst_wake_d5 <- simsum(
+  simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_tst_wake_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_tst_wake_d5, stats = "bias"),
+  methodvar = s_wsub_tst_wake_d5$methodvar,
+  by = s_wsub_tst_wake_d5$by,
+  stats = tidy(s_wsub_tst_wake_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-tst-mvpa-d5}
+s_wsub_tst_mvpa_d5 <- simsum(
+  simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_tst_mvpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_tst_mvpa_d5, stats = "bias"),
+  methodvar = s_wsub_tst_mvpa_d5$methodvar,
+  by = s_wsub_tst_mvpa_d5$by,
+  stats = tidy(s_wsub_tst_mvpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-tst-lpa-d5}
+s_wsub_tst_lpa_d5 <- simsum(
+  simsum_sub_d5[To == "TST" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_tst_lpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_tst_lpa_d5, stats = "bias"),
+  methodvar = s_wsub_tst_lpa_d5$methodvar,
+  by = s_wsub_tst_lpa_d5$by,
+  stats = tidy(s_wsub_tst_lpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-tst-sb-d5}
+s_wsub_tst_sb_d5 <- simsum(
+  simsum_sub_d5[To == "TST" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_tst_sb_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_tst_sb_d5, stats = "bias"),
+  methodvar = s_wsub_tst_sb_d5$methodvar,
+  by = s_wsub_tst_sb_d5$by,
+  stats = tidy(s_wsub_tst_sb_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-wake-tst-d5}
+s_wsub_wake_tst_d5 <- simsum(
+  simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_wake_tst_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_wake_tst_d5, stats = "bias"),
+  methodvar = s_wsub_wake_tst_d5$methodvar,
+  by = s_wsub_wake_tst_d5$by,
+  stats = tidy(s_wsub_wake_tst_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-wake-mvpa-d5}
+s_wsub_wake_mvpa_d5 <- simsum(
+  simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_wake_mvpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_wake_mvpa_d5, stats = "bias"),
+  methodvar = s_wsub_wake_mvpa_d5$methodvar,
+  by = s_wsub_wake_mvpa_d5$by,
+  stats = tidy(s_wsub_wake_mvpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-wake-lpa-d5}
+s_wsub_wake_lpa_d5 <- simsum(
+  simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_wake_lpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_wake_lpa_d5, stats = "bias"),
+  methodvar = s_wsub_wake_lpa_d5$methodvar,
+  by = s_wsub_wake_lpa_d5$by,
+  stats = tidy(s_wsub_wake_lpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-wake-sb-d5}
+s_wsub_wake_sb_d5 <- simsum(
+  simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_wake_sb_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_wake_sb_d5, stats = "bias"),
+  methodvar = s_wsub_wake_sb_d5$methodvar,
+  by = s_wsub_wake_sb_d5$by,
+  stats = tidy(s_wsub_wake_sb_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-mvpa-tst-d5}
+s_wsub_mvpa_tst_d5 <- simsum(
+  simsum_sub_d5[To == "MVPA" & From == "TST" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "TST"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_mvpa_tst_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_mvpa_tst_d5, stats = "bias"),
+  methodvar = s_wsub_mvpa_tst_d5$methodvar,
+  by = s_wsub_mvpa_tst_d5$by,
+  stats = tidy(s_wsub_mvpa_tst_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-mvpa-wake-d5}
+s_wsub_mvpa_wake_d5 <- simsum(
+  simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_mvpa_wake_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_mvpa_wake_d5, stats = "bias"),
+  methodvar = s_wsub_mvpa_wake_d5$methodvar,
+  by = s_wsub_mvpa_wake_d5$by,
+  stats = tidy(s_wsub_mvpa_wake_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-mvpa-lpa-d5}
+s_wsub_mvpa_lpa_d5 <- simsum(
+  simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_mvpa_lpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_mvpa_lpa_d5, stats = "bias"),
+  methodvar = s_wsub_mvpa_lpa_d5$methodvar,
+  by = s_wsub_mvpa_lpa_d5$by,
+  stats = tidy(s_wsub_mvpa_lpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-mvpa-sb-d5}
+s_wsub_mvpa_sb_d5 <- simsum(
+  simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_mvpa_sb_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_mvpa_sb_d5, stats = "bias"),
+  methodvar = s_wsub_mvpa_sb_d5$methodvar,
+  by = s_wsub_mvpa_sb_d5$by,
+  stats = tidy(s_wsub_mvpa_sb_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-lpa-tst-d5}
+s_wsub_lpa_tst_d5 <- simsum(
+  simsum_sub_d5[To == "LPA" & From == "TST" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_lpa_tst_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_lpa_tst_d5, stats = "bias"),
+  methodvar = s_wsub_lpa_tst_d5$methodvar,
+  by = s_wsub_lpa_tst_d5$by,
+  stats = tidy(s_wsub_lpa_tst_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-lpa-wake-d5}
+s_wsub_lpa_wake_d5 <- simsum(
+  simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_lpa_wake_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_lpa_wake_d5, stats = "bias"),
+  methodvar = s_wsub_lpa_wake_d5$methodvar,
+  by = s_wsub_lpa_wake_d5$by,
+  stats = tidy(s_wsub_lpa_wake_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-lpa-mvpa-d5}
+s_wsub_lpa_mvpa_d5 <- simsum(
+  simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_lpa_mvpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_lpa_mvpa_d5, stats = "bias"),
+  methodvar = s_wsub_lpa_mvpa_d5$methodvar,
+  by = s_wsub_lpa_mvpa_d5$by,
+  stats = tidy(s_wsub_lpa_mvpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-lpa-sb-d5}
+s_wsub_lpa_sb_d5 <- simsum(
+  simsum_sub_d5[To == "LPA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_lpa_sb_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_lpa_sb_d5, stats = "bias"),
+  methodvar = s_wsub_lpa_sb_d5$methodvar,
+  by = s_wsub_lpa_sb_d5$by,
+  stats = tidy(s_wsub_lpa_sb_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-tst-d5}
+s_wsub_sb_tst_d5 <- simsum(
+  simsum_sub_d5[To == "SB" & From == "TST" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_tst_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sb_tst_d5, stats = "bias"),
+  methodvar = s_wsub_sb_tst_d5$methodvar,
+  by = s_wsub_sb_tst_d5$by,
+  stats = tidy(s_wsub_sb_tst_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-wake-d5}
+s_wsub_sb_wake_d5 <- simsum(
+  simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_wake_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sb_wake_d5, stats = "bias"),
+  methodvar = s_wsub_sb_wake_d5$methodvar,
+  by = s_wsub_sb_wake_d5$by,
+  stats = tidy(s_wsub_sb_wake_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-mvpa-d5}
+s_wsub_sb_mvpa_d5 <- simsum(
+  simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_mvpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sb_mvpa_d5, stats = "bias"),
+  methodvar = s_wsub_sb_mvpa_d5$methodvar,
+  by = s_wsub_sb_mvpa_d5$by,
+  stats = tidy(s_wsub_sb_mvpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
+
+
+```{r wsub-sum-sb-lpa-d5}
+s_wsub_sb_lpa_d5 <- simsum(
+  simsum_sub_d5[To == "SB" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_w,
+  methodvar = "condition",
+  ref = "base",
+  by = c("N", "K"),
+  ci.limits = c("CI_low", "CI_high")
+)
+summary(s_wsub_sb_lpa_d5)
+
+# plot
+.heat_plot(
+  data = tidy(s_wsub_sb_lpa_d5, stats = "bias"),
+  methodvar = s_wsub_sb_lpa_d5$methodvar,
+  by = s_wsub_sb_lpa_d5$by,
+  stats = tidy(s_wsub_sb_lpa_d5, stats = "bias")$stat[[1]]
+) +
+  scale_fill_gradient2(
+    low = "#6D8B74",
+    high = "#FAF7F3",
+    na.value = NA
+  ) +
+  hrbrthemes::theme_ipsum()
+```
