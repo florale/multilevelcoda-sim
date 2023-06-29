@@ -2,3 +2,7 @@
 
 200623 - m3 2nd batch 
 - updated code following changes in package
+
+280623 - extracted brmcoda sim model results
+
+290623 - extracted brmcoda() and substitution() sim model results

@@ -46,7 +46,7 @@ for (i in 1:length(out)) {
 }
 allout <- list(out3, out4, out5)
 names(allout) <- c("out3", "out4", "out5")
-allout[[j]] <- lapply(allout, function(x) {
+allout <- lapply(allout, function(x) {
   x[!sapply(x, is.null)]})
 
 rm(out, out3, out4, out5)
