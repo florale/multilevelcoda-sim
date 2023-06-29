@@ -90,7 +90,7 @@ for (j in 1:8) {
 }
 ```
 
-## Extract results 
+## Extract brmcoda results 
 
 ```{r}
 results <- lapply(allout, function(y) {
@@ -168,6 +168,48 @@ results <- lapply(allout, function(y) {
   cbind(cond_results, fe_results, re_results, res_results)
 })
 ```
+
+
+## Extract substitution results 
+
+```{r}
+sub_results <- lapply(allout, function(y) {
+  
+  ### substitution ###
+  sub_sum <- do.call(rbind, lapply(y, function(x) {
+    sum <- summary(x$Result$Substitution)
+    
+    ### conditions
+    cond_results <- cbind(
+      sapply(y, function(x) {x$N}),
+      sapply(y, function(x) {x$K}),
+      sapply(y, function(x) {x$rint_sd}),
+      sapply(y, function(x) {x$res_sd}),
+      sapply(y, function(x) {x$run}),
+      sapply(y, function(x) {x$n_parts})
+    )
+    colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+    
+    cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
+          
+    ### putting it all together
+    cbind(cond_results, sum)
+  }))
+})
+
+sub_sum <- do.call(rbind, lapply(y, function(x) {
+  sum <- summary(x$Result$Substitution, delta = 30)
+  
+  ### conditions
+  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts)
+  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+  
+  cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
+  
+  cbind(cond_results, sum)
+}))
+```
+
 
 # Checking performances manually
 ## Average bias
@@ -453,7 +495,6 @@ s_u0 <- multisimsum(
   by = c("N", "K")
 )
 summary(s_u0)
-
 ```
 
 ### sigma
@@ -470,7 +511,6 @@ s_sigma <- simsum(
   by = c("N", "K")
 )
 summary(s_sigma)
-
 ```
 
 
