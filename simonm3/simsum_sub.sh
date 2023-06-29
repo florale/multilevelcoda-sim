@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=simsum_sub
-#SBATCH --time=0-1:00:00
+#SBATCH --job-name=simsum_sub_test
+#SBATCH --time=0-2:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem-per-cpu=50GB
+#SBATCH --mem-per-cpu=100GB
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=comp
 

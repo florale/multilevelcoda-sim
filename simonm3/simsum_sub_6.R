@@ -51,28 +51,45 @@ allout <- lapply(allout, function(x) {
 
 rm(out, out3, out4, out5)
 
-simsum_sub_6 <- lapply(allout, function(y) {
+sub_sum3 <- do.call(rbind, lapply(allout[["out3"]], function(x) {
+  # summary
+  sum <- summary(x$Result$Substitution, delta = 30)
   
-  ### substitution ###
-  sub_sum <- do.call(rbind, lapply(y, function(x) {
-    sum <- summary(x$Result$Substitution)
-    
-    ### conditions
-    cond_results <- cbind(
-      sapply(y, function(x) {x$N}),
-      sapply(y, function(x) {x$K}),
-      sapply(y, function(x) {x$rint_sd}),
-      sapply(y, function(x) {x$res_sd}),
-      sapply(y, function(x) {x$run}),
-      sapply(y, function(x) {x$n_parts})
-    )
-    colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
-    
-    cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
-    
-    ### putting it all together
-    cbind(cond_results, sum)
-  }))
-})
+  ### conditions
+  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts)
+  cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
+  
+  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+  
+  cbind(cond_results, sum)
+}))
 
+sub_sum4 <- do.call(rbind, lapply(allout[["out4"]], function(x) {
+  # summary
+  sum <- summary(x$Result$Substitution, delta = 30)
+  
+  ### conditions
+  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts)
+  cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
+  
+  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+  
+  cbind(cond_results, sum)
+}))
+
+sub_sum5 <- do.call(rbind, lapply(allout[["out5"]], function(x) {
+  # summary
+  sum <- summary(x$Result$Substitution, delta = 30)
+  
+  ### conditions
+  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts)
+  cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
+  
+  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+  
+  cbind(cond_results, sum)
+}))
+
+simsum_sub_6 <- list(sub_sum3, sub_sum4, sub_sum5)
+names(simsum_sub_6) <- c("out3", "out4", "out5")
 saveRDS(simsum_sub_6, "simsum_sub_6.RDS")
