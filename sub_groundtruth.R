@@ -24,9 +24,9 @@ brmcoda_gt <- readRDS("brmcoda_gt.RDS")
 source("input.R") # groundtruth, conditions and functions
 n_parts <- c(3:5)
 
-parts3 <- c("TIBg", "PAg", "SBg")
-parts4 <- c("TIBg", "MVPAg", "LPAg", "SBg")
-parts5 <- c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg")
+parts3 <- c("Sleep", "PA", "SB")
+parts4 <- c("Sleep", "MVPA", "LPA", "SB")
+parts5 <- c("TST", "WAKE", "MVPA", "LPA", "SB")
 
 # ground truth -----------------------------
 substutitution_gt <- list()
@@ -156,3 +156,4 @@ for (i in seq_along(n_parts)) {
 }
 
 str(substutitution_gt)
+saveRDS(substutitution_gt, "substutitution_gt.RDS")
