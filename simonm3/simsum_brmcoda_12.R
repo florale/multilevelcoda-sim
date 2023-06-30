@@ -29,11 +29,11 @@ source("input.R") # groundtruth, conditions and functions
 # out <- readRDS("/fs04/ft29/simonm3/out5.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out6.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out7.RDS")
-out <- readRDS("/fs04/ft29/simonm3/out8.RDS")
+# out <- readRDS("/fs04/ft29/simonm3/out8.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out9.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out10.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out11.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out12.RDS")
+out <- readRDS("/fs04/ft29/simonm3/out12.RDS")
 
 ## extract -------------------
 # registerDoFuture()
@@ -55,7 +55,7 @@ allout <- lapply(allout, function(x) {
 
 rm(out, out3, out4, out5)
 
-simsum_brmcoda_8 <- lapply(allout, function(y) {
+simsum_brmcoda_12 <- lapply(allout, function(y) {
   
   ### estimates ###
   est <- do.call(rbind, lapply(y, function(x) {
@@ -130,4 +130,4 @@ simsum_brmcoda_8 <- lapply(allout, function(y) {
   cbind(cond_results, fe_results, re_results, res_results)
 })
 
-saveRDS(simsum_brmcoda_8, "simsum_brmcoda_8.RDS")
+saveRDS(simsum_brmcoda_12, "simsum_brmcoda_12.RDS")

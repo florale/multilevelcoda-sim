@@ -30,6 +30,10 @@ out <- readRDS("/fs04/ft29/simonm3/out2.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out6.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out7.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out8.RDS")
+# out <- readRDS("/fs04/ft29/simonm3/out9.RDS")
+# out <- readRDS("/fs04/ft29/simonm3/out10.RDS")
+# out <- readRDS("/fs04/ft29/simonm3/out11.RDS")
+# out <- readRDS("/fs04/ft29/simonm3/out12.RDS")
 
 ## extract -------------------
 # registerDoFuture()
