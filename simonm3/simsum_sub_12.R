@@ -26,14 +26,14 @@ source("input.R") # groundtruth, conditions and functions
 # out <- readRDS("/fs04/ft29/simonm3/out2.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out3.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out4.RDS")
-out <- readRDS("/fs04/ft29/simonm3/out5.RDS")
+# out <- readRDS("/fs04/ft29/simonm3/out5.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out6.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out7.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out8.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out9.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out10.RDS")
 # out <- readRDS("/fs04/ft29/simonm3/out11.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out12.RDS")
+out <- readRDS("/fs04/ft29/simonm3/out12.RDS")
 
 ## extract -------------------
 # registerDoFuture()
@@ -94,6 +94,6 @@ sub_sum5 <- do.call(rbind, lapply(allout[["out5"]], function(x) {
   cbind(cond_results, sum)
 }))
 
-simsum_sub_5 <- list(sub_sum3, sub_sum4, sub_sum5)
-names(simsum_sub_5) <- c("out3", "out4", "out5")
-saveRDS(simsum_sub_5, "simsum_sub_5.RDS")
+simsum_sub_12 <- list(sub_sum3, sub_sum4, sub_sum5)
+names(simsum_sub_12) <- c("out3", "out4", "out5")
+saveRDS(simsum_sub_12, "simsum_sub_12.RDS")
