@@ -97,13 +97,17 @@ simsum_brmcoda_5 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Monash
 simsum_brmcoda_6 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_6.RDS")
 simsum_brmcoda_7 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_7.RDS")
 simsum_brmcoda_8 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_8.RDS")
+simsum_brmcoda_9 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_9.RDS")
+simsum_brmcoda_10 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_10.RDS")
+simsum_brmcoda_11 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_11.RDS")
+simsum_brmcoda_12 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_12.RDS")
 
 ## separate by parts
 simsum_brmcoda_d3 <- list()
 simsum_brmcoda_d4 <- list()
 simsum_brmcoda_d5 <- list()
 
-for (j in 1:6) {
+for (j in 1:12) {
   simsum_brmcoda_d3[[j]] <- get(paste0("simsum_brmcoda_", j))[["out3"]]
   simsum_brmcoda_d4[[j]] <- get(paste0("simsum_brmcoda_", j))[["out4"]]
   simsum_brmcoda_d5[[j]] <- get(paste0("simsum_brmcoda_", j))[["out5"]]
@@ -753,16 +757,20 @@ simsum_sub_5 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniv
 simsum_sub_6 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_6.RDS")
 simsum_sub_7 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_7.RDS")
 simsum_sub_8 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_8.RDS")
+simsum_sub_9 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_9.RDS")
+simsum_sub_10 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_10.RDS")
+simsum_sub_11 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_11.RDS")
+simsum_sub_12 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_12.RDS")
 
 ## separate by parts
 simsum_sub_d3 <- list()
 simsum_sub_d4 <- list()
 simsum_sub_d5 <- list()
 
-for (j in 1:8) {
-  simsum_sub_d3[[j]] <- get(paste0("simsum_sub_", j))[[1]]
-  simsum_sub_d4[[j]] <- get(paste0("simsum_sub_", j))[[2]]
-  simsum_sub_d5[[j]] <- get(paste0("simsum_sub_", j))[[3]]
+for (j in 1:12) {
+  simsum_sub_d3[[j]] <- get(paste0("simsum_sub_", j))[["out3"]]
+  simsum_sub_d4[[j]] <- get(paste0("simsum_sub_", j))[["out4"]]
+  simsum_sub_d5[[j]] <- get(paste0("simsum_sub_", j))[["out5"]]
 }
 
 simsum_sub_d3 <- as.data.table(do.call(rbind, simsum_sub_d3))
@@ -831,6 +839,25 @@ substutitution_gt_d5[, From := ifelse(MVPA == -30, "MVPA", From)]
 substutitution_gt_d5[, From := ifelse(LPA == -30, "LPA", From)]
 substutitution_gt_d5[, From := ifelse(SB == -30, "SB", From)]
 
+# coverage
+simsum_sub_d3[, coverage_diff_delta_y_b := NA]
+simsum_sub_d3[, coverage_diff_delta_y_w := NA]
+
+simsum_sub_d4[, coverage_diff_delta_y_b := NA]
+simsum_sub_d4[, coverage_diff_delta_y_w := NA]
+
+simsum_sub_d5[, coverage_diff_delta_y_b := NA]
+simsum_sub_d5[, coverage_diff_delta_y_w := NA]
+
+
+
+# simsum_sub_d3[, coverage_diff_delta_y_b := 
+#                 ifelse(To == "Sleep" & From == "PA" & Level == "between", 
+#                        (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_b >= CI_low) & 
+#                        (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_b <= CI_high),
+#                        coverage_diff_delta_y_b
+#                        )]
+
 ```
 
 ## between 3-part composition
@@ -860,6 +887,17 @@ summary(s_bsub_sleep_pa_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -888,6 +926,17 @@ summary(s_bsub_sleep_sb_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -916,6 +965,17 @@ summary(s_bsub_pa_sleep_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -944,6 +1004,17 @@ summary(s_bsub_pa_sb_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "PA" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d3[To == "PA" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -972,6 +1043,17 @@ summary(s_bsub_sb_sleep_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1000,7 +1082,19 @@ summary(s_bsub_sb_pa_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "SB" & From == "PA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d3[To == "SB" & From == "PA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
+
 
 ## between 4-part composition
 
@@ -1029,6 +1123,17 @@ summary(s_bsub_sleep_mvpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1057,6 +1162,17 @@ summary(s_bsub_sleep_lpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 ```{r bsub-sum-sleep-sb-d4}
@@ -1084,6 +1200,17 @@ summary(s_bsub_sleep_sb_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1112,6 +1239,17 @@ summary(s_bsub_mvpa_sleep_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1140,6 +1278,17 @@ summary(s_bsub_mvpa_lpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 ```{r bsub-sum-mvpa-sb-d4}
@@ -1167,6 +1316,17 @@ summary(s_bsub_mvpa_sb_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1195,6 +1355,17 @@ summary(s_bsub_lpa_sleep_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1223,6 +1394,17 @@ summary(s_bsub_lpa_mvpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1251,6 +1433,17 @@ summary(s_bsub_lpa_sb_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "LPA" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "LPA" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1279,6 +1472,17 @@ summary(s_bsub_sb_sleep_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1307,6 +1511,17 @@ summary(s_bsub_sb_mvpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1336,6 +1551,17 @@ summary(s_bsub_sb_lpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "SB" & From == "LPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d4[To == "SB" & From == "LPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1367,6 +1593,17 @@ summary(s_bsub_tst_wake_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1395,6 +1632,16 @@ summary(s_bsub_tst_mvpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
 ```
 
 
@@ -1423,6 +1670,17 @@ summary(s_bsub_tst_lpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "TST" & From == "LPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "TST" & From == "LPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1451,6 +1709,17 @@ summary(s_bsub_tst_sb_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "TST" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "TST" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1479,6 +1748,17 @@ summary(s_bsub_wake_tst_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1507,6 +1787,17 @@ summary(s_bsub_wake_mvpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1535,6 +1826,17 @@ summary(s_bsub_wake_lpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1563,6 +1865,17 @@ summary(s_bsub_wake_sb_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1591,6 +1904,17 @@ summary(s_bsub_mvpa_tst_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "MVPA" & From == "TST" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "MVPA" & From == "TST"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "MVPA" & From == "TST"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "MVPA" & From == "TST" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1619,6 +1943,17 @@ summary(s_bsub_mvpa_wake_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1647,6 +1982,17 @@ summary(s_bsub_mvpa_lpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1675,6 +2021,17 @@ summary(s_bsub_mvpa_sb_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1703,6 +2060,17 @@ summary(s_bsub_lpa_tst_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "LPA" & From == "TST" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "LPA" & From == "TST" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1731,6 +2099,17 @@ summary(s_bsub_lpa_wake_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1759,6 +2138,17 @@ summary(s_bsub_lpa_mvpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1787,6 +2177,17 @@ summary(s_bsub_lpa_sb_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "LPA" & From == "SB" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "LPA" & From == "SB" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1815,6 +2216,17 @@ summary(s_bsub_sb_tst_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "SB" & From == "TST" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "SB" & From == "TST" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1843,6 +2255,17 @@ summary(s_bsub_sb_wake_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1871,6 +2294,17 @@ summary(s_bsub_sb_mvpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 
@@ -1899,6 +2333,17 @@ summary(s_bsub_sb_lpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "SB" & From == "LPA" & Level == "between", 
+              coverage_diff_delta_y_b := 
+                (substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
+                (substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_b <= CI_high)]
+
+simsum_sub_d5[To == "SB" & From == "LPA" & Level == "between",
+              mean(coverage_diff_delta_y_b),
+              by = condition]
+
 ```
 
 ## within 3-part composition
@@ -1928,6 +2373,17 @@ summary(s_wsub_sleep_pa_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -1956,6 +2412,17 @@ summary(s_wsub_sleep_sb_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -1984,6 +2451,17 @@ summary(s_wsub_pa_sleep_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2012,6 +2490,17 @@ summary(s_wsub_pa_sb_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "PA" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d3[To == "PA" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2040,6 +2529,17 @@ summary(s_wsub_sb_sleep_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2068,6 +2568,17 @@ summary(s_wsub_sb_pa_d3)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d3[To == "SB" & From == "PA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d3[To == "SB" & From == "PA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 ## within 4-part composition
@@ -2097,6 +2608,17 @@ summary(s_wsub_sleep_mvpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2125,6 +2647,17 @@ summary(s_wsub_sleep_lpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 ```{r wsub-sum-sleep-sb-d4}
@@ -2152,6 +2685,17 @@ summary(s_wsub_sleep_sb_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2180,6 +2724,17 @@ summary(s_wsub_mvpa_sleep_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2208,6 +2763,17 @@ summary(s_wsub_mvpa_lpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 ```{r wsub-sum-mvpa-sb-d4}
@@ -2235,6 +2801,17 @@ summary(s_wsub_mvpa_sb_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2263,6 +2840,17 @@ summary(s_wsub_lpa_sleep_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2291,6 +2879,17 @@ summary(s_wsub_lpa_mvpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2319,6 +2918,17 @@ summary(s_wsub_lpa_sb_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "LPA" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "LPA" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2347,6 +2957,17 @@ summary(s_wsub_sb_sleep_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2375,6 +2996,17 @@ summary(s_wsub_sb_mvpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2404,6 +3036,17 @@ summary(s_wsub_sb_lpa_d4)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d4[To == "SB" & From == "LPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d4[To == "SB" & From == "LPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2435,6 +3078,17 @@ summary(s_wsub_tst_wake_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2463,6 +3117,17 @@ summary(s_wsub_tst_mvpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2491,6 +3156,17 @@ summary(s_wsub_tst_lpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "TST" & From == "LPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "TST" & From == "LPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2519,6 +3195,17 @@ summary(s_wsub_tst_sb_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "TST" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "TST" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2547,6 +3234,17 @@ summary(s_wsub_wake_tst_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2575,6 +3273,17 @@ summary(s_wsub_wake_mvpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2603,6 +3312,17 @@ summary(s_wsub_wake_lpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2631,6 +3351,17 @@ summary(s_wsub_wake_sb_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2659,6 +3390,17 @@ summary(s_wsub_mvpa_tst_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2687,6 +3429,17 @@ summary(s_wsub_mvpa_wake_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2715,6 +3468,17 @@ summary(s_wsub_mvpa_lpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2743,6 +3507,17 @@ summary(s_wsub_mvpa_sb_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2771,6 +3546,17 @@ summary(s_wsub_lpa_tst_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "LPA" & From == "TST" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "LPA" & From == "TST" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2799,6 +3585,17 @@ summary(s_wsub_lpa_wake_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2827,6 +3624,17 @@ summary(s_wsub_lpa_mvpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2855,6 +3663,17 @@ summary(s_wsub_lpa_sb_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "LPA" & From == "SB" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "LPA" & From == "SB" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2883,6 +3702,17 @@ summary(s_wsub_sb_tst_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "SB" & From == "TST" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "SB" & From == "TST" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2911,6 +3741,17 @@ summary(s_wsub_sb_wake_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2939,6 +3780,17 @@ summary(s_wsub_sb_mvpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
 
 
@@ -2967,4 +3819,17 @@ summary(s_wsub_sb_lpa_d5)
     na.value = NA
   ) +
   hrbrthemes::theme_ipsum()
+
+# coverage
+simsum_sub_d5[To == "SB" & From == "LPA" & Level == "within", 
+              coverage_diff_delta_y_w := 
+                (substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
+                (substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_w <= CI_high)]
+
+simsum_sub_d5[To == "SB" & From == "LPA" & Level == "within",
+              mean(coverage_diff_delta_y_w),
+              by = condition]
+
 ```
+
+
