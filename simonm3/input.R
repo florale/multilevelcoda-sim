@@ -30,7 +30,7 @@ groundtruth5 <- data.table(
   
   u0           = 1,
   u0_small     = sqrt(.5),
-  u0_large     = sqrt(1.5),
+  u0_large     = sqrt(2),
   
   sigma        = 1,
   sigma_small  = sqrt(.5),
@@ -48,7 +48,7 @@ groundtruth4 <- data.table(
   
   u0           = 1,
   u0_small     = sqrt(.5),
-  u0_large     = sqrt(1.5),
+  u0_large     = sqrt(2),
   
   sigma        = 1,
   sigma_small  = sqrt(.5),
@@ -64,7 +64,7 @@ groundtruth3 <- data.table(
   
   u0           = 1,
   u0_small     = sqrt(.5),
-  u0_large     = sqrt(1.5),
+  u0_large     = sqrt(2),
   
   sigma        = 1,
   sigma_small  = sqrt(.5),
@@ -72,24 +72,25 @@ groundtruth3 <- data.table(
 )
 
 ## conditions --------
-cond <- as.data.table(
+cond <- 
   expand.grid(N = c(30, 50, 360, 1200),
               K = c(3, 5, 7, 14),
-              rint_sd = c(1, sqrt(.5), sqrt(1.5)),
+              rint_sd = c(1, sqrt(.5), sqrt(2)),
               res_sd = c(1, sqrt(.5), sqrt(2)),
               n_parts = c(3, 4, 5),
-              run = 1:1000))
+              run = 1:1000)
+cond <- as.data.table(cond)
 cond <- cond[
     (rint_sd == 1 & res_sd == 1) |
-    (rint_sd == sqrt(.5) & res_sd == sqrt(1.5)) |
-    (rint_sd == sqrt(1.5) & res_sd == sqrt(.5)) |
+    (rint_sd == sqrt(.5) & res_sd == sqrt(2)) |
+    (rint_sd == sqrt(2) & res_sd == sqrt(.5)) |
     (rint_sd == 1 & res_sd == sqrt(2)) |
     (rint_sd == 1 & res_sd == sqrt(.5))] 
 
 cond[, condition := NA]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
-cond[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(2), "REsmall_RESlarge",  condition)]
+cond[, condition := ifelse(rint_sd == sqrt(2) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
@@ -202,7 +203,7 @@ simmodel <- function(database, parts, sbpbase, prefit = prefit) {
   
   submodel <- substitution(
     m,
-    delta = c(10, 20, 30),
+    delta = c(30),
     level = c("between", "within"),
     ref = "grandmean"
     )

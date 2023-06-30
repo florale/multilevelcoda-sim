@@ -8,3 +8,6 @@
 290623 - extracted brmcoda() and substitution() sim model results
 
 290623 - extracted substitution() sim model results v2 - increased 30GB to 50GB as out of mem
+
+300623 - m3 3nd batch 
+- change res_sd and rint_sd condition so reran (previously missed a condition)

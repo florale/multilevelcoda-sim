@@ -24,7 +24,7 @@ source("input.R") # groundtruth, conditions and functions
 
 ## set different for each script -------
 set.seed(5) 
-sampled_cond <- cond[96001:120000] 
+sampled_cond <- cond[80001:100000] 
 
 ## model -------------------
 registerDoFuture()
@@ -152,4 +152,4 @@ out5 <- foreach(i = seq_len(nrow(sampled_cond)),
 
 endtime <- proc.time()
 endtime - starttime ## time to complete
-saveRDS(out5, "out5.RDS", compress = "xz")
+saveRDS(out5, "out5.RDS")
