@@ -26,15 +26,7 @@ groundtruth5 <- data.table(
   b_wilr1      = -0.60,
   b_wilr2      = -0.45,
   b_wilr3      = -0.30,
-  b_wilr4      = -0.20,
-  
-  u0           = 1,
-  u0_small     = sqrt(.5),
-  u0_large     = sqrt(2),
-  
-  sigma        = 1,
-  sigma_small  = sqrt(.5),
-  sigma_large  = sqrt(2)
+  b_wilr4      = -0.20
 )
 
 groundtruth4 <- data.table(
@@ -44,15 +36,7 @@ groundtruth4 <- data.table(
   b_bilr3      = 0.02,
   b_wilr1      = -0.75,
   b_wilr2      = -0.30,
-  b_wilr3      = -0.20,
-  
-  u0           = 1,
-  u0_small     = sqrt(.5),
-  u0_large     = sqrt(2),
-  
-  sigma        = 1,
-  sigma_small  = sqrt(.5),
-  sigma_large  = sqrt(2)
+  b_wilr3      = -0.20
 )
 
 groundtruth3 <- data.table(
@@ -60,38 +44,30 @@ groundtruth3 <- data.table(
   b_bilr1      = 0.15,
   b_bilr2      = 0.10,
   b_wilr1      = -0.80,
-  b_wilr2      = -0.25,
-  
-  u0           = 1,
-  u0_small     = sqrt(.5),
-  u0_large     = sqrt(2),
-  
-  sigma        = 1,
-  sigma_small  = sqrt(.5),
-  sigma_large  = sqrt(2)
+  b_wilr2      = -0.25
 )
 
 ## conditions --------
 cond <- 
   expand.grid(N = c(30, 50, 360, 1200),
               K = c(3, 5, 7, 14),
-              rint_sd = c(1, sqrt(.5), sqrt(2)),
-              res_sd = c(1, sqrt(.5), sqrt(2)),
+              rint_sd = c(1, sqrt(.5), sqrt(1.5)),
+              res_sd = c(1, sqrt(.5), sqrt(1.5)),
               n_parts = c(3, 4, 5),
-              run = 1:1000)
+              run = 1:2000)
 cond <- as.data.table(cond)
 cond <- cond[
-    (rint_sd == 1 & res_sd == 1) |
-    (rint_sd == sqrt(.5) & res_sd == sqrt(2)) |
-    (rint_sd == sqrt(2) & res_sd == sqrt(.5)) |
-    (rint_sd == 1 & res_sd == sqrt(2)) |
+  (rint_sd == 1 & res_sd == 1) |
+    (rint_sd == sqrt(.5) & res_sd == sqrt(1.5)) |
+    (rint_sd == sqrt(1.5) & res_sd == sqrt(.5)) |
+    (rint_sd == 1 & res_sd == sqrt(1.5)) |
     (rint_sd == 1 & res_sd == sqrt(.5))] 
 
 cond[, condition := NA]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(2), "REsmall_RESlarge",  condition)]
-cond[, condition := ifelse(rint_sd == sqrt(2) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
-cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
+cond[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+cond[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(1.5), "REbase_RESlarge",  condition)]
 cond[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
 cond[, sbp := NA]
@@ -206,7 +182,7 @@ simmodel <- function(database, parts, sbpbase, prefit = prefit) {
     delta = c(30),
     level = c("between", "within"),
     ref = "grandmean"
-    )
+  )
   
   model <- list(
     ModelSummary = summary(m$Model),
