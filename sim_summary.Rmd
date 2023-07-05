@@ -35,12 +35,17 @@ library(foreach)
 library(doRNG)
 library(parallel)
 
-library(ggplot2)
-library(ggsci)
 library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
 library(heatmaply)
 library(ggthemes)
 library(bayesplot)
+
+library(hrbrthemes)
+library(wesanderson)
+library(ggplot2)
+library(ggsci)
+library(ggpubr)
+
 # library(ggthemr)
 
 # library(minted)
@@ -55,37 +60,13 @@ prefit4 <- input$prefit4
 prefit3 <- input$prefit3
 
 source("input.R") # groundtruth, conditions and functions
+source("functions.R") # functions for plots
 substutitution_gt <- readRDS("substutitution_gt.RDS")
 
-### Heat plot
-.heat_plot <- function(data, methodvar, by, stats) {
-  ### Create a .dgm column
-  if (!is.null(by)) {
-    tmp <- lapply(by, function(x) data[[x]])
-    data[[".dgm"]] <- do.call(paste, c(tmp, sep = ", "))
-  } else {
-    data[[".dgm"]] <- "Single DGM"
-  }
-  ### Build basic plot
-  if (!is.null(methodvar)) {
-    methodvar <- rlang::sym(methodvar)
-    gg <- ggplot2::ggplot(data = data, ggplot2::aes(x = {{methodvar}}, y = .dgm, fill = est))
-  } else {
-    gg <- ggplot2::ggplot(data = data, ggplot2::aes(x = "Single Method", y = .dgm, fill = est)) +
-      ggplot2::labs(x = "")
-  }
-  gg <- gg +
-    ggplot2::geom_raster() +
-    ggplot2::labs(y = "", fill = stats) +
-    geom_text(data = data, aes(y = .dgm, label = round(est, digits = 2)), color = "black")
-
-  ### Return plot
-  return(gg)
-}
 ```
 
 # brmcoda Simulation Summary
-## brmcodan() results data
+## Read brmcoda() results data
 
 ```{r brmcoda-dat}
 
@@ -97,17 +78,17 @@ simsum_brmcoda_5 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Monash
 simsum_brmcoda_6 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_6.RDS")
 simsum_brmcoda_7 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_7.RDS")
 simsum_brmcoda_8 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_8.RDS")
-simsum_brmcoda_9 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_9.RDS")
-simsum_brmcoda_10 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_10.RDS")
-simsum_brmcoda_11 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_11.RDS")
-simsum_brmcoda_12 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_12.RDS")
+# simsum_brmcoda_9 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_9.RDS")
+# simsum_brmcoda_10 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_10.RDS")
+# simsum_brmcoda_11 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_11.RDS")
+# simsum_brmcoda_12 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_12.RDS")
 
 ## separate by parts
 simsum_brmcoda_d3 <- list()
 simsum_brmcoda_d4 <- list()
 simsum_brmcoda_d5 <- list()
 
-for (j in 1:12) {
+for (j in 1:8) {
   simsum_brmcoda_d3[[j]] <- get(paste0("simsum_brmcoda_", j))[["out3"]]
   simsum_brmcoda_d4[[j]] <- get(paste0("simsum_brmcoda_", j))[["out4"]]
   simsum_brmcoda_d5[[j]] <- get(paste0("simsum_brmcoda_", j))[["out5"]]
@@ -120,22 +101,22 @@ simsum_brmcoda_d5 <- as.data.table(do.call(rbind, simsum_brmcoda_d5))
 # add condition
 simsum_brmcoda_d3[, condition := NA]
 simsum_brmcoda_d3[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-simsum_brmcoda_d3[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(2), "REsmall_RESlarge",  condition)]
-simsum_brmcoda_d3[, condition := ifelse(rint_sd == sqrt(2) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_brmcoda_d3[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_brmcoda_d3[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 simsum_brmcoda_d3[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 simsum_brmcoda_d3[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
 simsum_brmcoda_d4[, condition := NA]
 simsum_brmcoda_d4[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-simsum_brmcoda_d4[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(2), "REsmall_RESlarge",  condition)]
-simsum_brmcoda_d4[, condition := ifelse(rint_sd == sqrt(2) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_brmcoda_d4[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_brmcoda_d4[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 simsum_brmcoda_d4[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 simsum_brmcoda_d4[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
 simsum_brmcoda_d5[, condition := NA]
 simsum_brmcoda_d5[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-simsum_brmcoda_d5[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(2), "REsmall_RESlarge",  condition)]
-simsum_brmcoda_d5[, condition := ifelse(rint_sd == sqrt(2) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_brmcoda_d5[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_brmcoda_d5[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 simsum_brmcoda_d5[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 simsum_brmcoda_d5[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
@@ -157,29 +138,11 @@ s_b0_d3 <- simsum(
 summary(s_b0_d3)
 # knitr::kable(tidy(summary(s_b0_d3)))
 
-# plot
-autoplot(summary(s_b0_d3), type = "lolly", stats = "bias")
-autoplot(summary(s_b0_d3), type = "lolly", stats = "cover")
-
-autoplot(summary(s_b0_d3), type = "forest", stats = "bias")
-autoplot(summary(s_b0_d3), type = "forest", stats = "cover")
 
 bias_b0_d3 <- tidy(s_b0_d3, stats = "bias")
 # bias_b0_d3$grp <- ifelse(bias_b0_d3$est < -0.5, "low",
 #                          ifelse(bias_b0_d3$est > 0.5, "high", "medium"))
 
-.heat_plot(
-  data = tidy(s_b0_d3, stats = "bias"),
-  methodvar = s_b0_d3$methodvar,
-  by = s_b0_d3$by,
-  stats = tidy(s_b0_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -196,17 +159,6 @@ s_bilr1_d3 <- simsum(
 )
 summary(s_bilr1_d3)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr1_d3, stats = "bias"),
-  methodvar = s_bilr1_d3$methodvar,
-  by = s_bilr1_d3$by,
-  stats = tidy(s_bilr1_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -223,17 +175,6 @@ s_bilr2_d3 <- simsum(
 )
 summary(s_bilr2_d3)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr2_d3, stats = "bias"),
-  methodvar = s_bilr2_d3$methodvar,
-  by = s_bilr2_d3$by,
-  stats = tidy(s_bilr2_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -250,17 +191,6 @@ s_wilr1_d3 <- simsum(
 )
 summary(s_wilr1_d3)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr1_d3, stats = "bias"),
-  methodvar = s_wilr1_d3$methodvar,
-  by = s_wilr1_d3$by,
-  stats = tidy(s_wilr1_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -277,17 +207,6 @@ s_wilr2_d3 <- simsum(
 )
 summary(s_wilr2_d3)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr2_d3, stats = "bias"),
-  methodvar = s_wilr2_d3$methodvar,
-  by = s_wilr2_d3$by,
-  stats = tidy(s_wilr2_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 ## 4-part composition
@@ -305,17 +224,6 @@ s_b0_d4 <- simsum(
 )
 summary(s_b0_d4)
 
-# plot
-.heat_plot(
-  data = tidy(s_b0_d4, stats = "bias"),
-  methodvar = s_b0_d4$methodvar,
-  by = s_b0_d4$by,
-  stats = tidy(s_b0_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -332,17 +240,6 @@ s_bilr1_d4 <- simsum(
 )
 summary(s_bilr1_d4)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr1_d4, stats = "bias"),
-  methodvar = s_bilr1_d4$methodvar,
-  by = s_bilr1_d4$by,
-  stats = tidy(s_bilr1_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -359,17 +256,6 @@ s_bilr2_d4 <- simsum(
 )
 summary(s_bilr2_d4)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr2_d4, stats = "bias"),
-  methodvar = s_bilr2_d4$methodvar,
-  by = s_bilr2_d4$by,
-  stats = tidy(s_bilr2_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -386,17 +272,6 @@ s_bilr3_d4 <- simsum(
 )
 summary(s_bilr3_d4)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr3_d4, stats = "bias"),
-  methodvar = s_bilr3_d4$methodvar,
-  by = s_bilr3_d4$by,
-  stats = tidy(s_bilr3_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -413,17 +288,6 @@ s_wilr1_d4 <- simsum(
 )
 summary(s_wilr1_d4)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr1_d4, stats = "bias"),
-  methodvar = s_wilr1_d4$methodvar,
-  by = s_wilr1_d4$by,
-  stats = tidy(s_wilr1_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -440,17 +304,6 @@ s_wilr2_d4 <- simsum(
 )
 summary(s_wilr2_d4)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr2_d4, stats = "bias"),
-  methodvar = s_wilr2_d4$methodvar,
-  by = s_wilr2_d4$by,
-  stats = tidy(s_wilr2_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -467,17 +320,6 @@ s_wilr3_d4 <- simsum(
 )
 summary(s_wilr3_d4)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr3_d4, stats = "bias"),
-  methodvar = s_wilr3_d4$methodvar,
-  by = s_wilr3_d4$by,
-  stats = tidy(s_wilr3_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -496,17 +338,6 @@ s_b0_d5 <- simsum(
 )
 summary(s_b0_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_b0_d5, stats = "bias"),
-  methodvar = s_b0_d5$methodvar,
-  by = s_b0_d5$by,
-  stats = tidy(s_b0_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -523,17 +354,6 @@ s_bilr1_d5 <- simsum(
 )
 summary(s_bilr1_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr1_d5, stats = "bias"),
-  methodvar = s_bilr1_d5$methodvar,
-  by = s_bilr1_d5$by,
-  stats = tidy(s_bilr1_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -550,17 +370,6 @@ s_bilr2_d5 <- simsum(
 )
 summary(s_bilr2_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr2_d5, stats = "bias"),
-  methodvar = s_bilr2_d5$methodvar,
-  by = s_bilr2_d5$by,
-  stats = tidy(s_bilr2_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -577,17 +386,6 @@ s_bilr3_d5 <- simsum(
 )
 summary(s_bilr3_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr3_d5, stats = "bias"),
-  methodvar = s_bilr3_d5$methodvar,
-  by = s_bilr3_d5$by,
-  stats = tidy(s_bilr3_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -604,17 +402,6 @@ s_bilr4_d5 <- simsum(
 )
 summary(s_bilr4_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_bilr4_d5, stats = "bias"),
-  methodvar = s_bilr4_d5$methodvar,
-  by = s_bilr4_d5$by,
-  stats = tidy(s_bilr4_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -631,17 +418,6 @@ s_wilr1_d5 <- simsum(
 )
 summary(s_wilr1_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr1_d5, stats = "bias"),
-  methodvar = s_wilr1_d5$methodvar,
-  by = s_wilr1_d5$by,
-  stats = tidy(s_wilr1_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -658,17 +434,6 @@ s_wilr2_d5 <- simsum(
 )
 summary(s_wilr2_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr2_d5, stats = "bias"),
-  methodvar = s_wilr2_d5$methodvar,
-  by = s_wilr2_d5$by,
-  stats = tidy(s_wilr2_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -685,17 +450,6 @@ s_wilr3_d5 <- simsum(
 )
 summary(s_wilr3_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr3_d5, stats = "bias"),
-  methodvar = s_wilr3_d5$methodvar,
-  by = s_wilr3_d5$by,
-  stats = tidy(s_wilr3_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
 
@@ -712,37 +466,8 @@ s_wilr4_d5 <- simsum(
 )
 summary(s_wilr4_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_wilr4_d5, stats = "bias"),
-  methodvar = s_wilr4_d5$methodvar,
-  by = s_wilr4_d5$by,
-  stats = tidy(s_wilr4_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient(low = "#6D8B74",
-                      high = "#FAF7F3",
-                      na.value = NA) +
-  hrbrthemes::theme_ipsum()
 ```
 
-## brmcoda sim plot
-
-```{r}
-
-# foreach (d = seq_along(3:5),
-#          ) {
-# .heat_plot(
-#   data = df,
-#   methodvar = s_bilr1$methodvar,
-#   by = s_bilr1$by,
-#   stats = df$stat[[1]]
-# ) +
-#   scale_fill_gradient(low = "#6D8B74",
-#                       high = "#FAF7F3",
-#                       na.value = NA) +
-#   hrbrthemes::theme_ipsum()
-# }
-```
 
 # substitution() Simulation Summary
 ## substitution() results data
@@ -757,20 +482,20 @@ simsum_sub_5 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniv
 simsum_sub_6 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_6.RDS")
 simsum_sub_7 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_7.RDS")
 simsum_sub_8 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_8.RDS")
-simsum_sub_9 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_9.RDS")
-simsum_sub_10 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_10.RDS")
-simsum_sub_11 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_11.RDS")
-simsum_sub_12 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_12.RDS")
+# simsum_sub_9 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_9.RDS")
+# simsum_sub_10 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_10.RDS")
+# simsum_sub_11 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_11.RDS")
+# simsum_sub_12 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_12.RDS")
 
 ## separate by parts
 simsum_sub_d3 <- list()
 simsum_sub_d4 <- list()
 simsum_sub_d5 <- list()
 
-for (j in 1:12) {
-  simsum_sub_d3[[j]] <- get(paste0("simsum_sub_", j))[["out3"]]
-  simsum_sub_d4[[j]] <- get(paste0("simsum_sub_", j))[["out4"]]
-  simsum_sub_d5[[j]] <- get(paste0("simsum_sub_", j))[["out5"]]
+for (j in 1:8) {
+  simsum_sub_d3[[j]] <- get(paste0("simsum_sub_", j))[[1]]
+  simsum_sub_d4[[j]] <- get(paste0("simsum_sub_", j))[[2]]
+  simsum_sub_d5[[j]] <- get(paste0("simsum_sub_", j))[[3]]
 }
 
 simsum_sub_d3 <- as.data.table(do.call(rbind, simsum_sub_d3))
@@ -780,22 +505,22 @@ simsum_sub_d5 <- as.data.table(do.call(rbind, simsum_sub_d5))
 # add condition
 simsum_sub_d3[, condition := NA]
 simsum_sub_d3[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-simsum_sub_d3[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(2), "REsmall_RESlarge",  condition)]
-simsum_sub_d3[, condition := ifelse(rint_sd == sqrt(2) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_sub_d3[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_sub_d3[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 simsum_sub_d3[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 simsum_sub_d3[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
 simsum_sub_d4[, condition := NA]
 simsum_sub_d4[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-simsum_sub_d4[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(2), "REsmall_RESlarge",  condition)]
-simsum_sub_d4[, condition := ifelse(rint_sd == sqrt(2) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_sub_d4[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_sub_d4[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 simsum_sub_d4[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 simsum_sub_d4[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
 simsum_sub_d5[, condition := NA]
 simsum_sub_d5[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
-simsum_sub_d5[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(2), "REsmall_RESlarge",  condition)]
-simsum_sub_d5[, condition := ifelse(rint_sd == sqrt(2) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
+simsum_sub_d5[, condition := ifelse(rint_sd == sqrt(.5) & res_sd == sqrt(1.5), "REsmall_RESlarge",  condition)]
+simsum_sub_d5[, condition := ifelse(rint_sd == sqrt(1.5) & res_sd == sqrt(.5), "RElarge_RESsmall",  condition)]
 simsum_sub_d5[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(2), "REbase_RESlarge",  condition)]
 simsum_sub_d5[, condition := ifelse(rint_sd == 1 & res_sd == sqrt(.5), "REbase_RESsmall",  condition)]
 
@@ -872,31 +597,13 @@ s_bsub_sleep_pa_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sleep_pa_d3 <- .get_cov(
+  s_bsub_sleep_pa_d3,
+  simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_b
+  )
 summary(s_bsub_sleep_pa_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sleep_pa_d3, stats = "bias"),
-  methodvar = s_bsub_sleep_pa_d3$methodvar,
-  by = s_bsub_sleep_pa_d3$by,
-  stats = tidy(s_bsub_sleep_pa_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -911,31 +618,13 @@ s_bsub_sleep_sb_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sleep_sb_d3 <- .get_cov(
+  s_bsub_sleep_sb_d3,
+  simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_sleep_sb_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sleep_sb_d3, stats = "bias"),
-  methodvar = s_bsub_sleep_sb_d3$methodvar,
-  by = s_bsub_sleep_sb_d3$by,
-  stats = tidy(s_bsub_sleep_sb_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -950,32 +639,13 @@ s_bsub_pa_sleep_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_pa_sleep_d3 <- .get_cov(
+  s_bsub_pa_sleep_d3,
+  simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_b
+  )
 summary(s_bsub_pa_sleep_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_pa_sleep_d3, stats = "bias"),
-  methodvar = s_bsub_pa_sleep_d3$methodvar,
-  by = s_bsub_pa_sleep_d3$by,
-  stats = tidy(s_bsub_pa_sleep_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
-
 ```
 
 
@@ -989,32 +659,13 @@ s_bsub_pa_sb_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_pa_sb_d3 <- .get_cov(
+  s_bsub_pa_sb_d3,
+  simsum_sub_d3[To == "PA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_pa_sb_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_pa_sb_d3, stats = "bias"),
-  methodvar = s_bsub_pa_sb_d3$methodvar,
-  by = s_bsub_pa_sb_d3$by,
-  stats = tidy(s_bsub_pa_sb_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "PA" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d3[To == "PA" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
-
 ```
 
 
@@ -1028,32 +679,13 @@ s_bsub_sb_sleep_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_sleep_d3 <- .get_cov(
+  s_bsub_sb_sleep_d3,
+  simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_sleep_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sb_sleep_d3, stats = "bias"),
-  methodvar = s_bsub_sb_sleep_d3$methodvar,
-  by = s_bsub_sb_sleep_d3$by,
-  stats = tidy(s_bsub_sb_sleep_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
-
 ```
 
 
@@ -1067,32 +699,13 @@ s_bsub_sb_pa_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_pa_d3 <- .get_cov(
+  s_bsub_sb_pa_d3,
+  simsum_sub_d3[To == "SB" & From == "PA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_pa_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sb_pa_d3, stats = "bias"),
-  methodvar = s_bsub_sb_pa_d3$methodvar,
-  by = s_bsub_sb_pa_d3$by,
-  stats = tidy(s_bsub_sb_pa_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "SB" & From == "PA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d3[To == "SB" & From == "PA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
-
 ```
 
 
@@ -1108,31 +721,13 @@ s_bsub_sleep_mvpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sleep_mvpa_d4 <- .get_cov(
+  s_bsub_sleep_mvpa_d4,
+  simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_b
+  )
 summary(s_bsub_sleep_mvpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sleep_mvpa_d4, stats = "bias"),
-  methodvar = s_bsub_sleep_mvpa_d4$methodvar,
-  by = s_bsub_sleep_mvpa_d4$by,
-  stats = tidy(s_bsub_sleep_mvpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1147,31 +742,13 @@ s_bsub_sleep_lpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sleep_lpa_d4 <- .get_cov(
+  s_bsub_sleep_lpa_d4,
+  simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_b
+  )
 summary(s_bsub_sleep_lpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sleep_lpa_d4, stats = "bias"),
-  methodvar = s_bsub_sleep_lpa_d4$methodvar,
-  by = s_bsub_sleep_lpa_d4$by,
-  stats = tidy(s_bsub_sleep_lpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1185,31 +762,13 @@ s_bsub_sleep_sb_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sleep_sb_d4 <- .get_cov(
+  s_bsub_sleep_sb_d4,
+  simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_sleep_sb_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sleep_sb_d4, stats = "bias"),
-  methodvar = s_bsub_sleep_sb_d4$methodvar,
-  by = s_bsub_sleep_sb_d4$by,
-  stats = tidy(s_bsub_sleep_sb_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1224,31 +783,13 @@ s_bsub_mvpa_sleep_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_mvpa_sleep_d4 <- .get_cov(
+  s_bsub_mvpa_sleep_d4,
+  simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_b
+  )
 summary(s_bsub_mvpa_sleep_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_mvpa_sleep_d4, stats = "bias"),
-  methodvar = s_bsub_mvpa_sleep_d4$methodvar,
-  by = s_bsub_mvpa_sleep_d4$by,
-  stats = tidy(s_bsub_mvpa_sleep_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1263,31 +804,13 @@ s_bsub_mvpa_lpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_mvpa_lpa_d4 <- .get_cov(
+  s_bsub_mvpa_lpa_d4,
+  simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_b
+  )
 summary(s_bsub_mvpa_lpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_mvpa_lpa_d4, stats = "bias"),
-  methodvar = s_bsub_mvpa_lpa_d4$methodvar,
-  by = s_bsub_mvpa_lpa_d4$by,
-  stats = tidy(s_bsub_mvpa_lpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1301,31 +824,13 @@ s_bsub_mvpa_sb_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_mvpa_sb_d4 <- .get_cov(
+  s_bsub_mvpa_sb_d4,
+  simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_mvpa_sb_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_mvpa_sb_d4, stats = "bias"),
-  methodvar = s_bsub_mvpa_sb_d4$methodvar,
-  by = s_bsub_mvpa_sb_d4$by,
-  stats = tidy(s_bsub_mvpa_sb_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1340,31 +845,13 @@ s_bsub_lpa_sleep_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_lpa_sleep_d4 <- .get_cov(
+  s_bsub_lpa_sleep_d4,
+  simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_b
+  )
 summary(s_bsub_lpa_sleep_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_lpa_sleep_d4, stats = "bias"),
-  methodvar = s_bsub_lpa_sleep_d4$methodvar,
-  by = s_bsub_lpa_sleep_d4$by,
-  stats = tidy(s_bsub_lpa_sleep_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1379,31 +866,13 @@ s_bsub_lpa_mvpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_lpa_mvpa_d4 <- .get_cov(
+  s_bsub_lpa_mvpa_d4,
+  simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_b
+  )
 summary(s_bsub_lpa_mvpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_lpa_mvpa_d4, stats = "bias"),
-  methodvar = s_bsub_lpa_mvpa_d4$methodvar,
-  by = s_bsub_lpa_mvpa_d4$by,
-  stats = tidy(s_bsub_lpa_mvpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1418,31 +887,13 @@ s_bsub_lpa_sb_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_lpa_sb_d4 <- .get_cov(
+  s_bsub_lpa_sb_d4,
+  simsum_sub_d4[To == "LPA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_lpa_sb_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_lpa_sb_d4, stats = "bias"),
-  methodvar = s_bsub_lpa_sb_d4$methodvar,
-  by = s_bsub_lpa_sb_d4$by,
-  stats = tidy(s_bsub_lpa_sb_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "LPA" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "LPA" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1457,31 +908,13 @@ s_bsub_sb_sleep_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_sleep_d4 <- .get_cov(
+  s_bsub_sb_sleep_d4,
+  simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_sleep_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sb_sleep_d4, stats = "bias"),
-  methodvar = s_bsub_sb_sleep_d4$methodvar,
-  by = s_bsub_sb_sleep_d4$by,
-  stats = tidy(s_bsub_sb_sleep_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1496,31 +929,13 @@ s_bsub_sb_mvpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_mvpa_d4 <- .get_cov(
+  s_bsub_sb_mvpa_d4,
+  simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_mvpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sb_mvpa_d4, stats = "bias"),
-  methodvar = s_bsub_sb_mvpa_d4$methodvar,
-  by = s_bsub_sb_mvpa_d4$by,
-  stats = tidy(s_bsub_sb_mvpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1535,32 +950,13 @@ s_bsub_sb_lpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_lpa_d4 <- .get_cov(
+  s_bsub_sb_lpa_d4,
+  simsum_sub_d4[To == "SB" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_lpa_d4)
-
-# plot
-
-.heat_plot(
-  data = tidy(s_bsub_sb_lpa_d4, stats = "bias"),
-  methodvar = s_bsub_sb_lpa_d4$methodvar,
-  by = s_bsub_sb_lpa_d4$by,
-  stats = tidy(s_bsub_sb_lpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "SB" & From == "LPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d4[To == "SB" & From == "LPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1578,31 +974,14 @@ s_bsub_tst_wake_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_tst_wake_d5 <- .get_cov(
+  s_bsub_tst_wake_d5,
+  simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_b
+  )
 summary(s_bsub_tst_wake_d5)
 
-# plot
-.heat_plot(
-  data = tidy(s_bsub_tst_wake_d5, stats = "bias"),
-  methodvar = s_bsub_tst_wake_d5$methodvar,
-  by = s_bsub_tst_wake_d5$by,
-  stats = tidy(s_bsub_tst_wake_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1617,31 +996,13 @@ s_bsub_tst_mvpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_tst_mvpa_d5 <- .get_cov(
+  s_bsub_tst_mvpa_d5,
+  simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_b
+  )
 summary(s_bsub_tst_mvpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_tst_mvpa_d5, stats = "bias"),
-  methodvar = s_bsub_tst_mvpa_d5$methodvar,
-  by = s_bsub_tst_mvpa_d5$by,
-  stats = tidy(s_bsub_tst_mvpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 ```
 
 
@@ -1655,31 +1016,13 @@ s_bsub_tst_lpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_tst_lpa_d5 <- .get_cov(
+  s_bsub_tst_lpa_d5,
+  simsum_sub_d5[To == "TST" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_b
+  )
 summary(s_bsub_tst_lpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_tst_lpa_d5, stats = "bias"),
-  methodvar = s_bsub_tst_lpa_d5$methodvar,
-  by = s_bsub_tst_lpa_d5$by,
-  stats = tidy(s_bsub_tst_lpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "TST" & From == "LPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "TST" & From == "LPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1694,31 +1037,13 @@ s_bsub_tst_sb_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_tst_sb_d5 <- .get_cov(
+  s_bsub_tst_sb_d5,
+  simsum_sub_d5[To == "TST" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_tst_sb_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_tst_sb_d5, stats = "bias"),
-  methodvar = s_bsub_tst_sb_d5$methodvar,
-  by = s_bsub_tst_sb_d5$by,
-  stats = tidy(s_bsub_tst_sb_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "TST" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "TST" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1733,31 +1058,13 @@ s_bsub_wake_tst_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_wake_tst_d5 <- .get_cov(
+  s_bsub_wake_tst_d5,
+  simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_b
+  )
 summary(s_bsub_wake_tst_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_wake_tst_d5, stats = "bias"),
-  methodvar = s_bsub_wake_tst_d5$methodvar,
-  by = s_bsub_wake_tst_d5$by,
-  stats = tidy(s_bsub_wake_tst_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1772,31 +1079,13 @@ s_bsub_wake_mvpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_wake_mvpa_d5 <- .get_cov(
+  s_bsub_wake_mvpa_d5,
+  simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_b
+  )
 summary(s_bsub_wake_mvpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_wake_mvpa_d5, stats = "bias"),
-  methodvar = s_bsub_wake_mvpa_d5$methodvar,
-  by = s_bsub_wake_mvpa_d5$by,
-  stats = tidy(s_bsub_wake_mvpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1811,31 +1100,13 @@ s_bsub_wake_lpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_wake_lpa_d5 <- .get_cov(
+  s_bsub_wake_lpa_d5,
+  simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_b
+  )
 summary(s_bsub_wake_lpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_wake_lpa_d5, stats = "bias"),
-  methodvar = s_bsub_wake_lpa_d5$methodvar,
-  by = s_bsub_wake_lpa_d5$by,
-  stats = tidy(s_bsub_wake_lpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1850,31 +1121,13 @@ s_bsub_wake_sb_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_wake_sb_d5 <- .get_cov(
+  s_bsub_wake_sb_d5,
+  simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_wake_sb_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_wake_sb_d5, stats = "bias"),
-  methodvar = s_bsub_wake_sb_d5$methodvar,
-  by = s_bsub_wake_sb_d5$by,
-  stats = tidy(s_bsub_wake_sb_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1889,31 +1142,13 @@ s_bsub_mvpa_tst_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_mvpa_tst_d5 <- .get_cov(
+  s_bsub_mvpa_tst_d5,
+  simsum_sub_d5[To == "MVPA" & From == "TST" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "TST"]$diff_delta_y_b
+  )
 summary(s_bsub_mvpa_tst_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_mvpa_tst_d5, stats = "bias"),
-  methodvar = s_bsub_mvpa_tst_d5$methodvar,
-  by = s_bsub_mvpa_tst_d5$by,
-  stats = tidy(s_bsub_mvpa_tst_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "MVPA" & From == "TST" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "MVPA" & From == "TST"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "MVPA" & From == "TST"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "MVPA" & From == "TST" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1928,31 +1163,13 @@ s_bsub_mvpa_wake_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_mvpa_wake_d5 <- .get_cov(
+  s_bsub_mvpa_wake_d5,
+  simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_b
+  )
 summary(s_bsub_mvpa_wake_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_mvpa_wake_d5, stats = "bias"),
-  methodvar = s_bsub_mvpa_wake_d5$methodvar,
-  by = s_bsub_mvpa_wake_d5$by,
-  stats = tidy(s_bsub_mvpa_wake_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -1967,31 +1184,13 @@ s_bsub_mvpa_lpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_mvpa_lpa_d5 <- .get_cov(
+  s_bsub_mvpa_lpa_d5,
+  simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_b
+  )
 summary(s_bsub_mvpa_lpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_mvpa_lpa_d5, stats = "bias"),
-  methodvar = s_bsub_mvpa_lpa_d5$methodvar,
-  by = s_bsub_mvpa_lpa_d5$by,
-  stats = tidy(s_bsub_mvpa_lpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2006,31 +1205,13 @@ s_bsub_mvpa_sb_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_mvpa_sb_d5 <- .get_cov(
+  s_bsub_mvpa_sb_d5,
+  simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_mvpa_sb_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_mvpa_sb_d5, stats = "bias"),
-  methodvar = s_bsub_mvpa_sb_d5$methodvar,
-  by = s_bsub_mvpa_sb_d5$by,
-  stats = tidy(s_bsub_mvpa_sb_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2045,31 +1226,13 @@ s_bsub_lpa_tst_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_lpa_tst_d5 <- .get_cov(
+  s_bsub_lpa_tst_d5,
+  simsum_sub_d5[To == "LPA" & From == "TST" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_b
+  )
 summary(s_bsub_lpa_tst_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_lpa_tst_d5, stats = "bias"),
-  methodvar = s_bsub_lpa_tst_d5$methodvar,
-  by = s_bsub_lpa_tst_d5$by,
-  stats = tidy(s_bsub_lpa_tst_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "LPA" & From == "TST" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "LPA" & From == "TST" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2084,31 +1247,13 @@ s_bsub_lpa_wake_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_lpa_wake_d5 <- .get_cov(
+  s_bsub_lpa_wake_d5,
+  simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_b
+  )
 summary(s_bsub_lpa_wake_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_lpa_wake_d5, stats = "bias"),
-  methodvar = s_bsub_lpa_wake_d5$methodvar,
-  by = s_bsub_lpa_wake_d5$by,
-  stats = tidy(s_bsub_lpa_wake_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2123,31 +1268,13 @@ s_bsub_lpa_mvpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_lpa_mvpa_d5 <- .get_cov(
+  s_bsub_lpa_mvpa_d5,
+  simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_b
+  )
 summary(s_bsub_lpa_mvpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_lpa_mvpa_d5, stats = "bias"),
-  methodvar = s_bsub_lpa_mvpa_d5$methodvar,
-  by = s_bsub_lpa_mvpa_d5$by,
-  stats = tidy(s_bsub_lpa_mvpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2162,31 +1289,13 @@ s_bsub_lpa_sb_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_lpa_sb_d5 <- .get_cov(
+  s_bsub_lpa_sb_d5,
+  simsum_sub_d5[To == "LPA" & From == "SB" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_b
+  )
 summary(s_bsub_lpa_sb_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_lpa_sb_d5, stats = "bias"),
-  methodvar = s_bsub_lpa_sb_d5$methodvar,
-  by = s_bsub_lpa_sb_d5$by,
-  stats = tidy(s_bsub_lpa_sb_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "LPA" & From == "SB" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "LPA" & From == "SB" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2201,31 +1310,13 @@ s_bsub_sb_tst_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_tst_d5 <- .get_cov(
+  s_bsub_sb_tst_d5,
+  simsum_sub_d5[To == "SB" & From == "TST" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_tst_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sb_tst_d5, stats = "bias"),
-  methodvar = s_bsub_sb_tst_d5$methodvar,
-  by = s_bsub_sb_tst_d5$by,
-  stats = tidy(s_bsub_sb_tst_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "SB" & From == "TST" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "SB" & From == "TST" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2240,31 +1331,13 @@ s_bsub_sb_wake_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_wake_d5 <- .get_cov(
+  s_bsub_sb_wake_d5,
+  simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_wake_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sb_wake_d5, stats = "bias"),
-  methodvar = s_bsub_sb_wake_d5$methodvar,
-  by = s_bsub_sb_wake_d5$by,
-  stats = tidy(s_bsub_sb_wake_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2279,31 +1352,13 @@ s_bsub_sb_mvpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_mvpa_d5 <- .get_cov(
+  s_bsub_sb_mvpa_d5,
+  simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_mvpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sb_mvpa_d5, stats = "bias"),
-  methodvar = s_bsub_sb_mvpa_d5$methodvar,
-  by = s_bsub_sb_mvpa_d5$by,
-  stats = tidy(s_bsub_sb_mvpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2318,31 +1373,13 @@ s_bsub_sb_lpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_bsub_sb_lpa_d5 <- .get_cov(
+  s_bsub_sb_lpa_d5,
+  simsum_sub_d5[To == "SB" & From == "LPA" & Level == "between"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_b
+  )
 summary(s_bsub_sb_lpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_bsub_sb_lpa_d5, stats = "bias"),
-  methodvar = s_bsub_sb_lpa_d5$methodvar,
-  by = s_bsub_sb_lpa_d5$by,
-  stats = tidy(s_bsub_sb_lpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "SB" & From == "LPA" & Level == "between", 
-              coverage_diff_delta_y_b := 
-                (substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_b >= CI_low) & 
-                (substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_b <= CI_high)]
-
-simsum_sub_d5[To == "SB" & From == "LPA" & Level == "between",
-              mean(coverage_diff_delta_y_b),
-              by = condition]
 
 ```
 
@@ -2358,31 +1395,13 @@ s_wsub_sleep_pa_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sleep_pa_d3 <- .get_cov(
+  s_wsub_sleep_pa_d3,
+  simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_w
+  )
 summary(s_wsub_sleep_pa_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sleep_pa_d3, stats = "bias"),
-  methodvar = s_wsub_sleep_pa_d3$methodvar,
-  by = s_wsub_sleep_pa_d3$by,
-  stats = tidy(s_wsub_sleep_pa_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d3[To == "Sleep" & From == "PA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d3[To == "Sleep" & From == "PA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2397,31 +1416,13 @@ s_wsub_sleep_sb_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sleep_sb_d3 <- .get_cov(
+  s_wsub_sleep_sb_d3,
+  simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_sleep_sb_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sleep_sb_d3, stats = "bias"),
-  methodvar = s_wsub_sleep_sb_d3$methodvar,
-  by = s_wsub_sleep_sb_d3$by,
-  stats = tidy(s_wsub_sleep_sb_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d3[To == "Sleep" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d3[To == "Sleep" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2436,31 +1437,13 @@ s_wsub_pa_sleep_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_pa_sleep_d3 <- .get_cov(
+  s_wsub_pa_sleep_d3,
+  simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_w
+  )
 summary(s_wsub_pa_sleep_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_pa_sleep_d3, stats = "bias"),
-  methodvar = s_wsub_pa_sleep_d3$methodvar,
-  by = s_wsub_pa_sleep_d3$by,
-  stats = tidy(s_wsub_pa_sleep_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d3[To == "PA" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d3[To == "PA" & From == "Sleep" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2475,31 +1458,13 @@ s_wsub_pa_sb_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_pa_sb_d3 <- .get_cov(
+  s_wsub_pa_sb_d3,
+  simsum_sub_d3[To == "PA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_pa_sb_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_pa_sb_d3, stats = "bias"),
-  methodvar = s_wsub_pa_sb_d3$methodvar,
-  by = s_wsub_pa_sb_d3$by,
-  stats = tidy(s_wsub_pa_sb_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "PA" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d3[To == "PA" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d3[To == "PA" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2514,31 +1479,13 @@ s_wsub_sb_sleep_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_sleep_d3 <- .get_cov(
+  s_wsub_sb_sleep_d3,
+  simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_sleep_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sb_sleep_d3, stats = "bias"),
-  methodvar = s_wsub_sb_sleep_d3$methodvar,
-  by = s_wsub_sb_sleep_d3$by,
-  stats = tidy(s_wsub_sb_sleep_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d3[To == "SB" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d3[To == "SB" & From == "Sleep" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2553,31 +1500,13 @@ s_wsub_sb_pa_d3 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_pa_d3 <- .get_cov(
+  s_wsub_sb_pa_d3,
+  simsum_sub_d3[To == "SB" & From == "PA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_pa_d3)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sb_pa_d3, stats = "bias"),
-  methodvar = s_wsub_sb_pa_d3$methodvar,
-  by = s_wsub_sb_pa_d3$by,
-  stats = tidy(s_wsub_sb_pa_d3, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d3[To == "SB" & From == "PA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d3[To == "SB" & From == "PA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d3[To == "SB" & From == "PA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2593,31 +1522,13 @@ s_wsub_sleep_mvpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sleep_mvpa_d4 <- .get_cov(
+  s_wsub_sleep_mvpa_d4,
+  simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_w
+  )
 summary(s_wsub_sleep_mvpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sleep_mvpa_d4, stats = "bias"),
-  methodvar = s_wsub_sleep_mvpa_d4$methodvar,
-  by = s_wsub_sleep_mvpa_d4$by,
-  stats = tidy(s_wsub_sleep_mvpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "Sleep" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "Sleep" & From == "MVPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2632,31 +1543,13 @@ s_wsub_sleep_lpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sleep_lpa_d4 <- .get_cov(
+  s_wsub_sleep_lpa_d4,
+  simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_w
+  )
 summary(s_wsub_sleep_lpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sleep_lpa_d4, stats = "bias"),
-  methodvar = s_wsub_sleep_lpa_d4$methodvar,
-  by = s_wsub_sleep_lpa_d4$by,
-  stats = tidy(s_wsub_sleep_lpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "Sleep" & From == "LPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "Sleep" & From == "LPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2670,31 +1563,13 @@ s_wsub_sleep_sb_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sleep_sb_d4 <- .get_cov(
+  s_wsub_sleep_sb_d4,
+  simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_sleep_sb_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sleep_sb_d4, stats = "bias"),
-  methodvar = s_wsub_sleep_sb_d4$methodvar,
-  by = s_wsub_sleep_sb_d4$by,
-  stats = tidy(s_wsub_sleep_sb_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "Sleep" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "Sleep" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2709,31 +1584,13 @@ s_wsub_mvpa_sleep_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_mvpa_sleep_d4 <- .get_cov(
+  s_wsub_mvpa_sleep_d4,
+  simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_w
+  )
 summary(s_wsub_mvpa_sleep_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_mvpa_sleep_d4, stats = "bias"),
-  methodvar = s_wsub_mvpa_sleep_d4$methodvar,
-  by = s_wsub_mvpa_sleep_d4$by,
-  stats = tidy(s_wsub_mvpa_sleep_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "MVPA" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "MVPA" & From == "Sleep" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2748,31 +1605,13 @@ s_wsub_mvpa_lpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_mvpa_lpa_d4 <- .get_cov(
+  s_wsub_mvpa_lpa_d4,
+  simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_w
+  )
 summary(s_wsub_mvpa_lpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_mvpa_lpa_d4, stats = "bias"),
-  methodvar = s_wsub_mvpa_lpa_d4$methodvar,
-  by = s_wsub_mvpa_lpa_d4$by,
-  stats = tidy(s_wsub_mvpa_lpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "MVPA" & From == "LPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "MVPA" & From == "LPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2786,31 +1625,13 @@ s_wsub_mvpa_sb_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_mvpa_sb_d4 <- .get_cov(
+  s_wsub_mvpa_sb_d4,
+  simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_mvpa_sb_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_mvpa_sb_d4, stats = "bias"),
-  methodvar = s_wsub_mvpa_sb_d4$methodvar,
-  by = s_wsub_mvpa_sb_d4$by,
-  stats = tidy(s_wsub_mvpa_sb_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "MVPA" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "MVPA" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2825,31 +1646,13 @@ s_wsub_lpa_sleep_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_lpa_sleep_d4 <- .get_cov(
+  s_wsub_lpa_sleep_d4,
+  simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_w
+  )
 summary(s_wsub_lpa_sleep_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_lpa_sleep_d4, stats = "bias"),
-  methodvar = s_wsub_lpa_sleep_d4$methodvar,
-  by = s_wsub_lpa_sleep_d4$by,
-  stats = tidy(s_wsub_lpa_sleep_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "LPA" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "LPA" & From == "Sleep" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2864,31 +1667,13 @@ s_wsub_lpa_mvpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_lpa_mvpa_d4 <- .get_cov(
+  s_wsub_lpa_mvpa_d4,
+  simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_w
+  )
 summary(s_wsub_lpa_mvpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_lpa_mvpa_d4, stats = "bias"),
-  methodvar = s_wsub_lpa_mvpa_d4$methodvar,
-  by = s_wsub_lpa_mvpa_d4$by,
-  stats = tidy(s_wsub_lpa_mvpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "LPA" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "LPA" & From == "MVPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2903,31 +1688,13 @@ s_wsub_lpa_sb_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_lpa_sb_d4 <- .get_cov(
+  s_wsub_lpa_sb_d4,
+  simsum_sub_d4[To == "LPA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_lpa_sb_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_lpa_sb_d4, stats = "bias"),
-  methodvar = s_wsub_lpa_sb_d4$methodvar,
-  by = s_wsub_lpa_sb_d4$by,
-  stats = tidy(s_wsub_lpa_sb_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "LPA" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "LPA" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "LPA" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2942,31 +1709,13 @@ s_wsub_sb_sleep_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_sleep_d4 <- .get_cov(
+  s_wsub_sb_sleep_d4,
+  simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_sleep_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sb_sleep_d4, stats = "bias"),
-  methodvar = s_wsub_sb_sleep_d4$methodvar,
-  by = s_wsub_sb_sleep_d4$by,
-  stats = tidy(s_wsub_sb_sleep_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "SB" & From == "Sleep"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "SB" & From == "Sleep" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -2981,31 +1730,13 @@ s_wsub_sb_mvpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_mvpa_d4 <- .get_cov(
+  s_wsub_sb_mvpa_d4,
+  simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_mvpa_d4)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sb_mvpa_d4, stats = "bias"),
-  methodvar = s_wsub_sb_mvpa_d4$methodvar,
-  by = s_wsub_sb_mvpa_d4$by,
-  stats = tidy(s_wsub_sb_mvpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "SB" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "SB" & From == "MVPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3020,32 +1751,13 @@ s_wsub_sb_lpa_d4 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_lpa_d4 <- .get_cov(
+  s_wsub_sb_lpa_d4,
+  simsum_sub_d4[To == "SB" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_lpa_d4)
-
-# plot
-
-.heat_plot(
-  data = tidy(s_wsub_sb_lpa_d4, stats = "bias"),
-  methodvar = s_wsub_sb_lpa_d4$methodvar,
-  by = s_wsub_sb_lpa_d4$by,
-  stats = tidy(s_wsub_sb_lpa_d4, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d4[To == "SB" & From == "LPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d4[To == "SB" & From == "LPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d4[To == "SB" & From == "LPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3063,31 +1775,13 @@ s_wsub_tst_wake_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_tst_wake_d5 <- .get_cov(
+  s_wsub_tst_wake_d5,
+  simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_w
+  )
 summary(s_wsub_tst_wake_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_tst_wake_d5, stats = "bias"),
-  methodvar = s_wsub_tst_wake_d5$methodvar,
-  by = s_wsub_tst_wake_d5$by,
-  stats = tidy(s_wsub_tst_wake_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "TST" & From == "WAKE"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "TST" & From == "WAKE" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3102,31 +1796,13 @@ s_wsub_tst_mvpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_tst_mvpa_d5 <- .get_cov(
+  s_wsub_tst_mvpa_d5,
+  simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_w
+  )
 summary(s_wsub_tst_mvpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_tst_mvpa_d5, stats = "bias"),
-  methodvar = s_wsub_tst_mvpa_d5$methodvar,
-  by = s_wsub_tst_mvpa_d5$by,
-  stats = tidy(s_wsub_tst_mvpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "TST" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "TST" & From == "MVPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3141,31 +1817,13 @@ s_wsub_tst_lpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_tst_lpa_d5 <- .get_cov(
+  s_wsub_tst_lpa_d5,
+  simsum_sub_d5[To == "TST" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_w
+  )
 summary(s_wsub_tst_lpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_tst_lpa_d5, stats = "bias"),
-  methodvar = s_wsub_tst_lpa_d5$methodvar,
-  by = s_wsub_tst_lpa_d5$by,
-  stats = tidy(s_wsub_tst_lpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "TST" & From == "LPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "TST" & From == "LPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "TST" & From == "LPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3180,31 +1838,13 @@ s_wsub_tst_sb_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_tst_sb_d5 <- .get_cov(
+  s_wsub_tst_sb_d5,
+  simsum_sub_d5[To == "TST" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_tst_sb_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_tst_sb_d5, stats = "bias"),
-  methodvar = s_wsub_tst_sb_d5$methodvar,
-  by = s_wsub_tst_sb_d5$by,
-  stats = tidy(s_wsub_tst_sb_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "TST" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "TST" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "TST" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3219,31 +1859,13 @@ s_wsub_wake_tst_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_wake_tst_d5 <- .get_cov(
+  s_wsub_wake_tst_d5,
+  simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w
+  )
 summary(s_wsub_wake_tst_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_wake_tst_d5, stats = "bias"),
-  methodvar = s_wsub_wake_tst_d5$methodvar,
-  by = s_wsub_wake_tst_d5$by,
-  stats = tidy(s_wsub_wake_tst_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3258,31 +1880,13 @@ s_wsub_wake_mvpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_wake_mvpa_d5 <- .get_cov(
+  s_wsub_wake_mvpa_d5,
+  simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_w
+  )
 summary(s_wsub_wake_mvpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_wake_mvpa_d5, stats = "bias"),
-  methodvar = s_wsub_wake_mvpa_d5$methodvar,
-  by = s_wsub_wake_mvpa_d5$by,
-  stats = tidy(s_wsub_wake_mvpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "MVPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3297,31 +1901,13 @@ s_wsub_wake_lpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_wake_lpa_d5 <- .get_cov(
+  s_wsub_wake_lpa_d5,
+  simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_w
+  )
 summary(s_wsub_wake_lpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_wake_lpa_d5, stats = "bias"),
-  methodvar = s_wsub_wake_lpa_d5$methodvar,
-  by = s_wsub_wake_lpa_d5$by,
-  stats = tidy(s_wsub_wake_lpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "LPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "LPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3336,31 +1922,13 @@ s_wsub_wake_sb_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_wake_sb_d5 <- .get_cov(
+  s_wsub_wake_sb_d5,
+  simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_wake_sb_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_wake_sb_d5, stats = "bias"),
-  methodvar = s_wsub_wake_sb_d5$methodvar,
-  by = s_wsub_wake_sb_d5$by,
-  stats = tidy(s_wsub_wake_sb_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3375,31 +1943,13 @@ s_wsub_mvpa_tst_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_mvpa_tst_d5 <- .get_cov(
+  s_wsub_mvpa_tst_d5,
+  simsum_sub_d5[To == "MVPA" & From == "TST" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "TST"]$diff_delta_y_w
+  )
 summary(s_wsub_mvpa_tst_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_mvpa_tst_d5, stats = "bias"),
-  methodvar = s_wsub_mvpa_tst_d5$methodvar,
-  by = s_wsub_mvpa_tst_d5$by,
-  stats = tidy(s_wsub_mvpa_tst_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "WAKE" & From == "TST"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "WAKE" & From == "TST" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3414,31 +1964,13 @@ s_wsub_mvpa_wake_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_mvpa_wake_d5 <- .get_cov(
+  s_wsub_mvpa_wake_d5,
+  simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_w
+  )
 summary(s_wsub_mvpa_wake_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_mvpa_wake_d5, stats = "bias"),
-  methodvar = s_wsub_mvpa_wake_d5$methodvar,
-  by = s_wsub_mvpa_wake_d5$by,
-  stats = tidy(s_wsub_mvpa_wake_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "MVPA" & From == "WAKE"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "MVPA" & From == "WAKE" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3453,31 +1985,13 @@ s_wsub_mvpa_lpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_mvpa_lpa_d5 <- .get_cov(
+  s_wsub_mvpa_lpa_d5,
+  simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_w
+  )
 summary(s_wsub_mvpa_lpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_mvpa_lpa_d5, stats = "bias"),
-  methodvar = s_wsub_mvpa_lpa_d5$methodvar,
-  by = s_wsub_mvpa_lpa_d5$by,
-  stats = tidy(s_wsub_mvpa_lpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "MVPA" & From == "LPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "MVPA" & From == "LPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3492,31 +2006,13 @@ s_wsub_mvpa_sb_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_mvpa_sb_d5 <- .get_cov(
+  s_wsub_mvpa_sb_d5,
+  simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_mvpa_sb_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_mvpa_sb_d5, stats = "bias"),
-  methodvar = s_wsub_mvpa_sb_d5$methodvar,
-  by = s_wsub_mvpa_sb_d5$by,
-  stats = tidy(s_wsub_mvpa_sb_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "MVPA" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "MVPA" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3531,31 +2027,13 @@ s_wsub_lpa_tst_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_lpa_tst_d5 <- .get_cov(
+  s_wsub_lpa_tst_d5,
+  simsum_sub_d5[To == "LPA" & From == "TST" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_w
+  )
 summary(s_wsub_lpa_tst_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_lpa_tst_d5, stats = "bias"),
-  methodvar = s_wsub_lpa_tst_d5$methodvar,
-  by = s_wsub_lpa_tst_d5$by,
-  stats = tidy(s_wsub_lpa_tst_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "LPA" & From == "TST" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "LPA" & From == "TST"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "LPA" & From == "TST" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3570,31 +2048,13 @@ s_wsub_lpa_wake_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_lpa_wake_d5 <- .get_cov(
+  s_wsub_lpa_wake_d5,
+  simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_w
+  )
 summary(s_wsub_lpa_wake_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_lpa_wake_d5, stats = "bias"),
-  methodvar = s_wsub_lpa_wake_d5$methodvar,
-  by = s_wsub_lpa_wake_d5$by,
-  stats = tidy(s_wsub_lpa_wake_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "LPA" & From == "WAKE"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "LPA" & From == "WAKE" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3609,31 +2069,13 @@ s_wsub_lpa_mvpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_lpa_mvpa_d5 <- .get_cov(
+  s_wsub_lpa_mvpa_d5,
+  simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_w
+  )
 summary(s_wsub_lpa_mvpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_lpa_mvpa_d5, stats = "bias"),
-  methodvar = s_wsub_lpa_mvpa_d5$methodvar,
-  by = s_wsub_lpa_mvpa_d5$by,
-  stats = tidy(s_wsub_lpa_mvpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "LPA" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "LPA" & From == "MVPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3648,31 +2090,13 @@ s_wsub_lpa_sb_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_lpa_sb_d5 <- .get_cov(
+  s_wsub_lpa_sb_d5,
+  simsum_sub_d5[To == "LPA" & From == "SB" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_w
+  )
 summary(s_wsub_lpa_sb_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_lpa_sb_d5, stats = "bias"),
-  methodvar = s_wsub_lpa_sb_d5$methodvar,
-  by = s_wsub_lpa_sb_d5$by,
-  stats = tidy(s_wsub_lpa_sb_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "LPA" & From == "SB" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "LPA" & From == "SB"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "LPA" & From == "SB" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3687,31 +2111,13 @@ s_wsub_sb_tst_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_tst_d5 <- .get_cov(
+  s_wsub_sb_tst_d5,
+  simsum_sub_d5[To == "SB" & From == "TST" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_tst_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sb_tst_d5, stats = "bias"),
-  methodvar = s_wsub_sb_tst_d5$methodvar,
-  by = s_wsub_sb_tst_d5$by,
-  stats = tidy(s_wsub_sb_tst_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "SB" & From == "TST" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "SB" & From == "TST"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "SB" & From == "TST" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3726,31 +2132,13 @@ s_wsub_sb_wake_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_wake_d5 <- .get_cov(
+  s_wsub_sb_wake_d5,
+  simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_wake_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sb_wake_d5, stats = "bias"),
-  methodvar = s_wsub_sb_wake_d5$methodvar,
-  by = s_wsub_sb_wake_d5$by,
-  stats = tidy(s_wsub_sb_wake_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "SB" & From == "WAKE"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "SB" & From == "WAKE" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3765,31 +2153,13 @@ s_wsub_sb_mvpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_mvpa_d5 <- .get_cov(
+  s_wsub_sb_mvpa_d5,
+  simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_mvpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sb_mvpa_d5, stats = "bias"),
-  methodvar = s_wsub_sb_mvpa_d5$methodvar,
-  by = s_wsub_sb_mvpa_d5$by,
-  stats = tidy(s_wsub_sb_mvpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "SB" & From == "MVPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "SB" & From == "MVPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
@@ -3804,32 +2174,20 @@ s_wsub_sb_lpa_d5 <- simsum(
   by = c("N", "K"),
   ci.limits = c("CI_low", "CI_high")
 )
+s_wsub_sb_lpa_d5 <- .get_cov(
+  s_wsub_sb_lpa_d5,
+  simsum_sub_d5[To == "SB" & From == "LPA" & Level == "within"],
+  estvarname = "Mean",
+  true = substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_w
+  )
 summary(s_wsub_sb_lpa_d5)
-
-# plot
-.heat_plot(
-  data = tidy(s_wsub_sb_lpa_d5, stats = "bias"),
-  methodvar = s_wsub_sb_lpa_d5$methodvar,
-  by = s_wsub_sb_lpa_d5$by,
-  stats = tidy(s_wsub_sb_lpa_d5, stats = "bias")$stat[[1]]
-) +
-  scale_fill_gradient2(
-    low = "#6D8B74",
-    high = "#FAF7F3",
-    na.value = NA
-  ) +
-  hrbrthemes::theme_ipsum()
-
-# coverage
-simsum_sub_d5[To == "SB" & From == "LPA" & Level == "within", 
-              coverage_diff_delta_y_w := 
-                (substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_w >= CI_low) & 
-                (substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_w <= CI_high)]
-
-simsum_sub_d5[To == "SB" & From == "LPA" & Level == "within",
-              mean(coverage_diff_delta_y_w),
-              by = condition]
 
 ```
 
+# Save results
+```{r}
+# saveRDS(simsum_sub_d3, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d3.RDS")
+# saveRDS(simsum_sub_d4, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d4.RDS")
+# saveRDS(simsum_sub_d5, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d5.RDS")
+```
 
