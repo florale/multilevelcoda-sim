@@ -1,5 +1,3 @@
-library(knitr)
-
 library(data.table)
 library(extraoperators)
 library(compositions)
@@ -16,27 +14,11 @@ library(ggplot2)
 library(ggsci)
 library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
 
-input <- readRDS("input.RDS")
-meanscovs <- input$meanscovs
-prefit5 <- input$prefit5
-prefit4 <- input$prefit4
-prefit3 <- input$prefit3
-
-source("input.R") # groundtruth, conditions and functions
-
-out1 <- readRDS("/fs04/ft29/simonm3/out1.RDS")
-# out2 <- readRDS("/fs04/ft29/simonm3/out2.RDS")
-# out3 <- readRDS("/fs04/ft29/simonm3/out3.RDS")
-# out4 <- readRDS("/fs04/ft29/simonm3/out4.RDS")
-# out5 <- readRDS("/fs04/ft29/simonm3/out5.RDS")
-# out6 <- readRDS("/fs04/ft29/simonm3/out6.RDS")
-# out7 <- readRDS("/fs04/ft29/simonm3/out7.RDS")
-# out8 <- readRDS("/fs04/ft29/simonm3/out8.RDS")
+# out <- readRDS("/fs04/ft29/simonm3/out1.RDS")
 
 ## extract -------------------
 # registerDoFuture()
 # plan(multisession, workers = 8)
-out <- out1
 
 out3 <- list()
 out4 <- list()
@@ -114,6 +96,24 @@ results <- lapply(allout, function(y) {
   )
   colnames(res_results) <- c("sigma", "se_sigma", "ll_sigma", "ul_sigma")
   
+  ### others 
+  r_hat <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$fixed$Rhat
+  }))
+  colnames(r_hat) <- paste0("rhat_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  
+  b_ess <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$fixed$Bulk_ESS
+  }))
+  colnames(b_ess) <- paste0("bess_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  
+  t_ess <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$fixed$Tail_ESS
+  }))
+  colnames(t_ess) <- paste0("tess_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  
+  others <- cbind(r_hat, b_ess, t_ess)
+  
   ### conditions
   cond_results <- cbind(
     sapply(y, function(x) {x$N}),
@@ -121,12 +121,15 @@ results <- lapply(allout, function(y) {
     sapply(y, function(x) {x$rint_sd}),
     sapply(y, function(x) {x$res_sd}),
     sapply(y, function(x) {x$run}),
-    sapply(y, function(x) {x$n_parts})
+    sapply(y, function(x) {x$n_parts}),
+    sapply(y, function(x) {x$Result$ndt}),
+    sapply(y, function(x) {any(apply(x$CompILR$data[, x$parts, with = FALSE], 2, function(z) z == 0))})
   )
-  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+  
+  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts", "ndt", "zero")
   
   ### putting it all together
-  cbind(cond_results, fe_results, re_results, res_results)
+  cbind(cond_results, fe_results, re_results, res_results, others)
 })
 
 saveRDS(results, "results.RDS")

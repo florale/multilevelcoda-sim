@@ -24,7 +24,7 @@ source("input.R") # groundtruth, conditions and functions
 
 ## set different for each script -------
 set.seed(1) 
-sampled_cond <- cond[c(1, 65, 129)] 
+sampled_cond <- cond[c(1, 13, 81, 161)] 
 
 ## model -------------------
 registerDoFuture()
