@@ -9,8 +9,11 @@
 
 290623 - extracted substitution() sim model results v2 - increased 30GB to 50GB as out of mem
 
-300623 - m3 3rd batch 
+300623 - m3 3rd batch - disregarded
 - change large res_sd = 2 and large rint_sd = 2 condition so reran (previously missed a condition)
 
 300623 - m3 4th batch 
 - change large res_sd = 1.5 and large rint_sd = 1.5
+
+050723 - m3 5th batch 
+- run extra 1000 runs under each condition
