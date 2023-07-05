@@ -14,7 +14,7 @@ library(ggplot2)
 library(ggsci)
 library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
 
-out <- readRDS("/fs04/ft29/simonm3/out6.RDS")
+out <- readRDS("/fs04/ft29/simonm3/out23.RDS")
 
 ## extract -------------------
 # registerDoFuture()
@@ -36,7 +36,7 @@ allout <- lapply(allout, function(x) {
 
 rm(out, out3, out4, out5)
 
-simsum_brmcoda_6 <- lapply(allout, function(y) {
+simsum_brmcoda_23 <- lapply(allout, function(y) {
   
   ### estimates ###
   est <- do.call(rbind, lapply(y, function(x) {
@@ -132,4 +132,4 @@ simsum_brmcoda_6 <- lapply(allout, function(y) {
   cbind(cond_results, fe_results, re_results, res_results, others)
 })
 
-saveRDS(simsum_brmcoda_6, "simsum_brmcoda_6.RDS")
+saveRDS(simsum_brmcoda_23, "simsum_brmcoda_23.RDS")
