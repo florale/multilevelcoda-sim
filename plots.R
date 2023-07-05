@@ -225,50 +225,50 @@ ggarrange(bsub_bias_plot,
 
 # substitution cover -------------------
 bsub_cover_d3 <- as.data.table(rbind(
-  tidy(s_bsub_sleep_pa_d3, stats = "cover"),
-  tidy(s_bsub_sleep_sb_d3, stats = "cover"),
-  tidy(s_bsub_pa_sleep_d3, stats = "cover"),
-  tidy(s_bsub_pa_sb_d3, stats = "cover"),
-  tidy(s_bsub_sb_sleep_d3, stats = "cover"),
-  tidy(s_bsub_sb_pa_d3, stats = "cover")
+  tidy(s_bsub_sleep_pa_d3, stats = "becover"),
+  tidy(s_bsub_sleep_sb_d3, stats = "becover"),
+  tidy(s_bsub_pa_sleep_d3, stats = "becover"),
+  tidy(s_bsub_pa_sb_d3, stats = "becover"),
+  tidy(s_bsub_sb_sleep_d3, stats = "becover"),
+  tidy(s_bsub_sb_pa_d3, stats = "becover")
 ))
 
 bsub_cover_d4 <- as.data.table(rbind(
-  tidy(s_bsub_sleep_mvpa_d4, stats = "cover"),
-  tidy(s_bsub_sleep_lpa_d4, stats = "cover"),
-  tidy(s_bsub_sleep_sb_d4, stats = "cover"),
-  tidy(s_bsub_mvpa_sleep_d4, stats = "cover"),
-  tidy(s_bsub_mvpa_lpa_d4, stats = "cover"),
-  tidy(s_bsub_mvpa_sb_d4, stats = "cover"),
-  tidy(s_bsub_lpa_sleep_d4, stats = "cover"),
-  tidy(s_bsub_lpa_mvpa_d4, stats = "cover"),
-  tidy(s_bsub_lpa_sb_d4, stats = "cover"),
-  tidy(s_bsub_sb_sleep_d4, stats = "cover"),
-  tidy(s_bsub_sb_mvpa_d4, stats = "cover"),
-  tidy(s_bsub_sb_lpa_d4, stats = "cover")
+  tidy(s_bsub_sleep_mvpa_d4, stats = "becover"),
+  tidy(s_bsub_sleep_lpa_d4, stats = "becover"),
+  tidy(s_bsub_sleep_sb_d4, stats = "becover"),
+  tidy(s_bsub_mvpa_sleep_d4, stats = "becover"),
+  tidy(s_bsub_mvpa_lpa_d4, stats = "becover"),
+  tidy(s_bsub_mvpa_sb_d4, stats = "becover"),
+  tidy(s_bsub_lpa_sleep_d4, stats = "becover"),
+  tidy(s_bsub_lpa_mvpa_d4, stats = "becover"),
+  tidy(s_bsub_lpa_sb_d4, stats = "becover"),
+  tidy(s_bsub_sb_sleep_d4, stats = "becover"),
+  tidy(s_bsub_sb_mvpa_d4, stats = "becover"),
+  tidy(s_bsub_sb_lpa_d4, stats = "becover")
 ))
 
 bsub_cover_d5 <- as.data.table(rbind(
-  tidy(s_bsub_tst_wake_d5, stats = "cover"),
-  tidy(s_bsub_tst_mvpa_d5, stats = "cover"),
-  tidy(s_bsub_tst_lpa_d5, stats = "cover"),
-  tidy(s_bsub_tst_sb_d5, stats = "cover"),
-  tidy(s_bsub_wake_tst_d5, stats = "cover"),
-  tidy(s_bsub_wake_mvpa_d5, stats = "cover"),
-  tidy(s_bsub_wake_lpa_d5, stats = "cover"),
-  tidy(s_bsub_wake_sb_d5, stats = "cover"),
-  tidy(s_bsub_mvpa_tst_d5, stats = "cover"),
-  tidy(s_bsub_mvpa_wake_d5, stats = "cover"),
-  tidy(s_bsub_mvpa_lpa_d5, stats = "cover"),
-  tidy(s_bsub_mvpa_sb_d5, stats = "cover"),
-  tidy(s_bsub_lpa_tst_d5, stats = "cover"),
-  tidy(s_bsub_lpa_wake_d5, stats = "cover"),
-  tidy(s_bsub_lpa_mvpa_d5, stats = "cover"),
-  tidy(s_bsub_lpa_sb_d5, stats = "cover"),
-  tidy(s_bsub_sb_tst_d5, stats = "cover"),
-  tidy(s_bsub_sb_wake_d5, stats = "cover"),
-  tidy(s_bsub_sb_mvpa_d5, stats = "cover"),
-  tidy(s_bsub_sb_lpa_d5, stats = "cover")
+  tidy(s_bsub_tst_wake_d5, stats = "becover"),
+  tidy(s_bsub_tst_mvpa_d5, stats = "becover"),
+  tidy(s_bsub_tst_lpa_d5, stats = "becover"),
+  tidy(s_bsub_tst_sb_d5, stats = "becover"),
+  tidy(s_bsub_wake_tst_d5, stats = "becover"),
+  tidy(s_bsub_wake_mvpa_d5, stats = "becover"),
+  tidy(s_bsub_wake_lpa_d5, stats = "becover"),
+  tidy(s_bsub_wake_sb_d5, stats = "becover"),
+  tidy(s_bsub_mvpa_tst_d5, stats = "becover"),
+  tidy(s_bsub_mvpa_wake_d5, stats = "becover"),
+  tidy(s_bsub_mvpa_lpa_d5, stats = "becover"),
+  tidy(s_bsub_mvpa_sb_d5, stats = "becover"),
+  tidy(s_bsub_lpa_tst_d5, stats = "becover"),
+  tidy(s_bsub_lpa_wake_d5, stats = "becover"),
+  tidy(s_bsub_lpa_mvpa_d5, stats = "becover"),
+  tidy(s_bsub_lpa_sb_d5, stats = "becover"),
+  tidy(s_bsub_sb_tst_d5, stats = "becover"),
+  tidy(s_bsub_sb_wake_d5, stats = "becover"),
+  tidy(s_bsub_sb_mvpa_d5, stats = "becover"),
+  tidy(s_bsub_sb_lpa_d5, stats = "becover")
 ))
 
 
@@ -282,50 +282,50 @@ bsub_cover_d5[, NoOfParts := 5]
 bsub_cover_d5[, Level := "between"]
 
 wsub_cover_d3 <- as.data.table(rbind(
-  tidy(s_wsub_sleep_pa_d3, stats = "cover"),
-  tidy(s_wsub_sleep_sb_d3, stats = "cover"),
-  tidy(s_wsub_pa_sleep_d3, stats = "cover"),
-  tidy(s_wsub_pa_sb_d3, stats = "cover"),
-  tidy(s_wsub_sb_sleep_d3, stats = "cover"),
-  tidy(s_wsub_sb_pa_d3, stats = "cover")
+  tidy(s_wsub_sleep_pa_d3, stats = "becover"),
+  tidy(s_wsub_sleep_sb_d3, stats = "becover"),
+  tidy(s_wsub_pa_sleep_d3, stats = "becover"),
+  tidy(s_wsub_pa_sb_d3, stats = "becover"),
+  tidy(s_wsub_sb_sleep_d3, stats = "becover"),
+  tidy(s_wsub_sb_pa_d3, stats = "becover")
 ))
 
 wsub_cover_d4 <- as.data.table(rbind(
-  tidy(s_wsub_sleep_mvpa_d4, stats = "cover"),
-  tidy(s_wsub_sleep_lpa_d4, stats = "cover"),
-  tidy(s_wsub_sleep_sb_d4, stats = "cover"),
-  tidy(s_wsub_mvpa_sleep_d4, stats = "cover"),
-  tidy(s_wsub_mvpa_lpa_d4, stats = "cover"),
-  tidy(s_wsub_mvpa_sb_d4, stats = "cover"),
-  tidy(s_wsub_lpa_sleep_d4, stats = "cover"),
-  tidy(s_wsub_lpa_mvpa_d4, stats = "cover"),
-  tidy(s_wsub_lpa_sb_d4, stats = "cover"),
-  tidy(s_wsub_sb_sleep_d4, stats = "cover"),
-  tidy(s_wsub_sb_mvpa_d4, stats = "cover"),
-  tidy(s_wsub_sb_lpa_d4, stats = "cover")
+  tidy(s_wsub_sleep_mvpa_d4, stats = "becover"),
+  tidy(s_wsub_sleep_lpa_d4, stats = "becover"),
+  tidy(s_wsub_sleep_sb_d4, stats = "becover"),
+  tidy(s_wsub_mvpa_sleep_d4, stats = "becover"),
+  tidy(s_wsub_mvpa_lpa_d4, stats = "becover"),
+  tidy(s_wsub_mvpa_sb_d4, stats = "becover"),
+  tidy(s_wsub_lpa_sleep_d4, stats = "becover"),
+  tidy(s_wsub_lpa_mvpa_d4, stats = "becover"),
+  tidy(s_wsub_lpa_sb_d4, stats = "becover"),
+  tidy(s_wsub_sb_sleep_d4, stats = "becover"),
+  tidy(s_wsub_sb_mvpa_d4, stats = "becover"),
+  tidy(s_wsub_sb_lpa_d4, stats = "becover")
 ))
 
 wsub_cover_d5 <- as.data.table(rbind(
-  tidy(s_wsub_tst_wake_d5, stats = "cover"),
-  tidy(s_wsub_tst_mvpa_d5, stats = "cover"),
-  tidy(s_wsub_tst_lpa_d5, stats = "cover"),
-  tidy(s_wsub_tst_sb_d5, stats = "cover"),
-  tidy(s_wsub_wake_tst_d5, stats = "cover"),
-  tidy(s_wsub_wake_mvpa_d5, stats = "cover"),
-  tidy(s_wsub_wake_lpa_d5, stats = "cover"),
-  tidy(s_wsub_wake_sb_d5, stats = "cover"),
-  tidy(s_wsub_mvpa_tst_d5, stats = "cover"),
-  tidy(s_wsub_mvpa_wake_d5, stats = "cover"),
-  tidy(s_wsub_mvpa_lpa_d5, stats = "cover"),
-  tidy(s_wsub_mvpa_sb_d5, stats = "cover"),
-  tidy(s_wsub_lpa_tst_d5, stats = "cover"),
-  tidy(s_wsub_lpa_wake_d5, stats = "cover"),
-  tidy(s_wsub_lpa_mvpa_d5, stats = "cover"),
-  tidy(s_wsub_lpa_sb_d5, stats = "cover"),
-  tidy(s_wsub_sb_tst_d5, stats = "cover"),
-  tidy(s_wsub_sb_wake_d5, stats = "cover"),
-  tidy(s_wsub_sb_mvpa_d5, stats = "cover"),
-  tidy(s_wsub_sb_lpa_d5, stats = "cover")
+  tidy(s_wsub_tst_wake_d5, stats = "becover"),
+  tidy(s_wsub_tst_mvpa_d5, stats = "becover"),
+  tidy(s_wsub_tst_lpa_d5, stats = "becover"),
+  tidy(s_wsub_tst_sb_d5, stats = "becover"),
+  tidy(s_wsub_wake_tst_d5, stats = "becover"),
+  tidy(s_wsub_wake_mvpa_d5, stats = "becover"),
+  tidy(s_wsub_wake_lpa_d5, stats = "becover"),
+  tidy(s_wsub_wake_sb_d5, stats = "becover"),
+  tidy(s_wsub_mvpa_tst_d5, stats = "becover"),
+  tidy(s_wsub_mvpa_wake_d5, stats = "becover"),
+  tidy(s_wsub_mvpa_lpa_d5, stats = "becover"),
+  tidy(s_wsub_mvpa_sb_d5, stats = "becover"),
+  tidy(s_wsub_lpa_tst_d5, stats = "becover"),
+  tidy(s_wsub_lpa_wake_d5, stats = "becover"),
+  tidy(s_wsub_lpa_mvpa_d5, stats = "becover"),
+  tidy(s_wsub_lpa_sb_d5, stats = "becover"),
+  tidy(s_wsub_sb_tst_d5, stats = "becover"),
+  tidy(s_wsub_sb_wake_d5, stats = "becover"),
+  tidy(s_wsub_sb_mvpa_d5, stats = "becover"),
+  tidy(s_wsub_sb_lpa_d5, stats = "becover")
 ))
 
 wsub_cover_d3[, NoOfParts := 3]
@@ -500,33 +500,33 @@ ggarrange(bbrmcoda_bias_plot,
 
 ## brmcoda cover ----------------------
 brmcoda_cover_d3 <- as.data.table(rbind(
-  tidy(s_b0_d3, stats = "cover"),
-  tidy(s_bilr1_d3, stats = "cover"),
-  tidy(s_bilr2_d3, stats = "cover"),
-  tidy(s_wilr1_d3, stats = "cover"),
-  tidy(s_wilr2_d3, stats = "cover")
+  tidy(s_b0_d3, stats = "becover"),
+  tidy(s_bilr1_d3, stats = "becover"),
+  tidy(s_bilr2_d3, stats = "becover"),
+  tidy(s_wilr1_d3, stats = "becover"),
+  tidy(s_wilr2_d3, stats = "becover")
 ))
 
 brmcoda_cover_d4 <- as.data.table(rbind(
-  tidy(s_b0_d4, stats = "cover"),
-  tidy(s_bilr1_d4, stats = "cover"),
-  tidy(s_bilr2_d4, stats = "cover"),
-  tidy(s_bilr3_d4, stats = "cover"),
-  tidy(s_wilr1_d4, stats = "cover"),
-  tidy(s_wilr2_d4, stats = "cover"),
-  tidy(s_wilr3_d4, stats = "cover")
+  tidy(s_b0_d4, stats = "becover"),
+  tidy(s_bilr1_d4, stats = "becover"),
+  tidy(s_bilr2_d4, stats = "becover"),
+  tidy(s_bilr3_d4, stats = "becover"),
+  tidy(s_wilr1_d4, stats = "becover"),
+  tidy(s_wilr2_d4, stats = "becover"),
+  tidy(s_wilr3_d4, stats = "becover")
 ))
 
 brmcoda_cover_d5 <- as.data.table(rbind(
-  tidy(s_b0_d5, stats = "cover"),
-  tidy(s_bilr1_d5, stats = "cover"),
-  tidy(s_bilr2_d5, stats = "cover"),
-  tidy(s_bilr3_d5, stats = "cover"),
-  tidy(s_bilr4_d5, stats = "cover"),
-  tidy(s_wilr1_d5, stats = "cover"),
-  tidy(s_wilr2_d5, stats = "cover"),
-  tidy(s_wilr3_d5, stats = "cover"),
-  tidy(s_wilr4_d5, stats = "cover")
+  tidy(s_b0_d5, stats = "becover"),
+  tidy(s_bilr1_d5, stats = "becover"),
+  tidy(s_bilr2_d5, stats = "becover"),
+  tidy(s_bilr3_d5, stats = "becover"),
+  tidy(s_bilr4_d5, stats = "becover"),
+  tidy(s_wilr1_d5, stats = "becover"),
+  tidy(s_wilr2_d5, stats = "becover"),
+  tidy(s_wilr3_d5, stats = "becover"),
+  tidy(s_wilr4_d5, stats = "becover")
 ))
 
 
