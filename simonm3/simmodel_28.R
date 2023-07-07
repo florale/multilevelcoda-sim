@@ -23,8 +23,8 @@ prefit3 <- input$prefit3
 source("input.R") # groundtruth, conditions and functions
 
 ## set different for each script -------
-set.seed(1) 
-sampled_cond <- cond[c(1, 13, 81, 161)] 
+set.seed(28) 
+sampled_cond <- cond[540001:560000] 
 
 ## model -------------------
 registerDoFuture()
@@ -33,9 +33,10 @@ registerDoFuture()
 plan(multisession, workers = 20L)
 
 starttime <- proc.time()
-out <- vector("list", length = nrow(sampled_cond))
+out28 <- vector("list", length = nrow(sampled_cond))
+sim_model <- list()
 
-out <- foreach(i = seq_len(nrow(sampled_cond)),
+out28 <- foreach(i = seq_len(nrow(sampled_cond)),
                .combine = c, .export = ls(globalenv())) %dorng% {
                  
                  N             <- sampled_cond[i, N]
@@ -151,4 +152,4 @@ out <- foreach(i = seq_len(nrow(sampled_cond)),
 
 endtime <- proc.time()
 endtime - starttime ## time to complete
-#saveRDS(out, "out.RDS", compress = "xz")
+saveRDS(out28, "out28.RDS")

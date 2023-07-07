@@ -26,7 +26,15 @@ groundtruth5 <- data.table(
   b_wilr1      = -0.60,
   b_wilr2      = -0.45,
   b_wilr3      = -0.30,
-  b_wilr4      = -0.20
+  b_wilr4      = -0.20,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(2),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
 )
 
 groundtruth4 <- data.table(
@@ -36,7 +44,15 @@ groundtruth4 <- data.table(
   b_bilr3      = 0.02,
   b_wilr1      = -0.75,
   b_wilr2      = -0.30,
-  b_wilr3      = -0.20
+  b_wilr3      = -0.20,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(2),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
 )
 
 groundtruth3 <- data.table(
@@ -44,7 +60,15 @@ groundtruth3 <- data.table(
   b_bilr1      = 0.15,
   b_bilr2      = 0.10,
   b_wilr1      = -0.80,
-  b_wilr2      = -0.25
+  b_wilr2      = -0.25,
+  
+  u0           = 1,
+  u0_small     = sqrt(.5),
+  u0_large     = sqrt(2),
+  
+  sigma        = 1,
+  sigma_small  = sqrt(.5),
+  sigma_large  = sqrt(2)
 )
 
 ## conditions --------
@@ -54,7 +78,7 @@ cond <-
               rint_sd = c(1, sqrt(.5), sqrt(1.5)),
               res_sd = c(1, sqrt(.5), sqrt(1.5)),
               n_parts = c(3, 4, 5),
-              run = 1:2000)
+              run = 1:2500)
 cond <- as.data.table(cond)
 cond <- cond[
   (rint_sd == 1 & res_sd == 1) |
