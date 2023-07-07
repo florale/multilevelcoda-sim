@@ -1,5 +1,6 @@
-
-colour <- wes_palette("IsleofDogs2", 4)
+# set up ------------
+colour <- wes_palette("IsleofDogs2", 5)
+colour <- wes_palette("Cavalcanti1", 5)
 colour <- c("#EFE3E0", "#BEACA2", "#708885", "#5A6367")
 colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 
@@ -17,7 +18,7 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 
 .forest_plot(
   object = s_bilr1_d3,
-  stats = "bias"
+  stats = "becover"
 )
 
 .forest_plot(
@@ -32,6 +33,36 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 
 .forest_plot(
   object = s_wilr2_d3,
+  stats = "bias"
+) 
+
+.forest_plot(
+  object = s_u0_base_d3,
+  stats = "bias"
+)
+
+.forest_plot(
+  object = s_u0_small_d3,
+  stats = "bias"
+)
+
+.forest_plot(
+  object = s_u0_large_d3,
+  stats = "bias"
+)
+
+.forest_plot(
+  object = s_sigma_base_d3,
+  stats = "bias"
+) 
+
+.forest_plot(
+  object = s_sigma_small_d3,
+  stats = "bias"
+) 
+
+.forest_plot(
+  object = s_sigma_large_d3,
   stats = "bias"
 ) 
 
@@ -71,8 +102,37 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
   stats = "bias"
 ) 
 
-## bias brmcoda 5part ------------------------
+.forest_plot(
+  object = s_u0_base_d4,
+  stats = "bias"
+)
 
+.forest_plot(
+  object = s_u0_small_d4,
+  stats = "bias"
+)
+
+.forest_plot(
+  object = s_u0_large_d4,
+  stats = "bias"
+)
+
+.forest_plot(
+  object = s_sigma_base_d4,
+  stats = "bias"
+) 
+
+.forest_plot(
+  object = s_sigma_small_d4,
+  stats = "bias"
+) 
+
+.forest_plot(
+  object = s_sigma_large_d4,
+  stats = "bias"
+) 
+
+## bias brmcoda 5part ------------------------
 .forest_plot(
   object = s_b0_d5,
   stats = "bias"
@@ -115,6 +175,36 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 
 .forest_plot(
   object = s_wilr4_d5,
+  stats = "bias"
+) 
+
+.forest_plot(
+  object = s_u0_base_d5,
+  stats = "bias"
+)
+
+.forest_plot(
+  object = s_u0_small_d5,
+  stats = "bias"
+)
+
+.forest_plot(
+  object = s_u0_large_d5,
+  stats = "bias"
+)
+
+.forest_plot(
+  object = s_sigma_base_d5,
+  stats = "bias"
+) 
+
+.forest_plot(
+  object = s_sigma_small_d5,
+  stats = "bias"
+) 
+
+.forest_plot(
+  object = s_sigma_large_d5,
   stats = "bias"
 ) 
 
@@ -315,7 +405,7 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 .forest_plot(
   object = s_wsub_sleep_pa_d3,
   stats = "bias"
-) 
+) + ylim(c(-0.05, 0.05))
 
 .forest_plot(
   object = s_wsub_sleep_sb_d3,
@@ -508,7 +598,7 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 ## becover brmcoda 3part ------------------------
 .forest_plot(
   object = s_b0_d3,
-  stats = "cover"
+  stats = "becover"
 ) 
 
 .forest_plot(
@@ -806,7 +896,7 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
   stats = "becover"
 ) 
 
-# within substitution 3part ------------------
+# becover within substitution 3part ------------------
 .forest_plot(
   object = s_wsub_sleep_pa_d3,
   stats = "becover"
@@ -837,7 +927,7 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
   stats = "becover"
 ) 
 
-# within substitution 4part ------------------
+# becover within substitution 4part ------------------
 .forest_plot(
   object = s_wsub_sleep_mvpa_d4,
   stats = "becover"
@@ -898,7 +988,7 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
   stats = "becover"
 ) 
 
-# within substitution 5part ------------------
+# becover within substitution 5part ------------------
 .forest_plot(
   object = s_wsub_tst_wake_d5,
   stats = "becover"
