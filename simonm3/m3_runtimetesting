@@ -17,3 +17,7 @@ m3_foreach20
  m3_foreach10
      user   system  elapsed 
 903.492   27.874 8257.685
+
+simsum_brmcoda_ should only take < 5 mins
+simmodel_ should only take < 2 days for 20k runs
+simsum_sub is  < 25 mins
