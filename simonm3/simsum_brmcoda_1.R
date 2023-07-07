@@ -14,7 +14,7 @@ library(ggplot2)
 library(ggsci)
 library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
 
-# out <- readRDS("/fs04/ft29/simonm3/out1.RDS")
+out <- readRDS("/fs04/ft29/simonm3/out1.RDS")
 
 ## extract -------------------
 # registerDoFuture()

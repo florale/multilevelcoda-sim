@@ -14,7 +14,7 @@ library(ggplot2)
 library(ggsci)
 library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
 
-out <- readRDS("/fs04/ft29/simonm3/out5.RDS")
+out <- readRDS("/fs04/ft29/simonm3/out21.RDS")
 
 ## extract -------------------
 # registerDoFuture()
@@ -75,6 +75,6 @@ sub_sum5 <- do.call(rbind, lapply(allout[["out5"]], function(x) {
   cbind(cond_results, sum)
 }))
 
-simsum_sub_5 <- list(sub_sum3, sub_sum4, sub_sum5)
-names(simsum_sub_5) <- c("out3", "out4", "out5")
-saveRDS(simsum_sub_5, "simsum_sub_5.RDS")
+simsum_sub_21 <- list(sub_sum3, sub_sum4, sub_sum5)
+names(simsum_sub_21) <- c("out3", "out4", "out5")
+saveRDS(simsum_sub_21, "simsum_sub_21.RDS")

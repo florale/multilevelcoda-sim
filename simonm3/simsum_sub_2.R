@@ -14,26 +14,7 @@ library(ggplot2)
 library(ggsci)
 library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
 
-input <- readRDS("input.RDS")
-meanscovs <- input$meanscovs
-prefit5 <- input$prefit5
-prefit4 <- input$prefit4
-prefit3 <- input$prefit3
-
-source("input.R") # groundtruth, conditions and functions
-
-# out <- readRDS("/fs04/ft29/simonm3/out1.RDS")
 out <- readRDS("/fs04/ft29/simonm3/out2.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out3.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out4.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out5.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out6.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out7.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out8.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out9.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out10.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out11.RDS")
-# out <- readRDS("/fs04/ft29/simonm3/out12.RDS")
 
 ## extract -------------------
 # registerDoFuture()
