@@ -1,3 +1,6 @@
+source("simsum_brmcoda_out.R")
+source("simsum_sub_out.R")
+
 ## d3 fixed ----------------
 b0_d3    <- as.data.table(tidy(summary(s_b0_d3), stats = c("bias", "becover")))
 bilr1_d3 <- as.data.table(tidy(summary(s_bilr1_d3), stats = c("bias", "becover")))

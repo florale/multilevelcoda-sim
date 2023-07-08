@@ -204,12 +204,12 @@ brmcoda_d5_base[, by := factor(
   )
 )]
 
-plot_bias_brmcoda_d5_base <- .par_plot(brmcoda_d5[stat == "bias"])  +
+plot_bias_brmcoda_d5_base <- .par_plot(brmcoda_d5_base[stat == "bias"])  +
   scale_y_continuous(limits = c(-0.2, 0.2),
                      breaks = c(-0.1, 0, 0.1))
 plot_bias_brmcoda_d5_base
 
-plot_becover_brmcoda_d5_base <- .par_plot(brmcoda_d5[stat == "becover"]) +
+plot_becover_brmcoda_d5_base <- .par_plot(brmcoda_d5_base[stat == "becover"]) +
   scale_y_continuous(limits = c(0.9, 1),
                      breaks = c(0.9, 0.95, 1))
 plot_becover_brmcoda_d5_base
@@ -356,12 +356,12 @@ brmcoda_d5_ubes[, by := factor(
   )
 )]
 
-plot_bias_brmcoda_d5_ubes <- .par_plot(brmcoda_d5[stat == "bias"])  +
+plot_bias_brmcoda_d5_ubes <- .par_plot(brmcoda_d5_ubes[stat == "bias"])  +
   scale_y_continuous(limits = c(-0.2, 0.2),
                      breaks = c(-0.2, 0, 0.2))
 plot_bias_brmcoda_d5_ubes
 
-plot_becover_brmcoda_d5_ubes <- .par_plot(brmcoda_d5[stat == "becover"]) +
+plot_becover_brmcoda_d5_ubes <- .par_plot(brmcoda_d5_ubes[stat == "becover"]) +
   scale_y_continuous(limits = c(0.9, 1),
                      breaks = c(0.9, 0.95, 1))
 plot_becover_brmcoda_d5_ubes
@@ -508,12 +508,12 @@ brmcoda_d5_ubel[, by := factor(
   )
 )]
 
-plot_bias_brmcoda_d5_ubel <- .par_plot(brmcoda_d5[stat == "bias"])  +
+plot_bias_brmcoda_d5_ubel <- .par_plot(brmcoda_d5_ubel[stat == "bias"])  +
   scale_y_continuous(limits = c(-0.2, 0.2),
                      breaks = c(-0.2, 0, 0.2))
 plot_bias_brmcoda_d5_ubel
 
-plot_becover_brmcoda_d5_ubel <- .par_plot(brmcoda_d5[stat == "becover"]) +
+plot_becover_brmcoda_d5_ubel <- .par_plot(brmcoda_d5_ubel[stat == "becover"]) +
   scale_y_continuous(limits = c(0.9, 1),
                      breaks = c(0.9, 0.95, 1))
 plot_becover_brmcoda_d5_ubel
@@ -660,12 +660,12 @@ brmcoda_d5_usel[, by := factor(
   )
 )]
 
-plot_bias_brmcoda_d5_usel <- .par_plot(brmcoda_d5[stat == "bias"])  +
+plot_bias_brmcoda_d5_usel <- .par_plot(brmcoda_d5_usel[stat == "bias"])  +
   scale_y_continuous(limits = c(-0.2, 0.2),
                      breaks = c(-0.2, 0, 0.2))
 plot_bias_brmcoda_d5_usel
 
-plot_becover_brmcoda_d5_usel <- .par_plot(brmcoda_d5[stat == "becover"]) +
+plot_becover_brmcoda_d5_usel <- .par_plot(brmcoda_d5_usel[stat == "becover"]) +
   scale_y_continuous(limits = c(0.9, 1),
                      breaks = c(0.9, 0.95, 1))
 plot_becover_brmcoda_d5_usel
@@ -812,12 +812,12 @@ brmcoda_d5_ules[, by := factor(
   )
 )]
 
-plot_bias_brmcoda_d5_ules <- .par_plot(brmcoda_d5[stat == "bias"])  +
+plot_bias_brmcoda_d5_ules <- .par_plot(brmcoda_d5_ules[stat == "bias"])  +
   scale_y_continuous(limits = c(-0.2, 0.2),
                      breaks = c(-0.2, 0, 0.2))
 plot_bias_brmcoda_d5_ules
 
-plot_becover_brmcoda_d5_ules <- .par_plot(brmcoda_d5[stat == "becover"]) +
+plot_becover_brmcoda_d5_ules <- .par_plot(brmcoda_d5_ules[stat == "becover"]) +
   scale_y_continuous(limits = c(0.9, 1),
                      breaks = c(0.9, 0.95, 1))
 plot_becover_brmcoda_d5_ules
