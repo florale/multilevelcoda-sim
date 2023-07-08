@@ -98,6 +98,47 @@
   return(out)
 }
 
+
+## Forest parameter plot
+.par_plot <- function(data) {
+  
+  if(all(data$stat == "bias")) {
+    ylab <- "Bias"
+    yintercept <- 0
+  } else if (all(data$stat == "becover")) {
+    ylab <- "Coverage"
+    yintercept <- 0.95
+  }
+  
+  gg <- 
+    ggplot(data, 
+           aes(x = by, y = est, 
+               ymin = lower, ymax = upper,
+               colour = by)) +
+    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dotted", linewidth = 1 / 2) +
+    geom_point() +
+    geom_errorbar(width = 1 / 2) +
+    labs(x = "", y = ylab, colour = "Parameter") +
+    scale_colour_manual(values = colour) + 
+    coord_flip() +
+    facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
+    theme_ipsum() +
+    theme(
+      axis.ticks        = element_blank(),
+      legend.position   = "bottom",
+      panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background   = element_rect(fill = "transparent", colour = NA),
+      axis.title.y      = element_text(size = 12, face = "bold"),
+      axis.title.x      = element_text(size = 12, face = "bold"),
+      axis.text.x       = element_text(size = 11),
+      axis.text.y       = element_blank(),
+      title             = element_text(size = 12, face = "bold")
+    )
+  
+  return(gg)
+  
+}
+
 ## Coverage
 .get_cov <- function(object, data, estvarname, true, 
                      by = c("N", "K"),
