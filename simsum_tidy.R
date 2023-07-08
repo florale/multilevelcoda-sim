@@ -36,11 +36,11 @@ u0_base_d3[, Level := ""]
 
 u0_small_d3[, Parameter := "u0"]
 u0_small_d3[, Predictor := ""]
-u0_small_d3[, Level := "small"]
+u0_small_d3[, Level := ""]
 
 u0_large_d3[, Parameter := "u0"]
 u0_large_d3[, Predictor := ""]
-u0_large_d3[, Level := "large"]
+u0_large_d3[, Level := ""]
 
 ## d3 residual ----------------
 sigma_base_d3  <- as.data.table(tidy(summary(s_sigma_base_d3), stats = c("bias", "becover")))
@@ -53,11 +53,11 @@ sigma_base_d3[, Level := ""]
 
 sigma_small_d3[, Parameter := "sigma"]
 sigma_small_d3[, Predictor := ""]
-sigma_small_d3[, Level := "small"]
+sigma_small_d3[, Level := ""]
 
 sigma_large_d3[, Parameter := "sigma"]
 sigma_large_d3[, Predictor := ""]
-sigma_large_d3[, Level := "large"]
+sigma_large_d3[, Level := ""]
 
 ## d3 brmcoda base ----------------
 brmcoda_d3 <- rbind(
@@ -200,11 +200,11 @@ u0_base_d4[, Level := ""]
 
 u0_small_d4[, Parameter := "u0"]
 u0_small_d4[, Predictor := ""]
-u0_small_d4[, Level := "small"]
+u0_small_d4[, Level := ""]
 
 u0_large_d4[, Parameter := "u0"]
 u0_large_d4[, Predictor := ""]
-u0_large_d4[, Level := "large"]
+u0_large_d4[, Level := ""]
 
 ## d4 residual  ----------------
 sigma_base_d4  <- as.data.table(tidy(summary(s_sigma_base_d4), stats = c("bias", "becover")))
@@ -217,11 +217,11 @@ sigma_base_d4[, Level := ""]
 
 sigma_small_d4[, Parameter := "sigma"]
 sigma_small_d4[, Predictor := ""]
-sigma_small_d4[, Level := "small"]
+sigma_small_d4[, Level := ""]
 
 sigma_large_d4[, Parameter := "sigma"]
 sigma_large_d4[, Predictor := ""]
-sigma_large_d4[, Level := "large"]
+sigma_large_d4[, Level := ""]
 
 ## d4 brmcoda base -------
 brmcoda_d4 <- rbind(
@@ -424,11 +424,11 @@ u0_base_d5[, Level := ""]
 
 u0_small_d5[, Parameter := "u0"]
 u0_small_d5[, Predictor := ""]
-u0_small_d5[, Level := "small"]
+u0_small_d5[, Level := ""]
 
 u0_large_d5[, Parameter := "u0"]
 u0_large_d5[, Predictor := ""]
-u0_large_d5[, Level := "large"]
+u0_large_d5[, Level := ""]
 
 ## d5 residual  ----------------
 sigma_base_d5  <- as.data.table(tidy(summary(s_sigma_base_d5), stats = c("bias", "becover")))
@@ -441,11 +441,11 @@ sigma_base_d5[, Level := ""]
 
 sigma_small_d5[, Parameter := "sigma"]
 sigma_small_d5[, Predictor := ""]
-sigma_small_d5[, Level := "small"]
+sigma_small_d5[, Level := ""]
 
 sigma_large_d5[, Parameter := "sigma"]
 sigma_large_d5[, Predictor := ""]
-sigma_large_d5[, Level := "large"]
+sigma_large_d5[, Level := ""]
 
 ## d5 brmcoda base -------
 brmcoda_d5 <- rbind(
