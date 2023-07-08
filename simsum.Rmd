@@ -785,8 +785,6 @@ s_sigma_base_d5 <- simsum(
   estvarname = "sigma",
   true = groundtruth5$sigma,
   se = "se_sigma",
-  methodvar = "u0_condition",
-  ref = "base",
   by = c("N", "K"),
   ci.limits = c("ll_sigma", "ul_sigma")
 )
@@ -1974,6 +1972,7 @@ s_wsub_mvpa_lpa_d4 <- .get_cov(
 )
 summary(s_wsub_mvpa_lpa_d4)
 ```
+
 
 ```{r wsub-sum-mvpa-sb-d4}
 s_wsub_mvpa_sb_d4 <- simsum(
