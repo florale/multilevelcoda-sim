@@ -30,11 +30,11 @@ groundtruth5 <- data.table(
   
   u0           = 1,
   u0_small     = sqrt(.5),
-  u0_large     = sqrt(2),
+  u0_large     = sqrt(1.5),
   
   sigma        = 1,
   sigma_small  = sqrt(.5),
-  sigma_large  = sqrt(2)
+  sigma_large  = sqrt(1.5)
 )
 
 groundtruth4 <- data.table(
@@ -48,11 +48,11 @@ groundtruth4 <- data.table(
   
   u0           = 1,
   u0_small     = sqrt(.5),
-  u0_large     = sqrt(2),
+  u0_large     = sqrt(1.5),
   
   sigma        = 1,
   sigma_small  = sqrt(.5),
-  sigma_large  = sqrt(2)
+  sigma_large  = sqrt(1.5)
 )
 
 groundtruth3 <- data.table(
@@ -64,11 +64,11 @@ groundtruth3 <- data.table(
   
   u0           = 1,
   u0_small     = sqrt(.5),
-  u0_large     = sqrt(2),
+  u0_large     = sqrt(1.5),
   
   sigma        = 1,
   sigma_small  = sqrt(.5),
-  sigma_large  = sqrt(2)
+  sigma_large  = sqrt(1.5)
 )
 
 ## conditions --------
