@@ -60,10 +60,10 @@ sub_sum3 <- do.call(rbind, lapply(allout[["out3"]], function(x) {
   sum <- summary(x$Result$Substitution, delta = 30)
   
   ### conditions
-  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts)
+  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts, x$Result$ndt)
   cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
-
-  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+  
+  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts", "ndt")
   
   cbind(cond_results, sum)
 }))
@@ -73,10 +73,10 @@ sub_sum4 <- do.call(rbind, lapply(allout[["out4"]], function(x) {
   sum <- summary(x$Result$Substitution, delta = 30)
   
   ### conditions
-  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts)
+  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts, x$Result$ndt)
   cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
   
-  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts", "ndt")
   
   cbind(cond_results, sum)
 }))
@@ -86,10 +86,10 @@ sub_sum5 <- do.call(rbind, lapply(allout[["out5"]], function(x) {
   sum <- summary(x$Result$Substitution, delta = 30)
   
   ### conditions
-  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts)
+  cond_results <- cbind(x$N, x$K, x$rint_sd, x$res_sd, x$run, x$n_parts, x$Result$ndt)
   cond_results <- cond_results[rep(seq_len(nrow(cond_results)), nrow(sum)), ]
   
-  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts")
+  colnames(cond_results) <- c("N", "K", "rint_sd", "res_sd", "run", "n_parts", "ndt")
   
   cbind(cond_results, sum)
 }))
