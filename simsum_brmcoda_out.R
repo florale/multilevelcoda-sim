@@ -59,12 +59,12 @@ simsum_brmcoda_22 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Monas
 simsum_brmcoda_23 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_23.RDS")
 simsum_brmcoda_24 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_24.RDS")
 
-## separate by parts
+## separate by parts and clean -----------------
 simsum_brmcoda_d3 <- list()
 simsum_brmcoda_d4 <- list()
 simsum_brmcoda_d5 <- list()
 
-for (j in c(1:12, 16:22)) {
+for (j in c(1:22)) {
   simsum_brmcoda_d3[[j]] <- get(paste0("simsum_brmcoda_", j))[["out3"]]
   simsum_brmcoda_d4[[j]] <- get(paste0("simsum_brmcoda_", j))[["out4"]]
   simsum_brmcoda_d5[[j]] <- get(paste0("simsum_brmcoda_", j))[["out5"]]
@@ -73,7 +73,6 @@ for (j in c(1:12, 16:22)) {
 simsum_brmcoda_d3 <- as.data.table(do.call(rbind, simsum_brmcoda_d3))
 simsum_brmcoda_d4 <- as.data.table(do.call(rbind, simsum_brmcoda_d4))
 simsum_brmcoda_d5 <- as.data.table(do.call(rbind, simsum_brmcoda_d5))
-
 
 rm(simsum_brmcoda_1, simsum_brmcoda_2, simsum_brmcoda_3, simsum_brmcoda_4, 
    simsum_brmcoda_5, simsum_brmcoda_6, simsum_brmcoda_7, simsum_brmcoda_8,
@@ -86,8 +85,7 @@ rm(simsum_brmcoda_1, simsum_brmcoda_2, simsum_brmcoda_3, simsum_brmcoda_4,
 # 3 parts
 simsum_brmcoda_d3[, N := factor(N, levels = c("30", "50", "360", "1200"))]
 simsum_brmcoda_d3[, K := factor(K, levels = c("3", "5", "7", "14"))]
-simsum_brmcoda_d3[, NoOfParts := factor(n_parts, levels = c("3", "4", "5"))]
-
+simsum_brmcoda_d3[, D := factor(n_parts, levels = c("3", "4", "5"))]
 simsum_brmcoda_d3[, n_parts := NULL]
 
 simsum_brmcoda_d3[, condition := NA]
@@ -127,8 +125,7 @@ simsum_brmcoda_d3[, u0_condition := factor(u0_condition, levels = c(
 # 4 parts
 simsum_brmcoda_d4[, N := factor(N, levels = c("30", "50", "360", "1200"))]
 simsum_brmcoda_d4[, K := factor(K, levels = c("3", "5", "7", "14"))]
-simsum_brmcoda_d4[, NoOfParts := factor(n_parts, levels = c("3", "4", "5"))]
-
+simsum_brmcoda_d4[, D := factor(n_parts, levels = c("3", "4", "5"))]
 simsum_brmcoda_d4[, n_parts := NULL]
 
 simsum_brmcoda_d4[, condition := NA]
@@ -168,8 +165,7 @@ simsum_brmcoda_d4[, u0_condition := factor(u0_condition, levels = c(
 # 5 parts
 simsum_brmcoda_d5[, N := factor(N, levels = c("30", "50", "360", "1200"))]
 simsum_brmcoda_d5[, K := factor(K, levels = c("3", "5", "7", "14"))]
-simsum_brmcoda_d5[, NoOfParts := factor(n_parts, levels = c("3", "4", "5"))]
-
+simsum_brmcoda_d5[, D := factor(n_parts, levels = c("3", "4", "5"))]
 simsum_brmcoda_d5[, n_parts := NULL]
 
 simsum_brmcoda_d5[, condition := NA]
@@ -206,7 +202,21 @@ simsum_brmcoda_d5[, u0_condition := factor(u0_condition, levels = c(
   "large"
 ))]
 
-# d3 -------------------
+# set non-convergence/divergent transition/ problematic ESS to NA
+colnames(simsum_brmcoda_d3)
+colnames(simsum_brmcoda_d4)
+colnames(simsum_brmcoda_d5)
+
+estnames <-
+  colnames(simsum_brmcoda_d3) %snin% c("N", "K", "D", "rint_sd", "res_sd", "run", 
+                                       "ndt", "zero",
+                                       "condition", "sigma_condition", "u0_condition")
+
+simsum_brmcoda_d3 <- simsum_brmcoda_d3[ndt != 0 | zero != 0, (estnames) := NA]
+simsum_brmcoda_d4 <- simsum_brmcoda_d4[ndt != 0 | zero != 0, (estnames) := NA]
+simsum_brmcoda_d5 <- simsum_brmcoda_d5[ndt != 0 | zero != 0, (estnames) := NA]
+
+## d3 -------------------
 s_b0_d3 <- simsum(
   simsum_brmcoda_d3,
   estvarname = "b_Intercept",

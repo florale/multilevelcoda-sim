@@ -34,6 +34,7 @@ source("functions.R") # functions for plots
 substutitution_gt <- readRDS("substutitution_gt.RDS")
 brmcoda_gt <- readRDS("brmcoda_gt.RDS")
 
+# simsum_sub <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_.RDS")
 simsum_sub_1 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_1.RDS")
 simsum_sub_2 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_2.RDS")
 simsum_sub_3 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_3.RDS")
@@ -59,12 +60,12 @@ simsum_sub_22 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUni
 simsum_sub_23 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_23.RDS")
 simsum_sub_24 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_24.RDS")
 
-## separate by parts
+## separate by parts and clean -----------------
 simsum_sub_d3 <- list()
 simsum_sub_d4 <- list()
 simsum_sub_d5 <- list()
 
-for (j in c(1:11, 16:22)) {
+for (j in c(1:22)) {
   simsum_sub_d3[[j]] <- get(paste0("simsum_sub_", j))[[1]]
   simsum_sub_d4[[j]] <- get(paste0("simsum_sub_", j))[[2]]
   simsum_sub_d5[[j]] <- get(paste0("simsum_sub_", j))[[3]]
@@ -83,9 +84,8 @@ rm(simsum_sub_1, simsum_sub_2, simsum_sub_3, simsum_sub_4, simsum_sub_5, simsum_
 # 3 parts
 simsum_sub_d3[, N := factor(N, levels = c("30", "50", "360", "1200"))]
 simsum_sub_d3[, K := factor(K, levels = c("3", "5", "7", "14"))]
-simsum_sub_d3[, NoOfParts := factor(n_parts, levels = c("3", "4", "5"))]
+simsum_sub_d3[, D := factor(n_parts, levels = c("3", "4", "5"))]
 simsum_sub_d3[, Level := factor(Level, levels = c("between", "within"))]
-
 simsum_sub_d3[, n_parts := NULL]
 
 simsum_sub_d3[, condition := NA]
@@ -105,9 +105,8 @@ simsum_sub_d3[, condition := factor(condition, levels = c(
 # 4 parts
 simsum_sub_d4[, N := factor(N, levels = c("30", "50", "360", "1200"))]
 simsum_sub_d4[, K := factor(K, levels = c("3", "5", "7", "14"))]
-simsum_sub_d4[, NoOfParts := factor(n_parts, levels = c("3", "4", "5"))]
+simsum_sub_d4[, D := factor(n_parts, levels = c("3", "4", "5"))]
 simsum_sub_d4[, Level := factor(Level, levels = c("between", "within"))]
-
 simsum_sub_d4[, n_parts := NULL]
 
 simsum_sub_d4[, condition := NA]
@@ -127,9 +126,8 @@ simsum_sub_d4[, condition := factor(condition, levels = c(
 # 5 parts
 simsum_sub_d5[, N := factor(N, levels = c("30", "50", "360", "1200"))]
 simsum_sub_d5[, K := factor(K, levels = c("3", "5", "7", "14"))]
-simsum_sub_d5[, NoOfParts := factor(n_parts, levels = c("3", "4", "5"))]
+simsum_sub_d5[, D := factor(n_parts, levels = c("3", "4", "5"))]
 simsum_sub_d5[, Level := factor(Level, levels = c("between", "within"))]
-
 simsum_sub_d5[, n_parts := NULL]
 
 simsum_sub_d5[, condition := NA]
@@ -185,6 +183,17 @@ substutitution_gt_d5[, From := ifelse(WAKE == -30, "WAKE", From)]
 substutitution_gt_d5[, From := ifelse(MVPA == -30, "MVPA", From)]
 substutitution_gt_d5[, From := ifelse(LPA == -30, "LPA", From)]
 substutitution_gt_d5[, From := ifelse(SB == -30, "SB", From)]
+
+# set non-convergence/divergent transition/ problematic ESS to NA
+colnames(simsum_sub_d3)
+colnames(simsum_sub_d4)
+colnames(simsum_sub_d5)
+
+estnames <- c("Mean", "CI_low", "CI_high")
+
+simsum_sub_d3 <- simsum_sub_d3[ndt != 0, (estnames) := NA]
+simsum_sub_d4 <- simsum_sub_d4[ndt != 0, (estnames) := NA]
+simsum_sub_d5 <- simsum_sub_d5[ndt != 0, (estnames) := NA]
 
 ## bsub d3 ----------------
 s_bsub_sleep_pa_d3 <- simsum(
