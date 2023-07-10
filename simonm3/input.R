@@ -78,7 +78,7 @@ cond <-
               rint_sd = c(1, sqrt(.5), sqrt(1.5)),
               res_sd = c(1, sqrt(.5), sqrt(1.5)),
               n_parts = c(3, 4, 5),
-              run = 1:2500)
+              run = 1:3000)
 cond <- as.data.table(cond)
 cond <- cond[
   (rint_sd == 1 & res_sd == 1) |
