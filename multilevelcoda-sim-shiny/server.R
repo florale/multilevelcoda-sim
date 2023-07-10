@@ -98,4 +98,98 @@ server <- function(input, output) {
     sub_tab
   }))
   
+  # Summary Plots -------------------
+  ## brmcoda plot ---------------
+  output$simsum_brmcoda_plot <- renderPlot({
+
+    if (input$rint_sd_brmcoda_plot == "medium" & input$res_sd1_brmcoda_plot == "medium") {
+      if (input$D_brmcoda_plot == 3) {
+        .par_plot_shiny(brmcoda_d3[stat == input$stat_brmcoda_plot & condition == "base"])
+      } else if (input$D_brmcoda_plot == 4) {
+        .par_plot_shiny(brmcoda_d4[stat == input$stat_brmcoda_plot & condition == "base"])
+      } else if (input$D_brmcoda_plot == 5) {
+        .par_plot_shiny(brmcoda_d5[stat == input$stat_brmcoda_plot & condition == "base"])
+      }
+    } else if (input$rint_sd_brmcoda_plot == "medium" & input$res_sd1_brmcoda_plot == "small") {
+      if (input$D_brmcoda_plot == 3) {
+        .par_plot_shiny(brmcoda_d3[stat == input$stat_brmcoda_plot & condition == "REbase_RESsmall"])
+      } else if (input$D_brmcoda_plot == 4) {
+        .par_plot_shiny(brmcoda_d4[stat == input$stat_brmcoda_plot & condition == "REbase_RESsmall"])
+      } else if (input$D_brmcoda_plot == 5) {
+        .par_plot_shiny(brmcoda_d5[stat == input$stat_brmcoda_plot & condition == "REbase_RESsmall"])
+      }
+    } else if (input$rint_sd_brmcoda_plot == "medium" & input$res_sd1_brmcoda_plot == "large") {
+      if (input$D_brmcoda_plot == 3) {
+        .par_plot_shiny(brmcoda_d3[stat == input$stat_brmcoda_plot & condition == "REbase_RESlarge"])
+      } else if (input$D_brmcoda_plot == 4) {
+        .par_plot_shiny(brmcoda_d4[stat == input$stat_brmcoda_plot & condition == "REbase_RESlarge"])
+      } else if (input$D_brmcoda_plot == 5) {
+        .par_plot_shiny(brmcoda_d5[stat == input$stat_brmcoda_plot & condition == "REbase_RESlarge"])
+      }
+    } else if (input$rint_sd_brmcoda_plot == "small" & input$res_sd2_brmcoda_plot == "large") {
+      if (input$D_brmcoda_plot == 3) {
+        .par_plot_shiny(brmcoda_d3[stat == input$stat_brmcoda_plot & condition == "REsmall_RESlarge"])
+      } else if (input$D_brmcoda_plot == 4) {
+        .par_plot_shiny(brmcoda_d4[stat == input$stat_brmcoda_plot & condition == "REsmall_RESlarge"]) 
+      } else if (input$D_brmcoda_plot == 5) {
+        .par_plot_shiny(brmcoda_d5[stat == input$stat_brmcoda_plot & condition == "REsmall_RESlarge"])
+      }
+    } else if (input$rint_sd_brmcoda_plot == "large" & input$res_sd3_brmcoda_plot == "small") {
+      if (input$D_brmcoda_plot == 3) {
+        .par_plot_shiny(brmcoda_d3[stat == input$stat_brmcoda_plot & condition == "RElarge_RESsmall"])
+      } else if (input$D_brmcoda_plot == 4) {
+        .par_plot_shiny(brmcoda_d4[stat == input$stat_brmcoda_plot & condition == "RElarge_RESsmall"])
+      } else if (input$D_brmcoda_plot == 5) {
+        .par_plot_shiny(brmcoda_d5[stat == input$stat_brmcoda_plot & condition == "RElarge_RESsmall"])
+      }
+    }
+
+  }, height = 1000, width = 800)
+  
+  ## substitution plot ---------------
+  output$simsum_sub_plot <- renderPlot({
+    
+    if (input$rint_sd_sub_plot == "medium" & input$res_sd1_sub_plot == "medium") {
+      if (input$D_sub_plot == 3) {
+        .par_plot_shiny(sub_d3[stat == input$stat_sub_plot & condition == "base"])
+      } else if (input$D_sub_plot == 4) {
+        .par_plot_shiny(sub_d4[stat == input$stat_sub_plot & condition == "base"])
+      } else if (input$D_sub_plot == 5) {
+        .par_plot_shiny(sub_d5[stat == input$stat_sub_plot & condition == "base"])
+      }
+    } else if (input$rint_sd_sub_plot == "medium" & input$res_sd1_sub_plot == "small") {
+      if (input$D_sub_plot == 3) {
+        .par_plot_shiny(sub_d3[stat == input$stat_sub_plot & condition == "REbase_RESsmall"])
+      } else if (input$D_sub_plot == 4) {
+        .par_plot_shiny(sub_d4[stat == input$stat_sub_plot & condition == "REbase_RESsmall"])
+      } else if (input$D_sub_plot == 5) {
+        .par_plot_shiny(sub_d5[stat == input$stat_sub_plot & condition == "REbase_RESsmall"])
+      }
+    } else if (input$rint_sd_sub_plot == "medium" & input$res_sd1_sub_plot == "large") {
+      if (input$D_sub_plot == 3) {
+        .par_plot_shiny(sub_d3[stat == input$stat_sub_plot & condition == "REbase_RESlarge"])
+      } else if (input$D_sub_plot == 4) {
+        .par_plot_shiny(sub_d4[stat == input$stat_sub_plot & condition == "REbase_RESlarge"])
+      } else if (input$D_sub_plot == 5) {
+        .par_plot_shiny(sub_d5[stat == input$stat_sub_plot & condition == "REbase_RESlarge"])
+      }
+    } else if (input$rint_sd_sub_plot == "small" & input$res_sd2_sub_plot == "large") {
+      if (input$D_sub_plot == 3) {
+        .par_plot_shiny(sub_d3[stat == input$stat_sub_plot & condition == "REsmall_RESlarge"])
+      } else if (input$D_sub_plot == 4) {
+        .par_plot_shiny(sub_d4[stat == input$stat_sub_plot & condition == "REsmall_RESlarge"]) 
+      } else if (input$D_sub_plot == 5) {
+        .par_plot_shiny(sub_d5[stat == input$stat_sub_plot & condition == "REsmall_RESlarge"])
+      }
+    } else if (input$rint_sd_sub_plot == "large" & input$res_sd3_sub_plot == "small") {
+      if (input$D_sub_plot == 3) {
+        .par_plot_shiny(sub_d3[stat == input$stat_sub_plot & condition == "RElarge_RESsmall"])
+      } else if (input$D_sub_plot == 4) {
+        .par_plot_shiny(sub_d4[stat == input$stat_sub_plot & condition == "RElarge_RESsmall"])
+      } else if (input$D_sub_plot == 5) {
+        .par_plot_shiny(sub_d5[stat == input$stat_sub_plot & condition == "RElarge_RESsmall"])
+      }
+    }
+    
+  }, height = 1000, width = 800)
 }
