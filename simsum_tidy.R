@@ -1,5 +1,5 @@
-source("simsum_brmcoda_out.R")
-source("simsum_sub_out.R")
+# source("simsum_brmcoda_out.R")
+# source("simsum_sub_out.R")
 
 ## d3 fixed ----------------
 b0_d3    <- as.data.table(tidy(summary(s_b0_d3), stats = c("bias", "becover")))
@@ -145,11 +145,11 @@ brmcoda_d3[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_
 brmcoda_d3[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
 
 brmcoda_d3[, res_sd := NA_real_]
-brmcoda_d3[, res_sd := ifelse(condition == "base", 1, rint_sd)]
-brmcoda_d3[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), rint_sd)]
-brmcoda_d3[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), rint_sd)]
-brmcoda_d3[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), rint_sd)]
-brmcoda_d3[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), rint_sd)]
+brmcoda_d3[, res_sd := ifelse(condition == "base", 1, res_sd)]
+brmcoda_d3[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
+brmcoda_d3[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
+brmcoda_d3[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
+brmcoda_d3[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 brmcoda_d3[, D := 3]
 
 ## d3 sub ----------------
@@ -227,11 +227,11 @@ sub_d3[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
 sub_d3[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
 
 sub_d3[, res_sd := NA_real_]
-sub_d3[, res_sd := ifelse(condition == "base", 1, rint_sd)]
-sub_d3[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), rint_sd)]
-sub_d3[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), rint_sd)]
-sub_d3[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), rint_sd)]
-sub_d3[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), rint_sd)]
+sub_d3[, res_sd := ifelse(condition == "base", 1, res_sd)]
+sub_d3[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
+sub_d3[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
+sub_d3[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
+sub_d3[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 sub_d3[, D := 3]
 
 ## d4 fixed----------------
@@ -399,11 +399,11 @@ brmcoda_d4[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_
 brmcoda_d4[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
 
 brmcoda_d4[, res_sd := NA_real_]
-brmcoda_d4[, res_sd := ifelse(condition == "base", 1, rint_sd)]
-brmcoda_d4[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), rint_sd)]
-brmcoda_d4[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), rint_sd)]
-brmcoda_d4[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), rint_sd)]
-brmcoda_d4[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), rint_sd)]
+brmcoda_d4[, res_sd := ifelse(condition == "base", 1, res_sd)]
+brmcoda_d4[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
+brmcoda_d4[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
+brmcoda_d4[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
+brmcoda_d4[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 
 brmcoda_d4[, D := 4]
 
@@ -529,11 +529,11 @@ sub_d4[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
 sub_d4[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
 
 sub_d4[, res_sd := NA_real_]
-sub_d4[, res_sd := ifelse(condition == "base", 1, rint_sd)]
-sub_d4[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), rint_sd)]
-sub_d4[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), rint_sd)]
-sub_d4[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), rint_sd)]
-sub_d4[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), rint_sd)]
+sub_d4[, res_sd := ifelse(condition == "base", 1, res_sd)]
+sub_d4[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
+sub_d4[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
+sub_d4[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
+sub_d4[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 
 sub_d4[, D := 4]
 
@@ -723,11 +723,11 @@ brmcoda_d5[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_
 brmcoda_d5[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
 
 brmcoda_d5[, res_sd := NA_real_]
-brmcoda_d5[, res_sd := ifelse(condition == "base", 1, rint_sd)]
-brmcoda_d5[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), rint_sd)]
-brmcoda_d5[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), rint_sd)]
-brmcoda_d5[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), rint_sd)]
-brmcoda_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), rint_sd)]
+brmcoda_d5[, res_sd := ifelse(condition == "base", 1, res_sd)]
+brmcoda_d5[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
+brmcoda_d5[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
+brmcoda_d5[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
+brmcoda_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 
 brmcoda_d5[, D := 5]
 
@@ -915,11 +915,11 @@ sub_d5[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
 sub_d5[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
 
 sub_d5[, res_sd := NA_real_]
-sub_d5[, res_sd := ifelse(condition == "base", 1, rint_sd)]
-sub_d5[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), rint_sd)]
-sub_d5[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), rint_sd)]
-sub_d5[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), rint_sd)]
-sub_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), rint_sd)]
+sub_d5[, res_sd := ifelse(condition == "base", 1, res_sd)]
+sub_d5[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
+sub_d5[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
+sub_d5[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
+sub_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 
 sub_d5[, D := 5]
 
@@ -927,9 +927,12 @@ sub_d5[, D := 5]
 brmcoda_dat <- rbind(brmcoda_d3,
                      brmcoda_d4,
                      brmcoda_d5)
+saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
 
 ### all sub -----------
 sub_dat <- rbind(sub_d3,
                  sub_d4,
                  sub_d5)
+saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
+
 
