@@ -311,19 +311,23 @@ s_sigma_base_d3 <- simsum(
 )
 
 s_sigma_small_d3 <- simsum(
-  simsum_brmcoda_d3[sigma_condition == "small"],
+  simsum_brmcoda_d3[sigma_condition == "small"][, u0_condition := factor(u0_condition, levels = c("base", "large"))],
   estvarname = "sigma",
   true = groundtruth3$sigma_small,
   se = "se_sigma",
+  methodvar = "u0_condition",
+  ref = "base",
   by = c("N", "K"),
   ci.limits = c("ll_sigma", "ul_sigma")
 )
 
 s_sigma_large_d3 <- simsum(
-  simsum_brmcoda_d3[sigma_condition == "large"],
+  simsum_brmcoda_d3[sigma_condition == "large"][, u0_condition := factor(u0_condition, levels = c("base", "small"))],
   estvarname = "sigma",
   true = groundtruth3$sigma_large,
   se = "se_sigma",
+  methodvar = "u0_condition",
+  ref = "base",
   by = c("N", "K"),
   ci.limits = c("ll_sigma", "ul_sigma")
 )
@@ -445,19 +449,23 @@ s_sigma_base_d4 <- simsum(
 )
 
 s_sigma_small_d4 <- simsum(
-  simsum_brmcoda_d4[sigma_condition == "small"],
+  simsum_brmcoda_d4[sigma_condition == "small"][, u0_condition := factor(u0_condition, levels = c("base", "large"))],
   estvarname = "sigma",
   true = groundtruth4$sigma_small,
   se = "se_sigma",
+  methodvar = "u0_condition",
+  ref = "base",
   by = c("N", "K"),
   ci.limits = c("ll_sigma", "ul_sigma")
 )
 
 s_sigma_large_d4 <- simsum(
-  simsum_brmcoda_d4[sigma_condition == "large"],
+  simsum_brmcoda_d4[sigma_condition == "large"][, u0_condition := factor(u0_condition, levels = c("base", "small"))],
   estvarname = "sigma",
   true = groundtruth4$sigma_large,
   se = "se_sigma",
+  methodvar = "u0_condition",
+  ref = "base",
   by = c("N", "K"),
   ci.limits = c("ll_sigma", "ul_sigma")
 )
@@ -601,19 +609,23 @@ s_sigma_base_d5 <- simsum(
 )
 
 s_sigma_small_d5 <- simsum(
-  simsum_brmcoda_d4[sigma_condition == "small"],
+  simsum_brmcoda_d4[sigma_condition == "small"][, u0_condition := factor(u0_condition, levels = c("base", "large"))],
   estvarname = "sigma",
   true = groundtruth5$sigma_small,
   se = "se_sigma",
+  methodvar = "u0_condition",
+  ref = "base",
   by = c("N", "K"),
   ci.limits = c("ll_sigma", "ul_sigma")
 )
 
 s_sigma_large_d5 <- simsum(
-  simsum_brmcoda_d4[sigma_condition == "large"],
+  simsum_brmcoda_d4[sigma_condition == "large"][, u0_condition := factor(u0_condition, levels = c("base", "small"))],
   estvarname = "sigma",
   true = groundtruth5$sigma_large,
   se = "se_sigma",
+  methodvar = "u0_condition",
+  ref = "base",
   by = c("N", "K"),
   ci.limits = c("ll_sigma", "ul_sigma")
 )
