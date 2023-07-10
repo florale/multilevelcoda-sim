@@ -124,11 +124,11 @@ brmcoda_d3 <- rbind(
   sigma_small_d3[u0_condition == "large"][, -c("u0_condition")]
   )
 
-# add Parameter variable for plots
-brmcoda_d3[, Parameter := paste0(Level, " ", Predictor, " ", par)]
-unique(brmcoda_d3$Parameter)
-brmcoda_d3[, Parameter := factor(
-  Parameter,
+# add by variable for plots
+brmcoda_d3[, by := paste0(Level, " ", Predictor, " ", par)]
+unique(brmcoda_d3$by)
+brmcoda_d3[, by := factor(
+  by,
   levels = c(
     "  b0", "  u0",
     "between ilr1 beta", "within ilr1 beta",
@@ -200,25 +200,6 @@ wsub_d3[, Level := "within"]
 
 sub_d3 <- rbind(bsub_d3, wsub_d3)
 
-sub_d3[, Reallocation := paste0(Level, " ", From, " - ", To)]
-unique(sub_d3$Reallocation)
-sub_d3[, Reallocation := factor(Reallocation, levels = c(
-  "between Sleep - PA", "within Sleep - PA",
-  "between Sleep - SB", "within Sleep - SB",
-  
-  "between PA - Sleep", "within PA - Sleep",
-  "between PA - SB",    "within PA - SB",
-  
-  "between SB - Sleep", "within SB - Sleep",
-  "between SB - PA",    "within SB - PA"
-))]
-sub_d3 <- sub_d3[Reallocation %in% c(
-  "between Sleep - PA", "within Sleep - PA",
-  "between Sleep - SB", "within Sleep - SB",
-  
-  "between PA - SB",    "within PA - SB"
-)]
-
 sub_d3[, rint_sd := NA_real_]
 sub_d3[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
 sub_d3[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
@@ -232,6 +213,7 @@ sub_d3[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
 sub_d3[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
 sub_d3[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
 sub_d3[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
+
 sub_d3[, D := 3]
 
 ## d4 fixed----------------
@@ -377,11 +359,11 @@ brmcoda_d4 <- rbind(
   sigma_small_d4[u0_condition == "large"][, -c("u0_condition")]
 )
 
-# add Parameter variable for plots
-brmcoda_d4[, Parameter := paste0(Level, " ", Predictor, " ", par)]
-unique(brmcoda_d4$Parameter)
-brmcoda_d4[, Parameter := factor(
-  Parameter,
+# add by variable for plots
+brmcoda_d4[, by := paste0(Level, " ", Predictor, " ", par)]
+unique(brmcoda_d4$by)
+brmcoda_d4[, by := factor(
+  by,
   levels = c(
     "  b0", "  u0",
     "between ilr1 beta", "within ilr1 beta",
@@ -490,36 +472,6 @@ bsub_d4[, Level := "between"]
 wsub_d4[, Level := "within"]
 
 sub_d4 <- rbind(bsub_d4, wsub_d4)
-
-sub_d4[, Reallocation := paste0(Level, " ", From, " - ", To)]
-unique(sub_d4$Reallocation)
-sub_d4[, Reallocation := factor(Reallocation, levels = c(
-  "between Sleep - MVPA", "within Sleep - MVPA",
-  "between Sleep - LPA",  "within Sleep - LPA",
-  "between Sleep - SB",   "within Sleep - SB",
-
-  "between MVPA - Sleep", "within MVPA - Sleep",
-  "between MVPA - LPA",   "within MVPA - LPA",
-  "between MVPA - SB",    "within MVPA - SB",
-  
-  "between LPA - Sleep",  "within LPA - Sleep",
-  "between LPA - MVPA",   "within LPA - MVPA",
-  "between LPA - SB",     "within LPA - SB",
-  
-  "between SB - Sleep",   "within SB - Sleep",
-  "between SB - MVPA",    "within SB - MVPA",
-  "between SB - LPA",     "within SB - LPA"
-))]
-sub_d4 <- sub_d4[Reallocation %in% c(
-  "between Sleep - MVPA", "within Sleep - MVPA",
-  "between Sleep - LPA",  "within Sleep - LPA",
-  "between Sleep - SB",   "within Sleep - SB",
-  
-  "between MVPA - LPA",   "within MVPA - LPA",
-  "between MVPA - SB",    "within MVPA - SB",
-  
-  "between LPA - SB",     "within LPA - SB"
-)]
 
 sub_d4[, rint_sd := NA_real_]
 sub_d4[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
@@ -700,11 +652,11 @@ brmcoda_d5 <- rbind(
   sigma_small_d5[u0_condition == "large"][, -c("u0_condition")]
 )
 
-# add Parameter variable for plots
-brmcoda_d5[, Parameter := paste0(Level, " ", Predictor, " ", par)]
-unique(brmcoda_d5$Parameter)
-brmcoda_d5[, Parameter := factor(
-  Parameter,
+# add by variable for plots
+brmcoda_d5[, by := paste0(Level, " ", Predictor, " ", par)]
+unique(brmcoda_d5$by)
+brmcoda_d5[, by := factor(
+  by,
   levels = c(
     "  b0", "  u0",
     "between ilr1 beta", "within ilr1 beta",
@@ -863,9 +815,87 @@ wsub_d5[, Level := "within"]
 
 sub_d5 <- rbind(bsub_d5, wsub_d5)
 
-sub_d5[, Reallocation := paste0(Level, " ", From, " - ", To)]
-unique(sub_d5$Reallocation)
-sub_d5[, Reallocation := factor(Reallocation, levels = c(
+sub_d5[, rint_sd := NA_real_]
+sub_d5[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
+sub_d5[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
+sub_d5[, rint_sd := ifelse(condition == "REbase_RESlarge", 1, rint_sd)]
+sub_d5[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
+sub_d5[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
+
+sub_d5[, res_sd := NA_real_]
+sub_d5[, res_sd := ifelse(condition == "base", 1, res_sd)]
+sub_d5[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
+sub_d5[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
+sub_d5[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
+sub_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
+
+sub_d5[, D := 5]
+
+## save brmcoda data for shiny  -----------
+brmcoda_dat <- rbind(brmcoda_d3,
+                     brmcoda_d4,
+                     brmcoda_d5)
+# saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
+
+# save all sub dat for shiny -----------
+sub_tab <- rbind(sub_d3,
+                 sub_d4,
+                 sub_d5)
+# saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
+
+# subset sub dat for plots --------
+sub_d3[, by := paste0(Level, " ", From, " - ", To)]
+unique(sub_d3$by)
+sub_d3[, by := factor(by, levels = c(
+  "between Sleep - PA", "within Sleep - PA",
+  "between Sleep - SB", "within Sleep - SB",
+  
+  "between PA - Sleep", "within PA - Sleep",
+  "between PA - SB",    "within PA - SB",
+  
+  "between SB - Sleep", "within SB - Sleep",
+  "between SB - PA",    "within SB - PA"
+))]
+sub_d3 <- sub_d3[by %in% c(
+  "between Sleep - PA", "within Sleep - PA",
+  "between Sleep - SB", "within Sleep - SB",
+  
+  "between PA - SB",    "within PA - SB"
+)]
+
+sub_d4[, by := paste0(Level, " ", From, " - ", To)]
+unique(sub_d4$by)
+sub_d4[, by := factor(by, levels = c(
+  "between Sleep - MVPA", "within Sleep - MVPA",
+  "between Sleep - LPA",  "within Sleep - LPA",
+  "between Sleep - SB",   "within Sleep - SB",
+  
+  "between MVPA - Sleep", "within MVPA - Sleep",
+  "between MVPA - LPA",   "within MVPA - LPA",
+  "between MVPA - SB",    "within MVPA - SB",
+  
+  "between LPA - Sleep",  "within LPA - Sleep",
+  "between LPA - MVPA",   "within LPA - MVPA",
+  "between LPA - SB",     "within LPA - SB",
+  
+  "between SB - Sleep",   "within SB - Sleep",
+  "between SB - MVPA",    "within SB - MVPA",
+  "between SB - LPA",     "within SB - LPA"
+))]
+sub_d4 <- sub_d4[by %in% c(
+  "between Sleep - MVPA", "within Sleep - MVPA",
+  "between Sleep - LPA",  "within Sleep - LPA",
+  "between Sleep - SB",   "within Sleep - SB",
+  
+  "between MVPA - LPA",   "within MVPA - LPA",
+  "between MVPA - SB",    "within MVPA - SB",
+  
+  "between LPA - SB",     "within LPA - SB"
+)]
+
+sub_d5[, by := paste0(Level, " ", From, " - ", To)]
+unique(sub_d5$by)
+sub_d5[, by := factor(by, levels = c(
   "between TST - MVPA",  "within TST - MVPA",
   "between TST - WAKE",  "within TST - WAKE",
   "between TST - LPA",   "within TST - LPA",
@@ -891,7 +921,7 @@ sub_d5[, Reallocation := factor(Reallocation, levels = c(
   "between SB - MVPA",   "within SB - MVPA",
   "between SB - LPA",    "within SB - LPA"
 ))]
-sub_d5 <- sub_d5[Reallocation %in% c(
+sub_d5 <- sub_d5[by %in% c(
   "between TST - MVPA",  "within TST - MVPA",
   "between TST - WAKE",  "within TST - WAKE",
   "between TST - LPA",   "within TST - LPA",
@@ -903,36 +933,10 @@ sub_d5 <- sub_d5[Reallocation %in% c(
   
   "between MVPA - LPA",  "within MVPA - LPA",
   "between MVPA - SB",   "within MVPA - SB",
-
+  
   "between LPA - SB",     "within LPA - SB"
 )]
 
-sub_d5[, rint_sd := NA_real_]
-sub_d5[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
-sub_d5[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
-sub_d5[, rint_sd := ifelse(condition == "REbase_RESlarge", 1, rint_sd)]
-sub_d5[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
-sub_d5[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
-
-sub_d5[, res_sd := NA_real_]
-sub_d5[, res_sd := ifelse(condition == "base", 1, res_sd)]
-sub_d5[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
-sub_d5[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
-sub_d5[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
-sub_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
-
-sub_d5[, D := 5]
-
-### all brmcoda -----------
-brmcoda_dat <- rbind(brmcoda_d3,
-                     brmcoda_d4,
-                     brmcoda_d5)
-saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
-
-### all sub -----------
 sub_dat <- rbind(sub_d3,
                  sub_d4,
                  sub_d5)
-saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
-
-

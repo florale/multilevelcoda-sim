@@ -23,16 +23,13 @@ library(ggpubr)
 
 data.table::setDTthreads(10)
 
-input <- readRDS("input.RDS")
-meanscovs <- input$meanscovs
-prefit5 <- input$prefit5
-prefit4 <- input$prefit4
-prefit3 <- input$prefit3
-
 source("input.R") # groundtruth, conditions and functions
 source("functions.R") # functions for plots
+
 substutitution_gt <- readRDS("substutitution_gt.RDS")
-brmcoda_gt <- readRDS("brmcoda_gt.RDS")
+substutitution_gt_d3 <- substutitution_gt[[1]]
+substutitution_gt_d4 <- substutitution_gt[[2]]
+substutitution_gt_d5 <- substutitution_gt[[3]]
 
 # simsum_sub <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_.RDS")
 simsum_sub_1 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_1.RDS")
@@ -65,7 +62,7 @@ simsum_sub_d3 <- list()
 simsum_sub_d4 <- list()
 simsum_sub_d5 <- list()
 
-for (j in c(1:22)) {
+for (j in c(1:24)) {
   simsum_sub_d3[[j]] <- get(paste0("simsum_sub_", j))[[1]]
   simsum_sub_d4[[j]] <- get(paste0("simsum_sub_", j))[[2]]
   simsum_sub_d5[[j]] <- get(paste0("simsum_sub_", j))[[3]]
@@ -143,10 +140,6 @@ simsum_sub_d5[, condition := factor(condition, levels = c(
   "REbase_RESlarge",
   "REbase_RESsmall"
 ))]
-
-substutitution_gt_d3 <- substutitution_gt[[1]]
-substutitution_gt_d4 <- substutitution_gt[[2]]
-substutitution_gt_d5 <- substutitution_gt[[3]]
 
 substutitution_gt_d3[, To := NA]
 substutitution_gt_d3[, To := ifelse(Sleep == 30, "Sleep", To)]
@@ -1416,3 +1409,8 @@ s_wsub_sb_lpa_d5 <- .get_cov(
   estvarname = "Mean",
   true = substutitution_gt_d5[To == "SB" & From == "LPA"]$diff_delta_y_w
 )
+
+## save data -----------
+# saveRDS(simsum_sub_d3, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d3.RDS")
+# saveRDS(simsum_sub_d4, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d4.RDS")
+# saveRDS(simsum_sub_d5, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d5.RDS")

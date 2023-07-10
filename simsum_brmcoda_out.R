@@ -23,16 +23,8 @@ library(ggpubr)
 
 data.table::setDTthreads(10)
 
-input <- readRDS("input.RDS")
-meanscovs <- input$meanscovs
-prefit5 <- input$prefit5
-prefit4 <- input$prefit4
-prefit3 <- input$prefit3
-
 source("input.R") # groundtruth, conditions and functions
 source("functions.R") # functions for plots
-substutitution_gt <- readRDS("substutitution_gt.RDS")
-brmcoda_gt <- readRDS("brmcoda_gt.RDS")
 
 simsum_brmcoda_1 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_1.RDS")
 simsum_brmcoda_2 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_2.RDS")
@@ -64,7 +56,7 @@ simsum_brmcoda_d3 <- list()
 simsum_brmcoda_d4 <- list()
 simsum_brmcoda_d5 <- list()
 
-for (j in c(1:22)) {
+for (j in c(1:24)) {
   simsum_brmcoda_d3[[j]] <- get(paste0("simsum_brmcoda_", j))[["out3"]]
   simsum_brmcoda_d4[[j]] <- get(paste0("simsum_brmcoda_", j))[["out4"]]
   simsum_brmcoda_d5[[j]] <- get(paste0("simsum_brmcoda_", j))[["out5"]]
@@ -631,3 +623,8 @@ s_sigma_large_d5 <- simsum(
 )
 
 
+
+## save data -----------
+# saveRDS(simsum_brmcoda_d3, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_d3.RDS")
+# saveRDS(simsum_brmcoda_d4, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_d4.RDS")
+# saveRDS(simsum_brmcoda_d5, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_d5.RDS")
