@@ -1,6 +1,3 @@
-library(shiny)
-library(shinythemes)
-
 button_color_css <- "
 #DivCompClear, #FinderClear, #EnterTimes{
 /* Change the background color of the update button
@@ -16,4 +13,3 @@ source("ui.R")
 source("server.R")
 
 shinyApp(ui = ui, server = server)
-

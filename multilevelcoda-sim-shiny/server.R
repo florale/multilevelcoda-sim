@@ -1,116 +1,101 @@
-# source("plots_par.R")
-# source("simsum_tidy.R")
+# source("simsum_in.R")
 
 server <- function(input, output) {
   
-  ## Posterior Summary Statistics
-  ## brmcoda()
+  # Summary Statistics -------------------
+  ## brmcoda tab ---------------
   output$simsum_brmcoda_table <- DT::renderDataTable(DT::datatable({
-    if (input$Parameter == "All") {
-      by <- levels(brmcoda_dat$Parameter)
-    } else if (input$Parameter == "b_Intercept") {
-      by  <- "  b0"
-    } else if (input$Parameter == "b_bilr1") {
-      by <- "between ilr1 beta"
-    } else if (input$Parameter == "b_bilr2") {
-      by <- "between ilr2 beta"
-    } else if (input$Parameter == "b_bilr3") {
-      by <- "between ilr3 beta"
-    } else if (input$Parameter == "b_bilr4") {
-      by <- "between ilr4 beta"
-    } else if (input$Parameter == "b_wilr1") {
-      by <- "within ilr1 beta"
-    } else if (input$Parameter == "b_wilr2") {
-      by <- "within ilr2 beta"
-    } else if (input$Parameter == "b_wilr3") {
-      by <- "within ilr3 beta"
-    } else if (input$Parameter == "b_wilr4") {
-      by <- "within ilr4 beta"
-    } else if (input$Parameter == "sd_ID_Intercept") {
-      by <- "  u0"
-    } else if (input$Parameter == "sigma") {
-      by <- "  sigma"
+    if (input$par_brmcoda == "All") {
+      par_brmcoda <- levels(brmcoda_tab$by)
+    } else if (input$par_brmcoda == "b_Intercept") {
+      par_brmcoda  <- "  b0"
+    } else if (input$par_brmcoda == "b_bilr1") {
+      par_brmcoda <- "between ilr1 beta"
+    } else if (input$par_brmcoda == "b_bilr2") {
+      par_brmcoda <- "between ilr2 beta"
+    } else if (input$par_brmcoda == "b_bilr3") {
+      par_brmcoda <- "between ilr3 beta"
+    } else if (input$par_brmcoda == "b_bilr4") {
+      par_brmcoda <- "between ilr4 beta"
+    } else if (input$par_brmcoda == "b_wilr1") {
+      par_brmcoda <- "within ilr1 beta"
+    } else if (input$par_brmcoda == "b_wilr2") {
+      par_brmcoda <- "within ilr2 beta"
+    } else if (input$par_brmcoda == "b_wilr3") {
+      par_brmcoda <- "within ilr3 beta"
+    } else if (input$par_brmcoda == "b_wilr4") {
+      par_brmcoda <- "within ilr4 beta"
+    } else if (input$par_brmcoda == "sd_ID_Intercept") {
+      par_brmcoda <- "  u0"
+    } else if (input$par_brmcoda == "sigma") {
+      par_brmcoda <- "  sigma"
+    }
+    if (input$rint_sd_brmcoda == "medium" & input$res_sd1_brmcoda == "medium") {
+      brmcoda_tab <- brmcoda_tab[condition == "base"]
+    } else if (input$rint_sd_brmcoda == "medium" & input$res_sd1_brmcoda == "small") {
+      brmcoda_tab <- brmcoda_tab[condition == "REbase_RESsmall"]
+    } else if (input$rint_sd_brmcoda == "medium" & input$res_sd1_brmcoda == "large") {
+      brmcoda_tab <- brmcoda_tab[condition == "REbase_RESlarge"]
+    } else if (input$rint_sd_brmcoda == "small" & input$res_sd2_brmcoda == "large") {
+      brmcoda_tab <- brmcoda_tab[condition == "REsmall_RESlarge"]
+    } else if (input$rint_sd_brmcoda == "large" & input$res_sd3_brmcoda == "small") {
+      brmcoda_tab <- brmcoda_tab[condition == "RElarge_RESsmall"]
+    }
+    if (input$N_brmcoda != "All") {
+      brmcoda_tab <- brmcoda_tab[N == input$N_brmcoda]
+    }
+    if (input$K_brmcoda != "All") {
+      brmcoda_tab <- brmcoda_tab[K == input$K_brmcoda]
+    }
+    if (input$D_brmcoda != "All") {
+      brmcoda_tab <- brmcoda_tab[D == input$D_brmcoda]
     }
     
-
-    if (input$rint_sd == "medium" & input$res_sd == "medium") {
-      u0_sd <- 1
-      e_sd <- 1
-    } else if (input$rint_sd == "medium" & input$res_sd == "small") {
-      u0_sd <- 1
-      e_sd <- sqrt(0.5)
-    } else if (input$rint_sd == "medium" & input$res_sd == "large") {
-      u0_sd <- 1
-      e_sd <- sqrt(1.5)
-    } else if (input$rint_sd == "small" & input$res_sd == "large") {
-      u0_sd <- sqrt(0.5)
-      e_sd <- sqrt(1.5)
-    } else if (input$rint_sd == "large" & input$res_sd == "small") {
-      u0_sd <- sqrt(1.5)
-      e_sd <- sqrt(0.5)
-    }
+    brmcoda_tab <- brmcoda_tab[by %in% par_brmcoda & stat == input$stat_brmcoda, ]
     
-    if (input$N != "All") {
-      brmcoda_dat <- brmcoda_dat[N == input$N]
-    }
-    if (input$K != "All") {
-      brmcoda_dat <- brmcoda_dat[K == input$K]
-    }
-    if (input$D != "All") {
-      brmcoda_dat <- brmcoda_dat[D == input$D]
-    }
+    brmcoda_tab[] <- lapply(brmcoda_tab, function(x) if(is.numeric(x)) round(x, 2) else x)
     
-    brmcoda_dat <- brmcoda_dat[rint_sd == u0_sd &
-                                 res_sd  == e_sd &
-                                 Parameter %in% by &
-                                 stat  == input$stat,
-                               .(stat, est, mcse, upper, lower,
-                                 Parameter, N, K, D, rint_sd, res_sd)]
-    
-    brmcoda_dat[] <- lapply(brmcoda_dat, function(x) if(is.numeric(x)) round(x, 2) else x)
-    
-    brmcoda_dat
+    brmcoda_tab
   }))
   
-  ## substitution
+  ## substitution tab ------------
   output$simsum_sub_table <- DT::renderDataTable(DT::datatable({
     
-    if (input$rint_sd == "medium" & input$res_sd == "medium") {
-      u0_sd <- 1
-      e_sd <- 1
-    } else if (input$rint_sd == "medium" & input$res_sd == "small") {
-      u0_sd <- 1
-      e_sd <- sqrt(0.5)
-    } else if (input$rint_sd == "medium" & input$res_sd == "large") {
-      u0_sd <- 1
-      e_sd <- sqrt(1.5)
-    } else if (input$rint_sd == "small" & input$res_sd == "large") {
-      u0_sd <- sqrt(0.5)
-      e_sd <- sqrt(1.5)
-    } else if (input$rint_sd == "large" & input$res_sd == "small") {
-      u0_sd <- sqrt(1.5)
-      e_sd <- sqrt(0.5)
+    if (input$rint_sd_sub == "medium" & input$res_sd1_sub == "medium") {
+      sub_tab <- sub_tab[condition == "base"]
+    } else if (input$rint_sd_sub == "medium" & input$res_sd1_sub == "small") {
+      sub_tab <- sub_tab[condition == "REbase_RESsmall"]
+    } else if (input$rint_sd_sub == "medium" & input$res_sd1_sub == "large") {
+      sub_tab <- sub_tab[condition == "REbase_RESlarge"]
+    } else if (input$rint_sd_sub == "small" & input$res_sd2_sub == "large") {
+      sub_tab <- sub_tab[condition == "REsmall_RESlarge"]
+    } else if (input$rint_sd_sub == "large" & input$res_sd3_sub == "small") {
+      sub_tab <- sub_tab[condition == "RElarge_RESsmall"]
     }
-
-    if (input$N != "All") {
-      sub_dat <- sub_dat[N == input$N]
+    if (input$D_sub == 3) {
+      sub_tab <- sub_tab[To == input$delta3_sub]
+    } else if (input$D_sub == 4) {
+      sub_tab <- sub_tab[To == input$delta4_sub]
+    } else if (input$D_sub == 5) {
+      sub_tab <- sub_tab[To == input$delta5_sub]
     }
-    if (input$K != "All") {
-      sub_dat <- sub_dat[K == input$K]
+    if (input$level_sub != "all") {
+      sub_tab <- sub_tab[Level == input$level_sub]
     }
-    if (input$D != "All") {
-      sub_dat <- sub_dat[D == input$D]
+    if (input$N_sub != "All") {
+      sub_tab <- sub_tab[N == input$N_sub]
     }
-
-    sub_dat <- sub_dat[rint_sd == u0_sd &
-                         res_sd  == e_sd &
-                         Reallocation %in% delta &
-                         stat  == input$stat,
-                       .(stat, est, mcse, upper, lower,
-                         Reallocation, N, K, D, rint_sd, res_sd)]
+    if (input$K_sub != "All") {
+      sub_tab <- sub_tab[K == input$K_sub]
+    }
+    if (input$D_sub != "All") {
+      sub_tab <- sub_tab[D == input$D_sub]
+    }
+    sub_tab <- sub_tab[stat == input$stat_sub, ]
     
-    sub_dat[] <- lapply(sub_dat, function(x) if(is.numeric(x)) round(x, 2) else x)
+    sub_tab[] <- lapply(sub_tab, function(x) if(is.numeric(x)) round(x, 2) else x)
     
-    sub_dat
+    sub_tab
   }))
+  
 }
