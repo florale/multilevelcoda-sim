@@ -1,4 +1,67 @@
 
+## Coverage
+.get_cov <- function(object, data, estvarname, true, 
+                     by = c("N", "K"),
+                     methodvar = "condition",
+                     ci.limits = c("CI_low", "CI_high")) {
+  if (isTRUE(inherits(object, what = "simsum"))) {
+    
+    ci_level <- 0.95
+    crit <- stats::qnorm(1 - (1 - ci_level) / 2)
+    ref <- "base"
+    obj <- list()
+    
+    # object$summ$lower <- object$summ$est - crit * object$summ$mcse
+    # object$summ$upper <- object$summ$est + crit * object$summ$mcse
+    
+    data <- .split_by(data = data, by = by)
+    data <- lapply(X = seq_along(data), FUN = function(i) .split_by(data = data[[i]], by = methodvar))
+    
+    summ <- lapply(X = seq_along(data), FUN = function(i) {
+      out.out <- lapply(X = seq_along(data[[i]]), FUN = function(j) {
+        empse_ref <- sqrt(stats::var(data[[i]][[ref]][[estvarname]], na.rm = TRUE))
+        
+        nsim <- sum(!is.na(data[[i]][[j]][[estvarname]]), na.rm = TRUE)
+        
+        cover <- 1 / nsim * sum(true >= data[[i]][[j]][[ci.limits[1]]] & true <= data[[i]][[j]][[ci.limits[2]]], na.rm = TRUE)
+        becover <- 1 / nsim * sum(mean(data[[i]][[j]][[estvarname]], na.rm = TRUE) >= data[[i]][[j]][[ci.limits[1]]] & mean(data[[i]][[j]][[estvarname]], na.rm = TRUE) <= data[[i]][[j]][[ci.limits[2]]], na.rm = TRUE)
+        
+        cover_mcse <- sqrt(cover * (1 - cover) / nsim)
+        becover_mcse <- sqrt(becover * (1 - becover) / nsim)
+        
+        obj$stat <- c("cover", "becover")
+        obj$est <- c(cover, becover)
+        obj$mcse <- c(cover_mcse, becover_mcse)
+        
+        obj$condition <- unique(data[[i]][[j]]$condition)
+        obj$N <- unique(data[[i]][[j]]$N)
+        obj$K <- unique(data[[i]][[j]]$K)
+        
+        obj <- as.data.frame(obj, stringsAsFactors = FALSE)
+        
+      })
+      out.out <- do.call(rbind.data.frame, out.out)
+      
+    })
+    
+    summ <- do.call(rbind.data.frame, summ)
+    summ$condition <- as.factor(summ$condition)
+    summ$N <- as.factor(summ$N)
+    summ$K <- as.factor(summ$K)
+  }
+  object$summ <- rbind(object$summ, summ)
+  
+  object
+}
+
+# merge multiple data tables
+mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
+  Reduce(
+    function(...) {
+      merge(..., by = by, all = TRUE, sort = sort)
+    }, dt_list)
+}
+
 ### Heat plot
 .heat_plot <- function(data, methodvar, by, stats) {
   ### Create a .dgm column
@@ -138,58 +201,45 @@
   return(gg)
   
 }
-
-## Coverage
-.get_cov <- function(object, data, estvarname, true, 
-                     by = c("N", "K"),
-                     methodvar = "condition",
-                     ci.limits = c("CI_low", "CI_high")) {
-  if (isTRUE(inherits(object, what = "simsum"))) {
-    
-    ci_level <- 0.95
-    crit <- stats::qnorm(1 - (1 - ci_level) / 2)
-    ref <- "base"
-    obj <- list()
-    
-    # object$summ$lower <- object$summ$est - crit * object$summ$mcse
-    # object$summ$upper <- object$summ$est + crit * object$summ$mcse
-    
-    data <- .split_by(data = data, by = by)
-    data <- lapply(X = seq_along(data), FUN = function(i) .split_by(data = data[[i]], by = methodvar))
-    
-    summ <- lapply(X = seq_along(data), FUN = function(i) {
-      out.out <- lapply(X = seq_along(data[[i]]), FUN = function(j) {
-        empse_ref <- sqrt(stats::var(data[[i]][[ref]][[estvarname]], na.rm = TRUE))
-        
-        nsim <- sum(!is.na(data[[i]][[j]][[estvarname]]), na.rm = TRUE)
-        
-        cover <- 1 / nsim * sum(true >= data[[i]][[j]][[ci.limits[1]]] & true <= data[[i]][[j]][[ci.limits[2]]], na.rm = TRUE)
-        becover <- 1 / nsim * sum(mean(data[[i]][[j]][[estvarname]], na.rm = TRUE) >= data[[i]][[j]][[ci.limits[1]]] & mean(data[[i]][[j]][[estvarname]], na.rm = TRUE) <= data[[i]][[j]][[ci.limits[2]]], na.rm = TRUE)
-        
-        cover_mcse <- sqrt(cover * (1 - cover) / nsim)
-        becover_mcse <- sqrt(becover * (1 - becover) / nsim)
-        
-        obj$stat <- c("cover", "becover")
-        obj$est <- c(cover, becover)
-        obj$mcse <- c(cover_mcse, becover_mcse)
-        
-        obj$condition <- unique(data[[i]][[j]]$condition)
-        obj$N <- unique(data[[i]][[j]]$N)
-        obj$K <- unique(data[[i]][[j]]$K)
-        
-        obj <- as.data.frame(obj, stringsAsFactors = FALSE)
-        
-      })
-      out.out <- do.call(rbind.data.frame, out.out)
-      
-    })
-    
-    summ <- do.call(rbind.data.frame, summ)
-    summ$condition <- as.factor(summ$condition)
-    summ$N <- as.factor(summ$N)
-    summ$K <- as.factor(summ$K)
-  }
-  object$summ <- rbind(object$summ, summ)
+## Forest parameter plotn for shiny
+.par_plot_shiny <- function(data) {
   
-  object
+  if(all(data$stat == "bias")) {
+    ylab <- "Bias"
+    yintercept <- 0
+  } else if (all(data$stat == "becover")) {
+    ylab <- "Coverage"
+    yintercept <- 0.95
+  }
+  
+  gg <- 
+    ggplot(data, 
+           aes(x = by, y = est, 
+               ymin = lower, ymax = upper,
+               colour = by)) +
+    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dotted", linewidth = 0.75) +
+    geom_point() +
+    geom_errorbar(width = 0.5, linewidth = 0.75) +
+    labs(x = "", y = ylab, colour = "Parameter") +
+    scale_colour_manual(values = colour) + 
+    coord_flip() +
+    facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
+    theme_ipsum() +
+    theme(
+      axis.ticks        = element_blank(),
+      legend.position   = "bottom",
+      panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = 0.75),
+      plot.background   = element_rect(fill = "transparent", colour = NA),
+      axis.title.y      = element_text(size = 14, face = "bold"),
+      axis.title.x      = element_text(size = 14, face = "bold"),
+      axis.text.x       = element_text(size = 12),
+      axis.text.y       = element_blank(),
+      title             = element_text(size = 14, face = "bold"),
+      legend.text       = element_text(size = 12),
+      strip.text        = element_text(size = 12)
+    
+    )
+  
+  return(gg)
+  
 }
