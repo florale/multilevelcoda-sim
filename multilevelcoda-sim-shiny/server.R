@@ -99,8 +99,10 @@ server <- function(input, output) {
   }))
   
   # Summary Plots -------------------
+  # ranges_brmcoda <- reactiveValues(x = NULL, y = NULL)
+  
   ## brmcoda plot ---------------
-  output$simsum_brmcoda_plot <- renderPlot({
+  output$simsum_brmcoda_plot <- renderPlotly({
 
     if (input$rint_sd_brmcoda_plot == "medium" & input$res_sd1_brmcoda_plot == "medium") {
       if (input$D_brmcoda_plot == 3) {
@@ -144,10 +146,10 @@ server <- function(input, output) {
       }
     }
 
-  }, height = 1100)
+  })
   
   ## substitution plot ---------------
-  output$simsum_sub_plot <- renderPlot({
+  output$simsum_sub_plot <- renderPlotly({
     
     if (input$rint_sd_sub_plot == "medium" & input$res_sd1_sub_plot == "medium") {
       if (input$D_sub_plot == 3) {
@@ -177,7 +179,7 @@ server <- function(input, output) {
       if (input$D_sub_plot == 3) {
         .par_plot(sub_d3[stat == input$stat_sub_plot & condition == "REsmall_RESlarge"], shiny = TRUE)
       } else if (input$D_sub_plot == 4) {
-        .par_plot(sub_d4[stat == input$stat_sub_plot & condition == "REsmall_RESlarge"], shiny = TRUE) 
+        .par_plot(sub_d4[stat == input$stat_sub_plot & condition == "REsmall_RESlarge"], shiny = TRUE)
       } else if (input$D_sub_plot == 5) {
         .par_plot(sub_d5[stat == input$stat_sub_plot & condition == "REsmall_RESlarge"], shiny = TRUE)
       }
@@ -191,5 +193,18 @@ server <- function(input, output) {
       }
     }
     
-  }, height = 1300)
+  })
+  
+  # observe({
+  #   brush <- input$simsum_brmcoda_plot_brush
+  #   if (!is.null(brush)) {
+  #     ranges_brmcoda$x <- c(brush$xmin, brush$xmax)
+  #     ranges_brmcoda$y <- c(brush$ymin, brush$ymax)
+  #     
+  #   } else {
+  #     ranges_brmcoda$x <- NULL
+  #     ranges_brmcoda$y <- NULL
+  #   }
+  # })
+  
 }

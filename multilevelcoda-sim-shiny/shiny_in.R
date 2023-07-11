@@ -1,6 +1,13 @@
 library(data.table)
+library(extraoperators)
 library(shiny)
 library(shinythemes)
+library(shiny)
+library(ggplot2)
+library(ggthemes)
+library(ggpubr)
+library(plotly)
+library(bslib)
 
 # data --------------
 brmcoda_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
@@ -32,24 +39,46 @@ col_brmcoda_d5 <-
     "#1C1718")
 
 col_sub_d3 <- 
-  c("#bf5b4b", "#A69188", 
+  c("#bf5b4b", "#A69188",
     "#EAD3BF", "#FAD899",
-    "#8DA290", "#133A1B")
+    "#8DA290", "#133A1B"
+  )
 col_sub_d4 <-
   c("#2A3E59", "#456691",
     "#944C4C", "#C99696",
-    "#bf5b4b", "#A69188", 
+    "#bf5b4b", "#A69188",
     "#EAD3BF", "#FAD899",
     "#8DA290", "#133A1B",
-    "#6d765b", "#3d251e")
+    "#6d765b", "#3d251e"
+  )
 col_sub_d5 <- 
-  c("#1C1718", "#2A3E59", 
-    "#456691", "#647F9A", 
-    "#8CAACB", "#DCD5CE", 
-    "#DAA5AE", "#b6485d", 
+  c("#1C1718", "#2A3E59",
+    "#456691", "#647F9A",
+    "#8CAACB", "#DCD5CE",
+    "#DAA5AE", "#b6485d",
     "#944C4C", "#C99696",
-    "#bf5b4b", "#bb847a", 
-    "#A69188", "#EAD3BF", 
-    "#FAD899", "#8DA290", 
-    "#133A1B", "#6d765b", 
-    "#3b4031", "#3d251e")
+    "#bf5b4b", "#bb847a",
+    "#A69188", "#EAD3BF",
+    "#FAD899", "#8DA290",
+    "#133A1B", "#6d765b",
+    "#3b4031", "#3d251e"
+  )
+
+## theme
+shinyOptions(bslib = TRUE)
+flora_theme <- bs_theme(
+  bootswatch = "sandstone",
+  bg = "#FBF9F6",
+  fg = "#1C1718",
+  primary = "#708885",
+  secondary = "#8CAACB",
+  success = "#8DA290",
+  info = "#C99696",
+  warning = "#bb847a",
+  danger = "#944C4C",
+  code_font = "Roboto",
+  heading_font = NULL,
+  font_scale = NULL
+)
+thematic::thematic_shiny()
+bs_theme_preview(flora_theme, with_themer = FALSE)

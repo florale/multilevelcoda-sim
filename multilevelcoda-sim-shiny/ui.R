@@ -1,17 +1,33 @@
 ui <- fluidPage(
-  theme = shinytheme("yeti"),
-  
-  #Navbar structure for UI
+  # theme = shinytheme("sandstone"),
+  # theme = "shinythemes/css/sandstone.min.css",
+  # theme = shiny::bootstrapLib(),
+  # tags$head(includeCSS("multilevelcoda-sim-shiny/www/florastheme.css")),
+  theme = bs_theme(
+    bootswatch = "sandstone",
+    bg = "#FBF9F6",
+    fg = "#1C1718",
+    primary = "#708885",
+    secondary = "#8CAACB",
+    success = "#8DA290",
+    info = "#C99696",
+    warning = "#bb847a",
+    danger = "#944C4C",
+    code_font = "Roboto",
+    heading_font = NULL,
+    font_scale = NULL
+  ),
+  # thematic::thematic_shiny(),
   navbarPage(
     "multilevelcoda Simulation Study",
-    
+
     # Simulation Summary -----------------------------
     navbarMenu(
-      "Simulation Summary",
+      "Summary Statistics",
       
       ## brmcoda ------------------
       tabPanel(
-        "Bayesian Compositional Multilevel Estimates",
+        "Bayesian Compositional Multilevel",
         fluid = TRUE,
         
         fluidRow(column(
@@ -32,15 +48,13 @@ ui <- fluidPage(
             selectInput("N_brmcoda",
                         "Number of individuals:",
                         c("All",
-                          unique(
-                            as.character(brmcoda_dat$N)
-                          ))),
+                          30, 50, 360, 1200
+                          )),
             selectInput("K_brmcoda",
                         "Number of days:",
                         c("All",
-                          unique(
-                            as.character(brmcoda_dat$K)
-                          ))),
+                          3, 5, 7, 14
+                          )),
             radioButtons(
               "D_brmcoda",
               "Number of compositional parts:",
@@ -107,7 +121,7 @@ ui <- fluidPage(
       
       ## substitution ------------------
       tabPanel(
-        "Bayesian Compositional Multilevel Substitution Estimates",
+        "Bayesian Compositional Multilevel Substitution",
         fluid = TRUE,
         
         fluidRow(column(
@@ -128,15 +142,13 @@ ui <- fluidPage(
             selectInput("N_sub",
                         "Number of individuals:",
                         c("All",
-                          unique(
-                            as.character(brmcoda_dat$N)
-                          ))),
+                          30, 50, 360, 1200
+                          )),
             selectInput("K_sub",
                         "Number of days:",
                         c("All",
-                          unique(
-                            as.character(brmcoda_dat$K)
-                          ))),
+                          3, 5, 7, 14
+                          )),
             radioButtons(
               "D_sub",
               "Number of compositional parts:",
@@ -242,11 +254,11 @@ ui <- fluidPage(
     ),
     # Simulation Plots -----------------------------
     navbarMenu(
-      "Simulation Plots",
+      "Summary Plots",
       
       ## brmcoda plots ------------------
       tabPanel(
-        "Bayesian Compositional Multilevel Plots",
+        "Bayesian Compositional Multilevel Parameters",
         fluid = TRUE,
         
         fluidRow(column(
@@ -302,21 +314,26 @@ ui <- fluidPage(
             ),
             conditionalPanel(
               condition = "input.rint_sd_brmcoda_plot == 'large'",
-              selectInput("res_sd3_brmcoda_plot",
-                          "Residual variance:",
-                          c("small"), width = "100%")
+              selectInput(
+                "res_sd3_brmcoda_plot",
+                "Residual variance:",
+                c("small"),
+                width = "100%"
+              )
             )
           )
         ),
         fluidRow(column(
-          12, align = "center",
-          plotOutput("simsum_brmcoda_plot")
+          12,
+          align = "center",
+          plotlyOutput("simsum_brmcoda_plot",
+                       height = "1300px")
         ))
       ),
       
       ## substitution plots ------------------
       tabPanel(
-        "Bayesian Compositional Multilevel Substitution Plots",
+        "Bayesian Compositional Multilevel Substitution Estimates",
         fluid = TRUE,
         
         fluidRow(column(
@@ -378,7 +395,8 @@ ui <- fluidPage(
         ),
         fluidRow(column(
           12, align = "center",
-          plotOutput("simsum_sub_plot")
+          plotlyOutput("simsum_sub_plot",
+                       height = "1600px")
         ))
       )
     )

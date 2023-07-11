@@ -1,15 +1,7 @@
-button_color_css <- "
-#DivCompClear, #FinderClear, #EnterTimes{
-/* Change the background color of the update button
-to blue. */
-background: #708885;
+source("functions.R")
+source("multilevelcoda-sim-shiny/shiny_in.R")
 
-/* Change the text size to 15 pixels. */
-font-size: 15px;
-}"
-
-source("shiny_in.R")
-source("ui.R")
-source("server.R")
+source("multilevelcoda-sim-shiny/server.R")
+source("multilevelcoda-sim-shiny/ui.R")
 
 shinyApp(ui = ui, server = server)
