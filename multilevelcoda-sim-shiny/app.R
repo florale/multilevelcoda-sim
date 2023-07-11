@@ -8,7 +8,7 @@ background: #708885;
 font-size: 15px;
 }"
 
-
+source("shiny_in.R")
 source("ui.R")
 source("server.R")
 

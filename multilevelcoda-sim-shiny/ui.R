@@ -381,8 +381,6 @@ ui <- fluidPage(
           plotOutput("simsum_sub_plot")
         ))
       )
-      
-      
     )
     
     
