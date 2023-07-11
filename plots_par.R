@@ -10,24 +10,19 @@ col20 <- c("#1C1718", "#5A6367",
            "#9c8aa4", "#ABA2C3",
            "#9A5C7D", "#B98AA3",
            "#cc8a8c", "#A54E50",
-           "#DCD5CE",
-           "#B49797",
-           "#C99696",
-           "#DAA5AE",
-           "#d18d9a",
-           "#b6485d", 
-           "#D1ACA5",
-           "#C7AAA5", "#ba6c6e",
+           "#DCD5CE", "#B49797",
+           "#C99696", "#DAA5AE",
+           "#d18d9a", "#b6485d", 
+           "#D1ACA5", "#C7AAA5",
            "#4F7375", "#769798",
-           "#944C4C", 
+           "#944C4C", "#ba6c6e",
            "#bf5b4b", "#bb847a", 
            "#A69188", "#EAD3BF", 
            "#FAD899", 
            "#353D60", "#6171a9",
            "#8DA290", "#133A1B", 
            "#6d765b", "#3b4031", 
-           "#c48462",
-           "#3d251e",
+           "#c48462", "#3d251e",
            "#ab8b8b",
            "#D1ACA5"
 )
@@ -69,406 +64,211 @@ col_sub_d5 <-
     "#3b4031", "#3d251e")
   
 ## d3 brmcoda base plot ----------------------------------------------------------------------------
-colour <- col_brmcoda_d3
-
-plot_bias_brmcoda_d3_base <- .par_plot(brmcoda_d3[stat == "bias" & condition == "base"])  +
-  scale_y_continuous(limits = c(-0.1, 0.1),
-                     breaks = c(-0.1, 0, 0.1))
+plot_bias_brmcoda_d3_base <- .par_plot(brmcoda_d3[stat == "bias" & condition == "base"])
 plot_bias_brmcoda_d3_base
 
-plot_becover_brmcoda_d3_base <- .par_plot(brmcoda_d3[stat == "becover" & condition == "base"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d3_base <- .par_plot(brmcoda_d3[stat == "becover" & condition == "base"])
 plot_becover_brmcoda_d3_base
 
 ## d3 sub base plot --------------------------------------------------------------------------------
-colour <- col_sub_d3
-plot_bias_sub_d3_base <-
-  .par_plot(sub_d3[stat == "bias" & condition == "base"])  +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d3_base <- .par_plot(sub_d3[stat == "bias" & condition == "base"])
 plot_bias_sub_d3_base
 
-plot_becover_sub_d3_base <-
-  .par_plot(sub_d3[stat == "becover" & condition == "base"]) +
-  scale_y_continuous(limits = c(0.75, 1),
-                     breaks = c(0.75, 0.95))
+plot_becover_sub_d3_base <- .par_plot(sub_d3[stat == "becover" & condition == "base"])
 plot_becover_sub_d3_base
 
 ## d4 brmcoda base plot ----------------------------------------------------------------------------
-colour <- col_brmcoda_d4
-
-plot_bias_brmcoda_d4_base <- .par_plot(brmcoda_d4[stat == "bias" & condition == "base"])  +
-  scale_y_continuous(limits = c(-0.12, 0.12),
-                     breaks = c(-0.1, 0, 0.1))
+plot_bias_brmcoda_d4_base <- .par_plot(brmcoda_d4[stat == "bias" & condition == "base"])
 plot_bias_brmcoda_d4_base
 
-plot_becover_brmcoda_d4_base <- .par_plot(brmcoda_d4[stat == "becover" & condition == "base"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d4_base <- .par_plot(brmcoda_d4[stat == "becover" & condition == "base"])
 plot_becover_brmcoda_d4_base
 
 ## d4 sub base plot --------------------------------------------------------------------------------
-colour <- col_sub_d4
-plot_bias_sub_d4_base <-
-  .par_plot(sub_d4[stat == "bias" & condition == "base"]) +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d4_base <- .par_plot(sub_d4[stat == "bias" & condition == "base"])
 plot_bias_sub_d4_base
 
-plot_becover_sub_d4_base <-
-  .par_plot(sub_d4[stat == "becover" & condition == "base"]) +
-  scale_y_continuous(limits = c(0.65, 1),
-                     breaks = c(0.65, 0.95, 1))
+plot_becover_sub_d4_base <- .par_plot(sub_d4[stat == "becover" & condition == "base"])
 plot_becover_sub_d4_base
 
 ## d5 brmcoda base plot ----------------------------------------------------------------------------
-colour <- col_brmcoda_d5
-
-plot_bias_brmcoda_d5_base <- .par_plot(brmcoda_d5[stat == "bias" & condition == "base"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.1, 0, 0.1))
+plot_bias_brmcoda_d5_base <- .par_plot(brmcoda_d5[stat == "bias" & condition == "base"])
 plot_bias_brmcoda_d5_base
 
-plot_becover_brmcoda_d5_base <- .par_plot(brmcoda_d5[stat == "becover" & condition == "base"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d5_base <- .par_plot(brmcoda_d5[stat == "becover" & condition == "base"])
 plot_becover_brmcoda_d5_base
 
 ## d5 sub base plot --------------------------------------------------------------------------------
-colour <- col_sub_d5
-plot_bias_sub_d5_base <-
-  .par_plot(sub_d5[stat == "bias" & condition == "base"]) +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d5_base <- .par_plot(sub_d5[stat == "bias" & condition == "base"])
 plot_bias_sub_d5_base
 
-plot_becover_sub_d5_base <-
-  .par_plot(sub_d5[stat == "becover" & condition == "base"]) +
-  scale_y_continuous(limits = c(0.8, 1),
-                     breaks = c(0.8, 0.95, 1))
+plot_becover_sub_d5_base <- .par_plot(sub_d5[stat == "becover" & condition == "base"])
 plot_becover_sub_d5_base
 
 ## d3 brmcoda plot - u0 base e small ----------------------------------------------------------
-colour <- col_brmcoda_d3
-
-plot_bias_brmcoda_d3_ubes <- .par_plot(brmcoda_d3[stat == "bias" & condition == "REbase_RESsmall"])  +
-  scale_y_continuous(limits = c(-0.1, 0.1),
-                     breaks = c(-0.1, 0, 0.1))
+plot_bias_brmcoda_d3_ubes <- .par_plot(brmcoda_d3[stat == "bias" & condition == "REbase_RESsmall"])
 plot_bias_brmcoda_d3_ubes
 
-plot_becover_brmcoda_d3_ubes <- .par_plot(brmcoda_d3[stat == "becover" & condition == "REbase_RESsmall"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d3_ubes <- .par_plot(brmcoda_d3[stat == "becover" & condition == "REbase_RESsmall"])
 plot_becover_brmcoda_d3_ubes
 
 ## d3 sub plot - u0 base e small --------------------------------------------------------------
-colour <- col_sub_d3
-plot_bias_sub_d3_ubes <-
-  .par_plot(sub_d3[stat == "bias" & condition == "REbase_RESsmall"])  +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d3_ubes <- .par_plot(sub_d3[stat == "bias" & condition == "REbase_RESsmall"])
 plot_bias_sub_d3_ubes
 
-plot_becover_sub_d3_ubes <-
-  .par_plot(sub_d3[stat == "becover" & condition == "REbase_RESsmall"]) +
-  scale_y_continuous(limits = c(0.75, 1),
-                     breaks = c(0.75, 0.95, 1))
+plot_becover_sub_d3_ubes <- .par_plot(sub_d3[stat == "becover" & condition == "REbase_RESsmall"])
 plot_becover_sub_d3_ubes
 
 ## d4 brmcoda plot - u0 base e small ----------------------------------------------------------
-colour <- col_brmcoda_d4
-
-plot_bias_brmcoda_d4_ubes <- .par_plot(brmcoda_d4[stat == "bias" & condition == "REbase_RESsmall"])  +
-  scale_y_continuous(limits = c(-0.12, 0.1),
-                     breaks = c(-0.1, 0, 0.1))
+plot_bias_brmcoda_d4_ubes <- .par_plot(brmcoda_d4[stat == "bias" & condition == "REbase_RESsmall"])
 plot_bias_brmcoda_d4_ubes
 
-plot_becover_brmcoda_d4_ubes <- .par_plot(brmcoda_d4[stat == "becover" & condition == "REbase_RESsmall"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d4_ubes <- .par_plot(brmcoda_d4[stat == "becover" & condition == "REbase_RESsmall"])
 plot_becover_brmcoda_d4_ubes
 
 ## d4 sub plot - u0 base e small --------------------------------------------------------------
-colour <- col_sub_d4
-plot_bias_sub_d4_ubes <-
-  .par_plot(sub_d4[stat == "bias" & condition == "REbase_RESsmall"]) +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d4_ubes <- .par_plot(sub_d4[stat == "bias" & condition == "REbase_RESsmall"])
 plot_bias_sub_d4_ubes
 
-plot_becover_sub_d4_ubes <-
-  .par_plot(sub_d4[stat == "becover" & condition == "REbase_RESsmall"]) +
-  scale_y_continuous(limits = c(0.40, 1),
-                     breaks = c(0.40, 0.95))
+plot_becover_sub_d4_ubes <- .par_plot(sub_d4[stat == "becover" & condition == "REbase_RESsmall"])
 plot_becover_sub_d4_ubes
 
 ## d5 brmcoda plot - u0 base e small ----------------------------------------------------------
-colour <- col_brmcoda_d5
-
-plot_bias_brmcoda_d5_ubes <- .par_plot(brmcoda_d5[stat == "bias" & condition == "REbase_RESsmall"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d5_ubes <- .par_plot(brmcoda_d5[stat == "bias" & condition == "REbase_RESsmall"])
 plot_bias_brmcoda_d5_ubes
 
-plot_becover_brmcoda_d5_ubes <- .par_plot(brmcoda_d5[stat == "becover" & condition == "REbase_RESsmall"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d5_ubes <- .par_plot(brmcoda_d5[stat == "becover" & condition == "REbase_RESsmall"])
 plot_becover_brmcoda_d5_ubes
 
 ## d5 sub plot - u0 base e small --------------------------------------------------------------
-colour <- col_sub_d5
-plot_bias_sub_d5_ubes <-
-  .par_plot(sub_d5[stat == "bias" & condition == "REbase_RESsmall"]) +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d5_ubes <- .par_plot(sub_d5[stat == "bias" & condition == "REbase_RESsmall"])
 plot_bias_sub_d5_ubes
 
-plot_becover_sub_d5_ubes <-
-  .par_plot(sub_d5[stat == "becover" & condition == "REbase_RESsmall"]) +
-  scale_y_continuous(limits = c(0.65, 1),
-                     breaks = c(0.65, 0.95, 1))
+plot_becover_sub_d5_ubes <- .par_plot(sub_d5[stat == "becover" & condition == "REbase_RESsmall"])
 plot_becover_sub_d5_ubes
 
 ## d3 brmcoda plot - u0 base e large ----------------------------------------------------------
-colour <- col_brmcoda_d3
-
-plot_bias_brmcoda_d3_ubel <- .par_plot(brmcoda_d3[stat == "bias" & condition == "REbase_RESlarge"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d3_ubel <- .par_plot(brmcoda_d3[stat == "bias" & condition == "REbase_RESlarge"])
 plot_bias_brmcoda_d3_ubel
 
-plot_becover_brmcoda_d3_ubel <- .par_plot(brmcoda_d3[stat == "becover" & condition == "REbase_RESlarge"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d3_ubel <- .par_plot(brmcoda_d3[stat == "becover" & condition == "REbase_RESlarge"])
 plot_becover_brmcoda_d3_ubel
 
 ## d3 sub plot - u0 base e large --------------------------------------------------------------
-colour <- col_sub_d3
-plot_bias_sub_d3_ubel <-
-  .par_plot(sub_d3[stat == "bias" & condition == "REbase_RESlarge"])  +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d3_ubel <- .par_plot(sub_d3[stat == "bias" & condition == "REbase_RESlarge"])
 plot_bias_sub_d3_ubel
 
-plot_becover_sub_d3_ubel <-
-  .par_plot(sub_d3[stat == "becover" & condition == "REbase_RESlarge"]) +
-  scale_y_continuous(limits = c(0.75, 1),
-                     breaks = c(0.75, 0.95))
+plot_becover_sub_d3_ubel <- .par_plot(sub_d3[stat == "becover" & condition == "REbase_RESlarge"])
 plot_becover_sub_d3_ubel
 
 ## d4 brmcoda plot - u0 base e large ----------------------------------------------------------
-colour <- col_brmcoda_d4
-
-plot_bias_brmcoda_d4_ubel <- .par_plot(brmcoda_d4[stat == "bias" & condition == "REbase_RESlarge"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d4_ubel <- .par_plot(brmcoda_d4[stat == "bias" & condition == "REbase_RESlarge"])
 plot_bias_brmcoda_d4_ubel
 
-plot_becover_brmcoda_d4_ubel <- .par_plot(brmcoda_d4[stat == "becover" & condition == "REbase_RESlarge"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d4_ubel <- .par_plot(brmcoda_d4[stat == "becover" & condition == "REbase_RESlarge"])
 plot_becover_brmcoda_d4_ubel
 
 ## d4 sub plot - u0 base e large --------------------------------------------------------------
-colour <- col_sub_d4
-plot_bias_sub_d4_ubel <-
-  .par_plot(sub_d4[stat == "bias" & condition == "REbase_RESlarge"]) +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d4_ubel <- .par_plot(sub_d4[stat == "bias" & condition == "REbase_RESlarge"])
 plot_bias_sub_d4_ubel
 
-plot_becover_sub_d4_ubel <-
-  .par_plot(sub_d4[stat == "becover" & condition == "REbase_RESlarge"]) +
-  scale_y_continuous(limits = c(0.75, 1),
-                     breaks = c(0.75, 0.95))
+plot_becover_sub_d4_ubel <- .par_plot(sub_d4[stat == "becover" & condition == "REbase_RESlarge"])
 plot_becover_sub_d4_ubel
 
 ## d5 brmcoda plot - u0 base e large ----------------------------------------------------------
-colour <- col_brmcoda_d5
-
-plot_bias_brmcoda_d5_ubel <- .par_plot(brmcoda_d5[stat == "bias" & condition == "REbase_RESlarge"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d5_ubel <- .par_plot(brmcoda_d5[stat == "bias" & condition == "REbase_RESlarge"])
 plot_bias_brmcoda_d5_ubel
 
-plot_becover_brmcoda_d5_ubel <- .par_plot(brmcoda_d5[stat == "becover" & condition == "REbase_RESlarge"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d5_ubel <- .par_plot(brmcoda_d5[stat == "becover" & condition == "REbase_RESlarge"])
 plot_becover_brmcoda_d5_ubel
 
 ## d5 sub plot - u0 base e large --------------------------------------------------------------
-colour <- col_sub_d5
-plot_bias_sub_d5_ubel <-
-  .par_plot(sub_d5[stat == "bias" & condition == "REbase_RESlarge"]) +
-  scale_y_continuous(limits = c(-0.06, 0.06),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d5_ubel <- .par_plot(sub_d5[stat == "bias" & condition == "REbase_RESlarge"])
 plot_bias_sub_d5_ubel
 
-plot_becover_sub_d5_ubel <-
-  .par_plot(sub_d5[stat == "becover" & condition == "REbase_RESlarge"]) +
-  scale_y_continuous(limits = c(0.65, 1),
-                     breaks = c(0.65, 0.95, 1))
+plot_becover_sub_d5_ubel <- .par_plot(sub_d5[stat == "becover" & condition == "REbase_RESlarge"])
 plot_becover_sub_d5_ubel
 
 ## d3 brmcoda usel plot - u0 small e large ----------------------------------------------------------
-colour <- col_brmcoda_d3
-
-plot_bias_brmcoda_d3_usel <- .par_plot(brmcoda_d3[stat == "bias" & condition == "REsmall_RESlarge"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d3_usel <- .par_plot(brmcoda_d3[stat == "bias" & condition == "REsmall_RESlarge"])
 plot_bias_brmcoda_d3_usel
 
-plot_becover_brmcoda_d3_usel <- .par_plot(brmcoda_d3[stat == "becover" & condition == "REsmall_RESlarge"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d3_usel <- .par_plot(brmcoda_d3[stat == "becover" & condition == "REsmall_RESlarge"])
 plot_becover_brmcoda_d3_usel
 
 ## d3 sub usel plot - u0 small e large --------------------------------------------------------------
-colour <- col_sub_d3
-plot_bias_sub_d3_usel <-
-  .par_plot(sub_d3[stat == "bias" & condition == "REsmall_RESlarge"])  +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d3_usel <- .par_plot(sub_d3[stat == "bias" & condition == "REsmall_RESlarge"])
 plot_bias_sub_d3_usel
 
-plot_becover_sub_d3_usel <-
-  .par_plot(sub_d3[stat == "becover" & condition == "REsmall_RESlarge"]) +
-  scale_y_continuous(limits = c(0.75, 1),
-                     breaks = c(0.75, 0.95))
+plot_becover_sub_d3_usel <- .par_plot(sub_d3[stat == "becover" & condition == "REsmall_RESlarge"])
 plot_becover_sub_d3_usel
 
 ## d4 brmcoda usel plot - u0 small e large ----------------------------------------------------------
-colour <- col_brmcoda_d4
-
-plot_bias_brmcoda_d4_usel <- .par_plot(brmcoda_d4[stat == "bias" & condition == "REsmall_RESlarge"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d4_usel <- .par_plot(brmcoda_d4[stat == "bias" & condition == "REsmall_RESlarge"])
 plot_bias_brmcoda_d4_usel
 
-plot_becover_brmcoda_d4_usel <- .par_plot(brmcoda_d4[stat == "becover" & condition == "REsmall_RESlarge"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d4_usel <- .par_plot(brmcoda_d4[stat == "becover" & condition == "REsmall_RESlarge"])
 plot_becover_brmcoda_d4_usel
 
 ## d4 sub usel plot - u0 small e large --------------------------------------------------------------
-colour <- col_sub_d4
-plot_bias_sub_d4_usel <-
-  .par_plot(sub_d4[stat == "bias" & condition == "REsmall_RESlarge"]) +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d4_usel <- .par_plot(sub_d4[stat == "bias" & condition == "REsmall_RESlarge"])
 plot_bias_sub_d4_usel
 
-plot_becover_sub_d4_usel <-
-  .par_plot(sub_d4[stat == "becover" & condition == "REsmall_RESlarge"]) +
-  scale_y_continuous(limits = c(0.70, 1),
-                     breaks = c(0.75, 0.95))
+plot_becover_sub_d4_usel <- .par_plot(sub_d4[stat == "becover" & condition == "REsmall_RESlarge"])
 plot_becover_sub_d4_usel
 
 ## d5 brmcoda usel plot - u0 small e large ----------------------------------------------------------
-colour <- col_brmcoda_d5
-
-plot_bias_brmcoda_d5_usel <- .par_plot(brmcoda_d5[stat == "bias" & condition == "REsmall_RESlarge"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d5_usel <- .par_plot(brmcoda_d5[stat == "bias" & condition == "REsmall_RESlarge"])
 plot_bias_brmcoda_d5_usel
 
-plot_becover_brmcoda_d5_usel <- .par_plot(brmcoda_d5[stat == "becover" & condition == "REsmall_RESlarge"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d5_usel <- .par_plot(brmcoda_d5[stat == "becover" & condition == "REsmall_RESlarge"])
 plot_becover_brmcoda_d5_usel
 
 ## d5 sub usel plot - u0 small e large --------------------------------------------------------------
-colour <- col_sub_d5
-plot_bias_sub_d5_usel <-
-  .par_plot(sub_d5[stat == "bias" & condition == "REsmall_RESlarge"]) +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d5_usel <- .par_plot(sub_d5[stat == "bias" & condition == "REsmall_RESlarge"])
 plot_bias_sub_d5_usel
 
-plot_becover_sub_d5_usel <-
-  .par_plot(sub_d5[stat == "becover" & condition == "REsmall_RESlarge"]) +
-  scale_y_continuous(limits = c(0.70, 1),
-                     breaks = c(0.75, 0.95))
+plot_becover_sub_d5_usel <- .par_plot(sub_d5[stat == "becover" & condition == "REsmall_RESlarge"])
 plot_becover_sub_d5_usel
 
 ## d3 brmcoda ules plot - u0 large e small ----------------------------------------------------------
-colour <- col_brmcoda_d3
-
-plot_bias_brmcoda_d3_ules <- .par_plot(brmcoda_d3[stat == "bias" & condition == "RElarge_RESsmall"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d3_ules <- .par_plot(brmcoda_d3[stat == "bias" & condition == "RElarge_RESsmall"])
 plot_bias_brmcoda_d3_ules
 
-plot_becover_brmcoda_d3_ules <- .par_plot(brmcoda_d3[stat == "becover" & condition == "RElarge_RESsmall"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d3_ules <- .par_plot(brmcoda_d3[stat == "becover" & condition == "RElarge_RESsmall"])
 plot_becover_brmcoda_d3_ules
 
 ## d3 sub ules plot - u0 large e small --------------------------------------------------------------
-colour <- col_sub_d3
-plot_bias_sub_d3_ules <-
-  .par_plot(sub_d3[stat == "bias" & condition == "RElarge_RESsmall"])  +
-  scale_y_continuous(limits = c(-0.05, 0.05),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d3_ules <- .par_plot(sub_d3[stat == "bias" & condition == "RElarge_RESsmall"])
 plot_bias_sub_d3_ules
 
-plot_becover_sub_d3_ules <-
-  .par_plot(sub_d3[stat == "becover" & condition == "RElarge_RESsmall"]) +
-  scale_y_continuous(limits = c(0.65, 1),
-                     breaks = c(0.75, 0.95))
+plot_becover_sub_d3_ules <- .par_plot(sub_d3[stat == "becover" & condition == "RElarge_RESsmall"])
 plot_becover_sub_d3_ules
 
 ## d4 brmcoda ules plot - u0 large e small ----------------------------------------------------------
-colour <- col_brmcoda_d4
-
-plot_bias_brmcoda_d4_ules <- .par_plot(brmcoda_d4[stat == "bias" & condition == "RElarge_RESsmall"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d4_ules <- .par_plot(brmcoda_d4[stat == "bias" & condition == "RElarge_RESsmall"])
 plot_bias_brmcoda_d4_ules
 
-plot_becover_brmcoda_d4_ules <- .par_plot(brmcoda_d4[stat == "becover" & condition == "RElarge_RESsmall"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d4_ules <- .par_plot(brmcoda_d4[stat == "becover" & condition == "RElarge_RESsmall"])
 plot_becover_brmcoda_d4_ules
 
 ## d4 sub ules plot - u0 large e small --------------------------------------------------------------
-colour <- col_sub_d4
-plot_bias_sub_d4_ules <-
-  .par_plot(sub_d4[stat == "bias" & condition == "RElarge_RESsmall"]) +
-  scale_y_continuous(limits = c(-0.1, 0.1),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d4_ules <- .par_plot(sub_d4[stat == "bias" & condition == "RElarge_RESsmall"])
 plot_bias_sub_d4_ules
 
-plot_becover_sub_d4_ules <-
-  .par_plot(sub_d4[stat == "becover" & condition == "RElarge_RESsmall"]) +
-  scale_y_continuous(limits = c(0.40, 1),
-                     breaks = c(0.50, 0.75, 0.95))
+plot_becover_sub_d4_ules <- .par_plot(sub_d4[stat == "becover" & condition == "RElarge_RESsmall"])
 plot_becover_sub_d4_ules
 
 ## d5 brmcoda ules plot - u0 large e small ----------------------------------------------------------
-colour <- col_brmcoda_d5
-
-plot_bias_brmcoda_d5_ules <- .par_plot(brmcoda_d5[stat == "bias" & condition == "RElarge_RESsmall"])  +
-  scale_y_continuous(limits = c(-0.2, 0.2),
-                     breaks = c(-0.2, 0, 0.2))
+plot_bias_brmcoda_d5_ules <- .par_plot(brmcoda_d5[stat == "bias" & condition == "RElarge_RESsmall"])
 plot_bias_brmcoda_d5_ules
 
-plot_becover_brmcoda_d5_ules <- .par_plot(brmcoda_d5[stat == "becover" & condition == "RElarge_RESsmall"]) +
-  scale_y_continuous(limits = c(0.9, 1),
-                     breaks = c(0.9, 0.95, 1))
+plot_becover_brmcoda_d5_ules <- .par_plot(brmcoda_d5[stat == "becover" & condition == "RElarge_RESsmall"])
 plot_becover_brmcoda_d5_ules
 
 ## d5 sub ules plot - u0 large e small --------------------------------------------------------------
-colour <- col_sub_d5
-plot_bias_sub_d5_ules <-
-  .par_plot(sub_d5[stat == "bias" & condition == "RElarge_RESsmall"]) +
-  scale_y_continuous(limits = c(-0.1, 0.1),
-                     breaks = c(-0.05, 0, 0.05))
+plot_bias_sub_d5_ules <- .par_plot(sub_d5[stat == "bias" & condition == "RElarge_RESsmall"])
 plot_bias_sub_d5_ules
 
-plot_becover_sub_d5_ules <-
-  .par_plot(sub_d5[stat == "becover" & condition == "RElarge_RESsmall"]) +
-  scale_y_continuous(limits = c(0.65, 1),
-                     breaks = c(0.75, 0.95))
+plot_becover_sub_d5_ules <- .par_plot(sub_d5[stat == "becover" & condition == "RElarge_RESsmall"])
 plot_becover_sub_d5_ules

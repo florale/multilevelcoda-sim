@@ -100,13 +100,13 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   ci <- inherits(x = object, what = "summary.simsum")
   data <- tidy(object, stats = stats)
   
-    if (stats %in% c("cover", "becover", "power")) {
-      target <- 0.95
-    } else if (stats %in% c("thetamean", "thetamedian")) {
-      target <- object[["true"]]
-    } else {
-      target <- 0
-    }
+  if (stats %in% c("cover", "becover", "power")) {
+    target <- 0.95
+  } else if (stats %in% c("thetamean", "thetamedian")) {
+    target <- object[["true"]]
+  } else {
+    target <- 0
+  }
   
   ### Build basic plot
   if (!is.null(methodvar)) {
@@ -136,7 +136,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   }
   
   gg <- gg +
-    scale_colour_manual(values = colour) + 
+    scale_colour_manual(values = col) + 
     theme_ipsum() +
     theme(
       axis.ticks        = element_blank(),
@@ -163,83 +163,80 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
 
 
 ## Forest parameter plot
-.par_plot <- function(data) {
+.par_plot <- function(data, shiny = FALSE) {
   
-  if(all(data$stat == "bias")) {
+  if (all(data$stat == "bias")) {
     ylab <- "Bias"
     yintercept <- 0
-  } else if (all(data$stat == "becover")) {
-    ylab <- "Coverage"
-    yintercept <- 0.95
-  }
-  
-  gg <- 
-    ggplot(data, 
-           aes(x = by, y = est, 
-               ymin = lower, ymax = upper,
-               colour = by)) +
-    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dotted", linewidth = 1 / 2) +
-    geom_point() +
-    geom_errorbar(width = 1 / 2) +
-    labs(x = "", y = ylab, colour = "Parameter") +
-    scale_colour_manual(values = colour) + 
-    coord_flip() +
-    facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
-    theme_ipsum() +
-    theme(
-      axis.ticks        = element_blank(),
-      legend.position   = "bottom",
-      panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      plot.background   = element_rect(fill = "transparent", colour = NA),
-      axis.title.y      = element_text(size = 12, face = "bold"),
-      axis.title.x      = element_text(size = 12, face = "bold"),
-      axis.text.x       = element_text(size = 11),
-      axis.text.y       = element_blank(),
-      title             = element_text(size = 12, face = "bold")
-    )
-  
-  return(gg)
-  
-}
-## Forest parameter plotn for shiny
-.par_plot_shiny <- function(data) {
-  
-  if(all(data$stat == "bias")) {
-    ylab <- "Bias"
-    yintercept <- 0
-  } else if (all(data$stat == "becover")) {
-    ylab <- "Coverage"
-    yintercept <- 0.95
-  }
-  
-  gg <- 
-    ggplot(data, 
-           aes(x = by, y = est, 
-               ymin = lower, ymax = upper,
-               colour = by)) +
-    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dotted", linewidth = 0.75) +
-    geom_point() +
-    geom_errorbar(width = 0.5, linewidth = 0.75) +
-    labs(x = "", y = ylab, colour = "Parameter") +
-    scale_colour_manual(values = colour) + 
-    coord_flip() +
-    facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
-    theme_ipsum() +
-    theme(
-      axis.ticks        = element_blank(),
-      legend.position   = "bottom",
-      panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = 0.75),
-      plot.background   = element_rect(fill = "transparent", colour = NA),
-      axis.title.y      = element_text(size = 14, face = "bold"),
-      axis.title.x      = element_text(size = 14, face = "bold"),
-      axis.text.x       = element_text(size = 12),
-      axis.text.y       = element_blank(),
-      title             = element_text(size = 14, face = "bold"),
-      legend.text       = element_text(size = 12),
-      strip.text        = element_text(size = 12)
+    if ("Predictor" %in% colnames(data)) {
+      y_lims <- c(-0.16, 0.16)
+      y_breaks <- c(-0.1, 0, 0.1)
+    } else {
+      y_lims <- c(-0.075, 0.075)
+      y_breaks <- c(-0.05, 0, 0.05)
+    }
     
+  } else if (all(data$stat == "becover")) {
+    ylab <- "Coverage"
+    yintercept <- 0.95
+    if ("Predictor" %in% colnames(data)) {
+      y_lims <- c(0.9, 1)
+      y_breaks <- c(0.9, 0.95, 1)
+    } else {
+      y_lims <- c(0.4, 1)
+      y_breaks <- c(0.50, 0.75, 0.95)
+    }
+  }
+
+  if (nlevels(data$by) == 7) {
+    col <- col_brmcoda_d3
+  } else if (nlevels(data$by) == 9) {
+    col <- col_brmcoda_d4
+  } else if (nlevels(data$by) == 11) {
+    col <- col_brmcoda_d5
+  } else if (nlevels(data$by) == 12) {
+    col <- col_sub_d3
+  } else if (nlevels(data$by) == 24) {
+    col <- col_sub_d4
+  } else if (nlevels(data$by) == 40) {
+    col <- col_sub_d5
+  }
+  
+  point_size <- ifelse(shiny == TRUE, 2.5, 1.5)
+  line_size <- ifelse(shiny == TRUE, 0.75, 0.5)
+  btext_size <- ifelse(shiny == TRUE, 14, 12)
+  text_size <- ifelse(shiny == TRUE, 12, 11)
+  
+  gg <- 
+    ggplot(data, 
+           aes(x = by, y = est, 
+               ymin = lower, ymax = upper,
+               colour = by)) +
+    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dotted", linewidth = line_size) +
+    geom_point(size = point_size) +
+    geom_linerange(linewidth = line_size) +
+    labs(x = "", y = ylab, colour = "Parameter") +
+    scale_colour_manual(values = col) +
+    scale_y_continuous(limits = y_lims,
+                       breaks = y_breaks) +
+    coord_flip() +
+    facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
+    theme_ipsum() +
+    theme(
+      axis.ticks        = element_blank(),
+      legend.position   = "bottom",
+      panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = line_size),
+      plot.background   = element_rect(fill = "transparent", colour = NA),
+      axis.title.y      = element_text(size = btext_size, face = "bold"),
+      axis.title.x      = element_text(size = btext_size, face = "bold"),
+      axis.text.x       = element_text(size = text_size),
+      axis.text.y       = element_blank(),
+      title             = element_text(size = btext_size, face = "bold"),
+      legend.text       = element_text(size = text_size),
+      strip.text        = element_text(size = text_size)
     )
   
   return(gg)
   
 }
+
