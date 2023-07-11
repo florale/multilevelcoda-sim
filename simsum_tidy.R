@@ -1,5 +1,5 @@
-# source("simsum_brmcoda_out.R")
-# source("simsum_sub_out.R")
+source("simsum_brmcoda_out.R")
+source("simsum_sub_out.R")
 
 ## d3 fixed ----------------
 b0_d3    <- as.data.table(tidy(summary(s_b0_d3), stats = c("bias", "becover")))
@@ -831,17 +831,24 @@ sub_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 
 sub_d5[, D := 5]
 
-## save brmcoda data for shiny  -----------
-brmcoda_dat <- rbind(brmcoda_d3,
+## save brmcoda data for shiny tables  -----------
+brmcoda_tab <- rbind(brmcoda_d3,
                      brmcoda_d4,
                      brmcoda_d5)
-# saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
+saveRDS(brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
 
-# save all sub dat for shiny -----------
+# save all sub dat for shiny tables -----------
 sub_tab <- rbind(sub_d3,
                  sub_d4,
                  sub_d5)
-# saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
+saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
+
+# save all brmcoda dat for plots -----------
+brmcoda_dat <- list(brmcoda_d3,
+                    brmcoda_d4,
+                    brmcoda_d5)
+names(brmcoda_dat) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
+saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
 
 # subset sub dat for plots --------
 sub_d3[, by := paste0(Level, " ", From, " - ", To)]
@@ -937,6 +944,24 @@ sub_d5 <- sub_d5[by %in% c(
   "between LPA - SB",     "within LPA - SB"
 )]
 
-sub_dat <- rbind(sub_d3,
-                 sub_d4,
-                 sub_d5)
+# sub_d5[, by := factor(by), levels = c(
+#   "between TST - MVPA",  "within TST - MVPA",
+#   "between TST - WAKE",  "within TST - WAKE",
+#   "between TST - LPA",   "within TST - LPA",
+#   "between TST - SB",    "within TST - SB",
+#   
+#   "between WAKE - MVPA", "within WAKE - MVPA",
+#   "between WAKE - LPA",  "within WAKE - LPA",
+#   "between WAKE - SB",   "within WAKE - SB",
+#   
+#   "between MVPA - LPA",  "within MVPA - LPA",
+#   "between MVPA - SB",   "within MVPA - SB",
+#   
+#   "between LPA - SB",     "within LPA - SB"
+# )]
+
+sub_dat <- list(sub_d3,
+                sub_d4,
+                sub_d5)
+names(sub_dat) <- c("sub_d3", "sub_d4", "sub_d5")
+saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
