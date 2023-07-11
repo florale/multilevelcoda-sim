@@ -835,12 +835,16 @@ sub_d5[, D := 5]
 brmcoda_tab <- rbind(brmcoda_d3,
                      brmcoda_d4,
                      brmcoda_d5)
+brmcoda_tab[] <- as.data.table(lapply(brmcoda_tab, function(j) if(is.numeric(j)) round(j, 3) else j))
+
 saveRDS(brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
 
 # save all sub dat for shiny tables -----------
 sub_tab <- rbind(sub_d3,
                  sub_d4,
                  sub_d5)
+sub_tab[] <- as.data.table(lapply(sub_tab, function(j) if(is.numeric(j)) round(j, 3) else j))
+
 saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
 
 # save all brmcoda dat for plots -----------
@@ -848,6 +852,31 @@ brmcoda_dat <- list(brmcoda_d3,
                     brmcoda_d4,
                     brmcoda_d5)
 names(brmcoda_dat) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
+
+brmcoda_dat <- lapply(brmcoda_dat, function(i) {
+  i[] <- as.data.table(lapply(i, function(j) if(is.numeric(j)) round(j, 3) else j))
+  i[, NK := paste0("N: ", N, ", K: ", K)]
+  i[, NK := factor(NK, levels = c("N: 30, K: 3",
+                                  "N: 30, K: 5",
+                                  "N: 30, K: 7",
+                                  "N: 30, K: 14",
+                                  
+                                  "N: 50, K: 3",
+                                  "N: 50, K: 5",
+                                  "N: 50, K: 7",
+                                  "N: 50, K: 14",
+                                  
+                                  "N: 360, K: 3",
+                                  "N: 360, K: 5",
+                                  "N: 360, K: 7",
+                                  "N: 360, K: 14",
+                                  
+                                  "N: 1200, K: 3",
+                                  "N: 1200, K: 5",
+                                  "N: 1200, K: 7",
+                                  "N: 1200, K: 14"))]
+})
+
 saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
 
 # subset sub dat for plots --------
@@ -944,24 +973,33 @@ sub_d5 <- sub_d5[by %in% c(
   "between LPA - SB",     "within LPA - SB"
 )]
 
-# sub_d5[, by := factor(by), levels = c(
-#   "between TST - MVPA",  "within TST - MVPA",
-#   "between TST - WAKE",  "within TST - WAKE",
-#   "between TST - LPA",   "within TST - LPA",
-#   "between TST - SB",    "within TST - SB",
-#   
-#   "between WAKE - MVPA", "within WAKE - MVPA",
-#   "between WAKE - LPA",  "within WAKE - LPA",
-#   "between WAKE - SB",   "within WAKE - SB",
-#   
-#   "between MVPA - LPA",  "within MVPA - LPA",
-#   "between MVPA - SB",   "within MVPA - SB",
-#   
-#   "between LPA - SB",     "within LPA - SB"
-# )]
-
 sub_dat <- list(sub_d3,
                 sub_d4,
                 sub_d5)
 names(sub_dat) <- c("sub_d3", "sub_d4", "sub_d5")
+
+sub_dat <- lapply(sub_dat, function(i) {
+  i[] <- as.data.table(lapply(i, function(j) if(is.numeric(j)) round(j, 3) else j))
+  i[, NK := paste0("N: ", N, ", K: ", K)]
+  i[, NK := factor(NK, levels = c("N: 30, K: 3",
+                                  "N: 30, K: 5",
+                                  "N: 30, K: 7",
+                                  "N: 30, K: 14",
+                                  
+                                  "N: 50, K: 3",
+                                  "N: 50, K: 5",
+                                  "N: 50, K: 7",
+                                  "N: 50, K: 14",
+                                  
+                                  "N: 360, K: 3",
+                                  "N: 360, K: 5",
+                                  "N: 360, K: 7",
+                                  "N: 360, K: 14",
+                                  
+                                  "N: 1200, K: 3",
+                                  "N: 1200, K: 5",
+                                  "N: 1200, K: 7",
+                                  "N: 1200, K: 14"))]
+})
+
 saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
