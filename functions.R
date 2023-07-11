@@ -202,7 +202,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
     col <- col_sub_d5
   }
   
-  point_size <- ifelse(shiny == TRUE, 2.5, 1.5)
+  point_size <- ifelse(shiny == TRUE, 2, 1.5)
   line_size <- ifelse(shiny == TRUE, 0.75, 0.5)
   btext_size <- ifelse(shiny == TRUE, 14, 12)
   text_size <- ifelse(shiny == TRUE, 12, 11)
@@ -212,20 +212,23 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
            aes(x = by, y = est, 
                ymin = lower, ymax = upper,
                colour = by)) +
-    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dotted", linewidth = line_size) +
+    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dotted", linewidth = 0.5) +
     geom_point(size = point_size) +
     geom_linerange(linewidth = line_size) +
     labs(x = "", y = ylab, colour = "Parameter") +
     scale_colour_manual(values = col) +
     scale_y_continuous(limits = y_lims,
                        breaks = y_breaks) +
+    # facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
+    facet_wrap(ggplot2::vars(NK), labeller = ggplot2::label_context) +
     coord_flip() +
-    facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
-    theme_ipsum() +
+    hrbrthemes::theme_ipsum() +
     theme(
       axis.ticks        = element_blank(),
-      legend.position   = "bottom",
       panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = line_size),
+      panel.border      = element_rect(fill = "transparent", color = "black", linewidth = line_size),
+      # panel.grid.major  = element_blank(),
+      # panel.grid.minor  = element_blank(),
       plot.background   = element_rect(fill = "transparent", colour = NA),
       axis.title.y      = element_text(size = btext_size, face = "bold"),
       axis.title.x      = element_text(size = btext_size, face = "bold"),
@@ -233,10 +236,20 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       axis.text.y       = element_blank(),
       title             = element_text(size = btext_size, face = "bold"),
       legend.text       = element_text(size = text_size),
-      strip.text        = element_text(size = text_size)
+      strip.text.x      = element_text(size = text_size, hjust = 0, vjust = 1)
+      # strip.text.x      = element_blank()
+      
     )
-  
-  return(gg)
-  
+  if (shiny == TRUE) {
+    gg <- gg +
+      theme(
+        legend.position   = "none",
+        panel.spacing.y   = unit(0, "lines"),
+        panel.spacing.x   = unit(0.75, "lines")
+      )
+    plotly::ggplotly(gg, height = 1300, width = 1000)
+  } else {
+    gg + theme(legend.position   = "bottom")
+  }
 }
 
