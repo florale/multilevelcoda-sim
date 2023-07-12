@@ -2,11 +2,11 @@ source("simsum_brmcoda_out.R")
 source("simsum_sub_out.R")
 
 ## d3 fixed ----------------
-b0_d3    <- as.data.table(tidy(summary(s_b0_d3), stats = c("bias", "becover")))
-bilr1_d3 <- as.data.table(tidy(summary(s_bilr1_d3), stats = c("bias", "becover")))
-bilr2_d3 <- as.data.table(tidy(summary(s_bilr2_d3), stats = c("bias", "becover")))
-wilr1_d3 <- as.data.table(tidy(summary(s_wilr1_d3), stats = c("bias", "becover")))
-wilr2_d3 <- as.data.table(tidy(summary(s_wilr2_d3), stats = c("bias", "becover")))
+b0_d3    <- as.data.table(tidy(summary(s_b0_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr1_d3 <- as.data.table(tidy(summary(s_bilr1_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr2_d3 <- as.data.table(tidy(summary(s_bilr2_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr1_d3 <- as.data.table(tidy(summary(s_wilr1_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr2_d3 <- as.data.table(tidy(summary(s_wilr2_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 b0_d3[, par := "b0"]
 b0_d3[, Predictor := ""]
@@ -29,9 +29,9 @@ wilr2_d3[, Predictor := "ilr2"]
 wilr2_d3[, Level := "within"]
 
 ## d3 random ----------------
-u0_base_d3  <- as.data.table(tidy(summary(s_u0_base_d3), stats = c("bias", "becover")))
-u0_small_d3 <- as.data.table(tidy(summary(s_u0_small_d3), stats = c("bias", "becover")))
-u0_large_d3 <- as.data.table(tidy(summary(s_u0_large_d3), stats = c("bias", "becover")))
+u0_base_d3  <- as.data.table(tidy(summary(s_u0_base_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+u0_small_d3 <- as.data.table(tidy(summary(s_u0_small_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+u0_large_d3 <- as.data.table(tidy(summary(s_u0_large_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 u0_base_d3[, par := "u0"]
 u0_base_d3[, Predictor := ""]
@@ -55,9 +55,9 @@ u0_large_d3[, condition := "RElarge_RESsmall"]
 u0_large_d3[, condition := as.factor(condition)]
 
 ## d3 residual ----------------
-sigma_base_d3  <- as.data.table(tidy(summary(s_sigma_base_d3), stats = c("bias", "becover")))
-sigma_small_d3 <- as.data.table(tidy(summary(s_sigma_small_d3), stats = c("bias", "becover")))
-sigma_large_d3 <- as.data.table(tidy(summary(s_sigma_large_d3), stats = c("bias", "becover")))
+sigma_base_d3  <- as.data.table(tidy(summary(s_sigma_base_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+sigma_small_d3 <- as.data.table(tidy(summary(s_sigma_small_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+sigma_large_d3 <- as.data.table(tidy(summary(s_sigma_large_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 sigma_base_d3[, par := "sigma"]
 sigma_base_d3[, Predictor := ""]
@@ -154,43 +154,43 @@ brmcoda_d3[, D := 3]
 
 ## d3 sub ----------------
 bsub_d3 <- as.data.table(rbind(
-  cbind(tidy(summary(s_bsub_sleep_pa_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sleep_pa_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "Sleep" & From == "PA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sleep_sb_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sleep_sb_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "Sleep" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_pa_sleep_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_pa_sleep_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "PA" & From == "Sleep",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_pa_sb_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_pa_sb_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "PA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sb_sleep_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sb_sleep_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "SB" & From == "Sleep",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sb_pa_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sb_pa_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "SB" & From == "PA",
                              .(To, From)])
 ))
 
 wsub_d3 <- as.data.table(rbind(
-  cbind(tidy(summary(s_wsub_sleep_pa_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sleep_pa_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "Sleep" & From == "PA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sleep_sb_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sleep_sb_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "Sleep" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_pa_sleep_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_pa_sleep_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "PA" & From == "Sleep",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_pa_sb_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_pa_sb_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "PA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sb_sleep_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sb_sleep_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "SB" & From == "Sleep",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sb_pa_d3), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sb_pa_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d3[To == "SB" & From == "PA",
                              .(To, From)])
 ))
@@ -217,13 +217,13 @@ sub_d3[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 sub_d3[, D := 3]
 
 ## d4 fixed----------------
-b0_d4    <- as.data.table(tidy(summary(s_b0_d4), stats = c("bias", "becover")))
-bilr1_d4 <- as.data.table(tidy(summary(s_bilr1_d4), stats = c("bias", "becover")))
-bilr2_d4 <- as.data.table(tidy(summary(s_bilr2_d4), stats = c("bias", "becover")))
-bilr3_d4 <- as.data.table(tidy(summary(s_bilr3_d4), stats = c("bias", "becover")))
-wilr1_d4 <- as.data.table(tidy(summary(s_wilr1_d4), stats = c("bias", "becover")))
-wilr2_d4 <- as.data.table(tidy(summary(s_wilr2_d4), stats = c("bias", "becover")))
-wilr3_d4 <- as.data.table(tidy(summary(s_wilr3_d4), stats = c("bias", "becover")))
+b0_d4    <- as.data.table(tidy(summary(s_b0_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr1_d4 <- as.data.table(tidy(summary(s_bilr1_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr2_d4 <- as.data.table(tidy(summary(s_bilr2_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr3_d4 <- as.data.table(tidy(summary(s_bilr3_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr1_d4 <- as.data.table(tidy(summary(s_wilr1_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr2_d4 <- as.data.table(tidy(summary(s_wilr2_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr3_d4 <- as.data.table(tidy(summary(s_wilr3_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 b0_d4[, par := "b0"]
 b0_d4[, Predictor := ""]
@@ -254,9 +254,9 @@ wilr3_d4[, Predictor := "ilr3"]
 wilr3_d4[, Level := "within"]
 
 ## d4 random ----------------
-u0_base_d4  <- as.data.table(tidy(summary(s_u0_base_d4), stats = c("bias", "becover")))
-u0_small_d4 <- as.data.table(tidy(summary(s_u0_small_d4), stats = c("bias", "becover")))
-u0_large_d4 <- as.data.table(tidy(summary(s_u0_large_d4), stats = c("bias", "becover")))
+u0_base_d4  <- as.data.table(tidy(summary(s_u0_base_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+u0_small_d4 <- as.data.table(tidy(summary(s_u0_small_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+u0_large_d4 <- as.data.table(tidy(summary(s_u0_large_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 u0_base_d4[, par := "u0"]
 u0_base_d4[, Predictor := ""]
@@ -280,9 +280,9 @@ u0_large_d4[, condition := "RElarge_RESsmall"]
 u0_large_d4[, condition := as.factor(condition)]
 
 ## d4 residual  ----------------
-sigma_base_d4  <- as.data.table(tidy(summary(s_sigma_base_d4), stats = c("bias", "becover")))
-sigma_small_d4 <- as.data.table(tidy(summary(s_sigma_small_d4), stats = c("bias", "becover")))
-sigma_large_d4 <- as.data.table(tidy(summary(s_sigma_large_d4), stats = c("bias", "becover")))
+sigma_base_d4  <- as.data.table(tidy(summary(s_sigma_base_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+sigma_small_d4 <- as.data.table(tidy(summary(s_sigma_small_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+sigma_large_d4 <- as.data.table(tidy(summary(s_sigma_large_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 sigma_base_d4[, par := "sigma"]
 sigma_base_d4[, Predictor := ""]
@@ -391,79 +391,79 @@ brmcoda_d4[, D := 4]
 
 ## d4 sub ---------
 bsub_d4 <- as.data.table(rbind(
-  cbind(tidy(summary(s_bsub_sleep_mvpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sleep_mvpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "Sleep" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sleep_lpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sleep_lpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "Sleep" & From == "LPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sleep_sb_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sleep_sb_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "Sleep" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_mvpa_sleep_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_mvpa_sleep_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "MVPA" & From == "Sleep",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_mvpa_lpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_mvpa_lpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "MVPA" & From == "LPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_mvpa_sb_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_mvpa_sb_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "MVPA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_lpa_sleep_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_lpa_sleep_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "LPA" & From == "Sleep",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_lpa_mvpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_lpa_mvpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "LPA" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_lpa_sb_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_lpa_sb_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "LPA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sb_sleep_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sb_sleep_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "SB" & From == "Sleep",
                              .(To, From)]),
-  cbind( tidy(summary(s_bsub_sb_mvpa_d4), stats = c("bias", "becover")),
+  cbind( tidy(summary(s_bsub_sb_mvpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
          substutitution_gt_d4[To == "SB" & From == "MVPA",
                               .(To, From)]),
-  cbind(tidy(summary(s_bsub_sb_lpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sb_lpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "SB" & From == "LPA",
                              .(To, From)])
 ))
 
 wsub_d4 <- as.data.table(rbind(
-  cbind(tidy(summary(s_wsub_sleep_mvpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sleep_mvpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "Sleep" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sleep_lpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sleep_lpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "Sleep" & From == "LPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sleep_sb_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sleep_sb_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "Sleep" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_mvpa_sleep_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_mvpa_sleep_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "MVPA" & From == "Sleep",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_mvpa_lpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_mvpa_lpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "MVPA" & From == "LPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_mvpa_sb_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_mvpa_sb_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "MVPA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_lpa_sleep_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_lpa_sleep_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "LPA" & From == "Sleep",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_lpa_mvpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_lpa_mvpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "LPA" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_lpa_sb_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_lpa_sb_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "LPA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sb_sleep_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sb_sleep_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "SB" & From == "Sleep",
                              .(To, From)]),
-  cbind( tidy(summary(s_wsub_sb_mvpa_d4), stats = c("bias", "becover")),
+  cbind( tidy(summary(s_wsub_sb_mvpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
          substutitution_gt_d4[To == "SB" & From == "MVPA",
                               .(To, From)]),
-  cbind(tidy(summary(s_wsub_sb_lpa_d4), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sb_lpa_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d4[To == "SB" & From == "LPA",
                              .(To, From)])
 ))
@@ -490,15 +490,15 @@ sub_d4[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
 sub_d4[, D := 4]
 
 ## d5 fixed----------------
-b0_d5    <- as.data.table(tidy(summary(s_b0_d5), stats = c("bias", "becover")))
-bilr1_d5 <- as.data.table(tidy(summary(s_bilr1_d5), stats = c("bias", "becover")))
-bilr2_d5 <- as.data.table(tidy(summary(s_bilr2_d5), stats = c("bias", "becover")))
-bilr3_d5 <- as.data.table(tidy(summary(s_bilr3_d5), stats = c("bias", "becover")))
-bilr4_d5 <- as.data.table(tidy(summary(s_bilr4_d5), stats = c("bias", "becover")))
-wilr1_d5 <- as.data.table(tidy(summary(s_wilr1_d5), stats = c("bias", "becover")))
-wilr2_d5 <- as.data.table(tidy(summary(s_wilr2_d5), stats = c("bias", "becover")))
-wilr3_d5 <- as.data.table(tidy(summary(s_wilr3_d5), stats = c("bias", "becover")))
-wilr4_d5 <- as.data.table(tidy(summary(s_wilr4_d5), stats = c("bias", "becover")))
+b0_d5    <- as.data.table(tidy(summary(s_b0_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr1_d5 <- as.data.table(tidy(summary(s_bilr1_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr2_d5 <- as.data.table(tidy(summary(s_bilr2_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr3_d5 <- as.data.table(tidy(summary(s_bilr3_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+bilr4_d5 <- as.data.table(tidy(summary(s_bilr4_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr1_d5 <- as.data.table(tidy(summary(s_wilr1_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr2_d5 <- as.data.table(tidy(summary(s_wilr2_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr3_d5 <- as.data.table(tidy(summary(s_wilr3_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+wilr4_d5 <- as.data.table(tidy(summary(s_wilr4_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 b0_d5[, par := "b0"]
 b0_d5[, Predictor := ""]
@@ -537,9 +537,9 @@ wilr4_d5[, Predictor := "ilr4"]
 wilr4_d5[, Level := "within"]
 
 ## d5 random ----------------
-u0_base_d5  <- as.data.table(tidy(summary(s_u0_base_d5), stats = c("bias", "becover")))
-u0_small_d5 <- as.data.table(tidy(summary(s_u0_small_d5), stats = c("bias", "becover")))
-u0_large_d5 <- as.data.table(tidy(summary(s_u0_large_d5), stats = c("bias", "becover")))
+u0_base_d5  <- as.data.table(tidy(summary(s_u0_base_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+u0_small_d5 <- as.data.table(tidy(summary(s_u0_small_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+u0_large_d5 <- as.data.table(tidy(summary(s_u0_large_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 u0_base_d5[, par := "u0"]
 u0_base_d5[, Predictor := ""]
@@ -563,9 +563,9 @@ u0_large_d5[, condition := "RElarge_RESsmall"]
 u0_large_d5[, condition := as.factor(condition)]
 
 ## d5 residual  ----------------
-sigma_base_d5  <- as.data.table(tidy(summary(s_sigma_base_d5), stats = c("bias", "becover")))
-sigma_small_d5 <- as.data.table(tidy(summary(s_sigma_small_d5), stats = c("bias", "becover")))
-sigma_large_d5 <- as.data.table(tidy(summary(s_sigma_large_d5), stats = c("bias", "becover")))
+sigma_base_d5  <- as.data.table(tidy(summary(s_sigma_base_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+sigma_small_d5 <- as.data.table(tidy(summary(s_sigma_small_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
+sigma_large_d5 <- as.data.table(tidy(summary(s_sigma_large_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
 
 sigma_base_d5[, par := "sigma"]
 sigma_base_d5[, Predictor := ""]
@@ -685,127 +685,127 @@ brmcoda_d5[, D := 5]
 
 ## d5 sub ---------
 bsub_d5 <- as.data.table(rbind(
-  cbind(tidy(summary(s_bsub_tst_wake_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_tst_wake_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "TST" & From == "WAKE",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_tst_mvpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_tst_mvpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "TST" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_tst_lpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_tst_lpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "TST" & From == "LPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_tst_sb_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_tst_sb_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "TST" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_wake_tst_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_wake_tst_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "WAKE" & From == "TST",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_wake_mvpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_wake_mvpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "WAKE" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_wake_lpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_wake_lpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "WAKE" & From == "LPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_wake_sb_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_wake_sb_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "WAKE" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_mvpa_tst_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_mvpa_tst_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "MVPA" & From == "TST",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_mvpa_wake_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_mvpa_wake_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "MVPA" & From == "WAKE",
                              .(To, From)]),
-  cbind( tidy(summary(s_bsub_mvpa_lpa_d5), stats = c("bias", "becover")),
+  cbind( tidy(summary(s_bsub_mvpa_lpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
          substutitution_gt_d5[To == "MVPA" & From == "LPA",
                               .(To, From)]),
-  cbind(tidy(summary(s_bsub_mvpa_sb_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_mvpa_sb_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "MVPA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_lpa_tst_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_lpa_tst_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "LPA" & From == "TST",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_lpa_wake_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_lpa_wake_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "LPA" & From == "WAKE",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_lpa_mvpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_lpa_mvpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "LPA" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_lpa_sb_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_lpa_sb_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "LPA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sb_tst_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sb_tst_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "SB" & From == "TST",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sb_wake_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sb_wake_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "SB" & From == "WAKE",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sb_mvpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sb_mvpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "SB" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_bsub_sb_lpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_bsub_sb_lpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "SB" & From == "LPA",
                              .(To, From)])
 ))
 
 wsub_d5 <- as.data.table(rbind(
-  cbind(tidy(summary(s_wsub_tst_wake_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_tst_wake_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "TST" & From == "WAKE",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_tst_mvpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_tst_mvpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "TST" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_tst_lpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_tst_lpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "TST" & From == "LPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_tst_sb_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_tst_sb_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "TST" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_wake_tst_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_wake_tst_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "WAKE" & From == "TST",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_wake_mvpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_wake_mvpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "WAKE" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_wake_lpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_wake_lpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "WAKE" & From == "LPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_wake_sb_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_wake_sb_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "WAKE" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_mvpa_tst_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_mvpa_tst_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "MVPA" & From == "TST",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_mvpa_wake_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_mvpa_wake_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "MVPA" & From == "WAKE",
                              .(To, From)]),
-  cbind( tidy(summary(s_wsub_mvpa_lpa_d5), stats = c("bias", "becover")),
+  cbind( tidy(summary(s_wsub_mvpa_lpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
          substutitution_gt_d5[To == "MVPA" & From == "LPA",
                               .(To, From)]),
-  cbind(tidy(summary(s_wsub_mvpa_sb_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_mvpa_sb_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "MVPA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_lpa_tst_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_lpa_tst_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "LPA" & From == "TST",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_lpa_wake_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_lpa_wake_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "LPA" & From == "WAKE",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_lpa_mvpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_lpa_mvpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "LPA" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_lpa_sb_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_lpa_sb_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "LPA" & From == "SB",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sb_tst_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sb_tst_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "SB" & From == "TST",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sb_wake_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sb_wake_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "SB" & From == "WAKE",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sb_mvpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sb_mvpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "SB" & From == "MVPA",
                              .(To, From)]),
-  cbind(tidy(summary(s_wsub_sb_lpa_d5), stats = c("bias", "becover")),
+  cbind(tidy(summary(s_wsub_sb_lpa_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")),
         substutitution_gt_d5[To == "SB" & From == "LPA",
                              .(To, From)])
 ))
