@@ -1,6 +1,6 @@
 # source("simsum_in.R")
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   
   # Summary Statistics -------------------
   ## brmcoda tab ---------------
@@ -51,7 +51,7 @@ server <- function(input, output) {
       brmcoda_tab <- brmcoda_tab[D == input$D_brmcoda]
     }
     
-    brmcoda_tab <- brmcoda_tab[by %in% par_brmcoda & stat == input$stat_brmcoda, ]
+    brmcoda_tab <- brmcoda_tab[by %in% par_brmcoda & stat == input$stat_brmcoda, .(est, mcse, lower, upper, D, N, K)]
     
     brmcoda_tab[] <- lapply(brmcoda_tab, function(x) if(is.numeric(x)) round(x, 2) else x)
     
@@ -91,7 +91,7 @@ server <- function(input, output) {
     if (input$D_sub != "All") {
       sub_tab <- sub_tab[D == input$D_sub]
     }
-    sub_tab <- sub_tab[stat == input$stat_sub, ]
+    sub_tab <- sub_tab[stat == input$stat_sub, .(est, mcse, lower, upper, D, N, K)]
     
     sub_tab[] <- lapply(sub_tab, function(x) if(is.numeric(x)) round(x, 2) else x)
     
@@ -194,7 +194,9 @@ server <- function(input, output) {
     }
     
   })
-  
+  # observe(session$setCurrentTheme(
+  #   if (isTRUE(input$dark_mode)) dark else light
+  # ))
   # observe({
   #   brush <- input$simsum_brmcoda_plot_brush
   #   if (!is.null(brush)) {

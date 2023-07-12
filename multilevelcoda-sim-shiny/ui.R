@@ -1,26 +1,57 @@
 ui <- fluidPage(
+  theme = floras,
+  tags$style(
+    HTML(
+      "
+        @media (min-width: 768px) {
+            body > div .container-fluid {
+                width: 750px;
+            }
+        }
+        @media (min-width: 992px) {
+            body > div > .container-fluid {
+                width: 970px;
+            }
+        }
+        @media (min-width: 1200px) {
+            body > div .container-fluid {
+                width: 1170px;
+            }
+        }
+        body > div > .container-fluid:nth-of-type(1) {
+            margin: 0 auto;
+            padding-top: 55px;
+        }
+        body > div > nav .nav.navbar-nav {
+            float: right;
+        }
+        .dataTables_wrapper .dataTables_filter input{
+                      width: 30px;
+                      background-color: #EFE3E0;}
+        .well {background-color:#CFDAE2;}
+        "
+    )
+  ),
+  # .tabs-above > .nav > li[class=active] > a {
+  #   background-color: #6171a9;
+  #     color: #FFF;
+  # }
+  
+  # .dataTables_wrapper .dataTables_length {
+  #   float: right;}
+  # .dataTables_wrapper .dataTables_filter {
+  #   float: right;
+  #   text-align: right;}
   # theme = shinytheme("sandstone"),
   # theme = "shinythemes/css/sandstone.min.css",
   # theme = shiny::bootstrapLib(),
   # tags$head(includeCSS("multilevelcoda-sim-shiny/www/florastheme.css")),
-  theme = bs_theme(
-    bootswatch = "sandstone",
-    bg = "#FBF9F6",
-    fg = "#1C1718",
-    primary = "#708885",
-    secondary = "#8CAACB",
-    success = "#8DA290",
-    info = "#C99696",
-    warning = "#bb847a",
-    danger = "#944C4C",
-    code_font = "Roboto",
-    heading_font = NULL,
-    font_scale = NULL
-  ),
-  # thematic::thematic_shiny(),
+  # checkboxInput("dark_mode", "Dark mode", FALSE),
   navbarPage(
+    position = "fixed-top",
     "multilevelcoda Simulation Study",
-
+    theme = floras,
+    
     # Simulation Summary -----------------------------
     navbarMenu(
       "Summary Statistics",
@@ -35,8 +66,13 @@ ui <- fluidPage(
           selectInput(
             "stat_brmcoda",
             "Performance Measure:",
-            c("Bias" = "bias",
-              "Bias-Eliminated Coverage" = "becover"),
+            c(
+              "Bias" = "bias",
+              "Coverage" = "cover",
+              "Bias-Eliminated Coverage" = "becover",
+              "Empirical Standard Error" = "empse",
+              "Mean-squared Error" = "mse"
+            ),
             width = "100%"
           )
         )),
@@ -45,16 +81,16 @@ ui <- fluidPage(
         
         sidebarLayout(
           sidebarPanel(
+            style = "height:581px",
+            # tags$style(".well {background-color:#CFDAE2;}"),
             selectInput("N_brmcoda",
                         "Number of individuals:",
                         c("All",
-                          30, 50, 360, 1200
-                          )),
+                          30, 50, 360, 1200)),
             selectInput("K_brmcoda",
                         "Number of days:",
                         c("All",
-                          3, 5, 7, 14
-                          )),
+                          3, 5, 7, 14)),
             radioButtons(
               "D_brmcoda",
               "Number of compositional parts:",
@@ -129,8 +165,13 @@ ui <- fluidPage(
           selectInput(
             "stat_sub",
             "Performance Measure:",
-            c("Bias" = "bias",
-              "Bias-Eliminated Coverage" = "becover"),
+            c(
+              "Bias" = "bias",
+              "Coverage" = "cover",
+              "Bias-Eliminated Coverage" = "becover",
+              "Empirical Standard Error" = "empse",
+              "Mean-squared Error" = "mse"
+              ),
             width = "100%"
           )
         )),
@@ -142,13 +183,11 @@ ui <- fluidPage(
             selectInput("N_sub",
                         "Number of individuals:",
                         c("All",
-                          30, 50, 360, 1200
-                          )),
+                          30, 50, 360, 1200)),
             selectInput("K_sub",
                         "Number of days:",
                         c("All",
-                          3, 5, 7, 14
-                          )),
+                          3, 5, 7, 14)),
             radioButtons(
               "D_sub",
               "Number of compositional parts:",
@@ -266,8 +305,13 @@ ui <- fluidPage(
           selectInput(
             "stat_brmcoda_plot",
             "Performance Measure:",
-            c("Bias" = "bias",
-              "Bias-Eliminated Coverage" = "becover"),
+            c(
+              "Bias" = "bias",
+              "Coverage" = "cover",
+              "Bias-Eliminated Coverage" = "becover",
+              "Empirical Standard Error" = "empse",
+              "Mean-squared Error" = "mse"
+            ),
             width = "100%"
           )
         )),
@@ -341,8 +385,13 @@ ui <- fluidPage(
           selectInput(
             "stat_sub_plot",
             "Performance Measure:",
-            c("Bias" = "bias",
-              "Bias-Eliminated Coverage" = "becover"),
+            c(
+              "Bias" = "bias",
+              "Coverage" = "cover",
+              "Bias-Eliminated Coverage" = "becover",
+              "Empirical Standard Error" = "empse",
+              "Mean-squared Error" = "mse"
+              ),
             width = "100%"
           )
         )),

@@ -8,6 +8,7 @@ library(ggthemes)
 library(ggpubr)
 library(plotly)
 library(bslib)
+library(sass)
 
 # data --------------
 brmcoda_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
@@ -66,19 +67,105 @@ col_sub_d5 <-
 
 ## theme
 shinyOptions(bslib = TRUE)
-flora_theme <- bs_theme(
-  bootswatch = "sandstone",
-  bg = "#FBF9F6",
+theme <- bs_theme(
+  # version = 5,
+  bootswatch = "minty",
+  bg = "#fff",
   fg = "#1C1718",
-  primary = "#708885",
-  secondary = "#8CAACB",
+  primary = "#A1B2C2",
+  secondary = "#A69188",
   success = "#8DA290",
-  info = "#C99696",
-  warning = "#bb847a",
+  info = "#d18d9a",
+  warning = "#FAD899",
   danger = "#944C4C",
-  code_font = "Roboto",
+  # base_font = "Roboto",
+  code_font = "Consolas",
   heading_font = NULL,
-  font_scale = NULL
+  font_scale = NULL,
 )
-thematic::thematic_shiny()
-bs_theme_preview(flora_theme, with_themer = FALSE)
+floras <-
+  bs_add_variables(
+    theme,
+    .where = "declarations",
+    "body-color" = "#58504C",
+    "panel-inner-border" = "#CFDAE2",
+    "navbar-light-brand-color" = "#FAF7F3",
+    "navbar-light-active-color" = "#b39b89",
+    "navbar-light-hover-color" = "#d18d9a",
+    "navbar-light-bg" = "#665C58",
+    "navbar-default-link-hover-bg" = "#A1B2C2",
+    "navbar-light-panel-bg" = "#A1B2C2",
+    "navbar-inner-bg" = "#A1B2C2",
+    
+    "table-light-striped-bg" = "#FAF7F3",
+    "table-light-striped-bg-active" = "#CFDAE2",
+    "table-light-striped-bg-hover" = "#DCD5CE",
+    "table-light-bg-accent" = "#CFDAE2",
+    
+    "pagination-color" = "#3d251e",
+    "pagination-bg" = "#BEC7B4",
+    "pagination-border-color" = "#BEC7B4",
+    
+    "pagination-hover-colour" = "#FAF7F3",
+    "pagination-hover-bg" = "#708885",
+    "pagination-hover-border-color" = "#708885",
+    
+    "pagination-active-bg" = "#8DA290",
+    "pagination-active-border-color" = "#8DA290",
+    
+    "pagination-disabled-bg" = "#5A6367", 
+    "pagination-disabled-border-color" = "#5A6367",
+    "pagination-disabled-color" = "#708885",
+    
+    "navbar-light-table-striped-color" = "#1C1718",
+    "navbar-light-table-striped-bg" = "#CFDAE2",
+    "navbar-light-table-hover-bg" = "#CFDAE2",
+    
+    "dropdown-bg" = "#fff",
+    # "table-border-color" = "#DCD5CE",
+    
+    "table-bg" = "#E5E8E1",   #E5E8E1 DFD7D6 
+    "table-accent-bg" = "#fff", 
+    
+    "navbar-sidebar-bg" = "#A1B2C2",
+
+    "table-thead-light" = "#d18d9a  !important",
+    "table-thead-bg" = "#d18d9a !important",
+    
+    # "table-striped-bg" = "#FAF7F3",
+    # "table-hover-bg-factor" = "1.25",
+    "btn-default-bg" = "#A1B2C2",
+    "btn-success-bg" = "#A1B2C2",
+    "input-bg" = "#fff",
+    
+    
+    "legend-color" = "#DCD5CE",
+    "border-primary" = "#3d251e",
+    "bg-primary" = "#3d251e",
+    "table-active-bg" = "#F0DBDE  !important"
+    # "bs-table-hover-bg" = "#CFDAE2",
+    # 
+    # "bs-table-bg-accent" = "#CFDAE2"
+    
+    # "inverse-bg" = "#DCD5CE"
+    
+  )
+
+# dark <- bs_theme(
+#   # version = 5,
+#   # bootswatch = "sandstone",
+#   bg = "#1C1718",
+#   fg = "#FBF9F6",
+#   primary = "#A1B2C2",
+#   secondary = "#8CAACB",
+#   success = "#8DA290",
+#   info = "#C99696",
+#   warning = "#bb847a",
+#   danger = "#944C4C",
+#   code_font = "Roboto",
+#   heading_font = NULL,
+#   font_scale = NULL
+# )
+# thematic::thematic_shiny()
+# bs_theme_preview(floras, with_themer = FALSE)
+
