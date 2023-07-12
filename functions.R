@@ -176,7 +176,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       y_breaks <- c(-0.05, 0, 0.05)
     }
     
-  } else if (all(data$stat == "becover")) {
+  } else if (all(data$stat %in% c("cover", "becover"))) {
     ylab <- "Coverage"
     yintercept <- 0.95
     if ("Predictor" %in% colnames(data)) {
@@ -185,6 +185,26 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
     } else {
       y_lims <- c(0.4, 1)
       y_breaks <- c(0.50, 0.75, 0.95)
+    }
+  } else if (all(data$stat == "mse")) {
+    ylab <- "Empirical Standard Error"
+    yintercept <- 0
+    if ("Predictor" %in% colnames(data)) {
+      y_lims <- c(0, 3.5)
+      y_breaks <- c(0, 1.5, 3)
+    } else {
+      y_lims <- c(0, 1)
+      y_breaks <- c(0, 0.5, 1)
+    }
+  } else if (all(data$stat == "empse")) {
+    ylab <- "Mean-squared Error"
+    yintercept <- 0
+    if ("Predictor" %in% colnames(data)) {
+      y_lims <- c(0, 3)
+      y_breaks <- c(0, 1.5, 3)
+    } else {
+      y_lims <- c(0, 1)
+      y_breaks <- c(0, 0.5, 1)
     }
   }
 
