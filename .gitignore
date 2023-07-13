@@ -56,3 +56,5 @@ multilevelcoda-sim.Rproj
 *.log
 
 .RDataTmp1
+
+.sass_cache_keys
