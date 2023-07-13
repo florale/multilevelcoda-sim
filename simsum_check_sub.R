@@ -25,14 +25,16 @@ data.table::setDTthreads(10)
 
 source("input.R") # groundtruth, conditions and functions
 source("functions.R") # functions for plots
-source("simsum_sub_out.R")
+ssub <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/rounded_sub_res/simsum_sub_d4.RDS")
+ssub[To == "Sleep" & From == "SB"]$diff_delta_y_w
+mean(ssub[To == "Sleep"][["Mean"]], na.rm = TRUE)
 
 ssub <-
-  simsum_sub_d4[condition == "RElarge_RESsmall" &
-                  D == 4 &
-                  From %in% c("Sleep", "SB") &
-                  To %in% c("Sleep", "SB") & Level == "within" &
-                  N == 1200 & K == 14]
+  ssub[condition == "RElarge_RESsmall" &
+         D == 4 &
+         From %in% c("Sleep", "SB") &
+         To %in% c("Sleep", "SB") & Level == "within" &
+         N == 1200 & K == 14]
 ssub[, CI_width := abs(CI_low - CI_high)]
 
 # cal cover and becover manually
