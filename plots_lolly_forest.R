@@ -18,7 +18,7 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 
 .forest_plot(
   object = s_bilr1_d3,
-  stats = "becover"
+  stats = "bias"
 )
 
 .forest_plot(
@@ -904,7 +904,7 @@ colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 
 .forest_plot(
   object = s_wsub_sleep_sb_d3,
-  stats = "becover"
+  stats = "cover"
 ) 
 
 .forest_plot(

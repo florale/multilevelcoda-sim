@@ -560,3 +560,15 @@ ggplot(brmcoda_cover, aes(Coverage, cond, by = NoOfParts)) +
   facet_grid( ~ NoOfParts) +
   xlab("brmcoda Coverage") +
   xlim(c(0.9, 1))
+
+
+# individual plot
+ggplot(brmcoda_d3[N == 30 & K == 3 & stat == "bias" & by == "  b0" & condition == "base"], 
+       aes(x = by, y = est, 
+           ymin = lower, ymax = upper,
+           colour = by)) +
+         # geom_hline(color = "#666666", linetype = "dotted", linewidth = 0.5) +
+         geom_point() +
+         geom_linerange(linewidth = 1)
+
+
