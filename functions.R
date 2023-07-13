@@ -175,16 +175,25 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       y_lims <- c(-0.075, 0.075)
       y_breaks <- c(-0.05, 0, 0.05)
     }
-    
-  } else if (all(data$stat %in% c("cover", "becover"))) {
+  } else if (all(data$stat == "cover")) {
     ylab <- "Coverage"
     yintercept <- 0.95
     if ("Predictor" %in% colnames(data)) {
       y_lims <- c(0.9, 1)
       y_breaks <- c(0.9, 0.95, 1)
     } else {
-      y_lims <- c(0.4, 1)
-      y_breaks <- c(0.50, 0.75, 0.95)
+      y_lims <- c(0.9, 1)
+      y_breaks <- c(0.9, 0.95, 1)
+    }
+  } else if (all(data$stat == "becover")) {
+    ylab <- "Bias-Eliminated Coverage"
+    yintercept <- 0.95
+    if ("Predictor" %in% colnames(data)) {
+      y_lims <- c(0.9, 1)
+      y_breaks <- c(0.9, 0.95, 1)
+    } else {
+      y_lims <- c(0.9, 1)
+      y_breaks <- c(0.9, 0.95, 1)
     }
   } else if (all(data$stat == "mse")) {
     ylab <- "Empirical Standard Error"
@@ -267,7 +276,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
         panel.spacing.y   = unit(0, "lines"),
         panel.spacing.x   = unit(0.75, "lines")
       )
-    plotly::ggplotly(gg, height = 1300, width = 1000)
+    plotly::ggplotly(gg, height = 1300)
   } else {
     gg + theme(legend.position   = "bottom")
   }
