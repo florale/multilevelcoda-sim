@@ -1,5 +1,6 @@
 source("simsum_brmcoda_out.R")
 source("simsum_sub_out.R")
+library(latex2exp)
 
 ## d3 fixed ----------------
 b0_d3    <- as.data.table(tidy(summary(s_b0_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
@@ -137,19 +138,19 @@ brmcoda_d3[, by := factor(
   )
 )]
 
-brmcoda_d3[, rint_sd := NA_real_]
-brmcoda_d3[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
-brmcoda_d3[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
-brmcoda_d3[, rint_sd := ifelse(condition == "REbase_RESlarge", 1, rint_sd)]
-brmcoda_d3[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
-brmcoda_d3[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
+brmcoda_d3[, sd_ID_Intercept := NA_real_]
+brmcoda_d3[, sd_ID_Intercept := ifelse(condition == "base", 1, sd_ID_Intercept)]
+brmcoda_d3[, sd_ID_Intercept := ifelse(condition == "REbase_RESsmall", 1, sd_ID_Intercept)]
+brmcoda_d3[, sd_ID_Intercept := ifelse(condition == "REbase_RESlarge", 1, sd_ID_Intercept)]
+brmcoda_d3[, sd_ID_Intercept := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), sd_ID_Intercept)]
+brmcoda_d3[, sd_ID_Intercept := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), sd_ID_Intercept)]
 
-brmcoda_d3[, res_sd := NA_real_]
-brmcoda_d3[, res_sd := ifelse(condition == "base", 1, res_sd)]
-brmcoda_d3[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
-brmcoda_d3[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
-brmcoda_d3[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
-brmcoda_d3[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
+brmcoda_d3[, sigma := NA_real_]
+brmcoda_d3[, sigma := ifelse(condition == "base", 1, sigma)]
+brmcoda_d3[, sigma := ifelse(condition == "REbase_RESsmall", sqrt(0.5), sigma)]
+brmcoda_d3[, sigma := ifelse(condition == "REbase_RESlarge", sqrt(1.5), sigma)]
+brmcoda_d3[, sigma := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), sigma)]
+brmcoda_d3[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 brmcoda_d3[, D := 3]
 
 ## d3 sub ----------------
@@ -200,19 +201,19 @@ wsub_d3[, Level := "within"]
 
 sub_d3 <- rbind(bsub_d3, wsub_d3)
 
-sub_d3[, rint_sd := NA_real_]
-sub_d3[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
-sub_d3[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
-sub_d3[, rint_sd := ifelse(condition == "REbase_RESlarge", 1, rint_sd)]
-sub_d3[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
-sub_d3[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
+sub_d3[, sd_ID_Intercept := NA_real_]
+sub_d3[, sd_ID_Intercept := ifelse(condition == "base", 1, sd_ID_Intercept)]
+sub_d3[, sd_ID_Intercept := ifelse(condition == "REbase_RESsmall", 1, sd_ID_Intercept)]
+sub_d3[, sd_ID_Intercept := ifelse(condition == "REbase_RESlarge", 1, sd_ID_Intercept)]
+sub_d3[, sd_ID_Intercept := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), sd_ID_Intercept)]
+sub_d3[, sd_ID_Intercept := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), sd_ID_Intercept)]
 
-sub_d3[, res_sd := NA_real_]
-sub_d3[, res_sd := ifelse(condition == "base", 1, res_sd)]
-sub_d3[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
-sub_d3[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
-sub_d3[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
-sub_d3[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
+sub_d3[, sigma := NA_real_]
+sub_d3[, sigma := ifelse(condition == "base", 1, sigma)]
+sub_d3[, sigma := ifelse(condition == "REbase_RESsmall", sqrt(0.5), sigma)]
+sub_d3[, sigma := ifelse(condition == "REbase_RESlarge", sqrt(1.5), sigma)]
+sub_d3[, sigma := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), sigma)]
+sub_d3[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 
 sub_d3[, D := 3]
 
@@ -373,19 +374,19 @@ brmcoda_d4[, by := factor(
   )
 )]
 
-brmcoda_d4[, rint_sd := NA_real_]
-brmcoda_d4[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
-brmcoda_d4[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
-brmcoda_d4[, rint_sd := ifelse(condition == "REbase_RESlarge", 1, rint_sd)]
-brmcoda_d4[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
-brmcoda_d4[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
+brmcoda_d4[, sd_ID_Intercept := NA_real_]
+brmcoda_d4[, sd_ID_Intercept := ifelse(condition == "base", 1, sd_ID_Intercept)]
+brmcoda_d4[, sd_ID_Intercept := ifelse(condition == "REbase_RESsmall", 1, sd_ID_Intercept)]
+brmcoda_d4[, sd_ID_Intercept := ifelse(condition == "REbase_RESlarge", 1, sd_ID_Intercept)]
+brmcoda_d4[, sd_ID_Intercept := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), sd_ID_Intercept)]
+brmcoda_d4[, sd_ID_Intercept := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), sd_ID_Intercept)]
 
-brmcoda_d4[, res_sd := NA_real_]
-brmcoda_d4[, res_sd := ifelse(condition == "base", 1, res_sd)]
-brmcoda_d4[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
-brmcoda_d4[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
-brmcoda_d4[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
-brmcoda_d4[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
+brmcoda_d4[, sigma := NA_real_]
+brmcoda_d4[, sigma := ifelse(condition == "base", 1, sigma)]
+brmcoda_d4[, sigma := ifelse(condition == "REbase_RESsmall", sqrt(0.5), sigma)]
+brmcoda_d4[, sigma := ifelse(condition == "REbase_RESlarge", sqrt(1.5), sigma)]
+brmcoda_d4[, sigma := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), sigma)]
+brmcoda_d4[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 
 brmcoda_d4[, D := 4]
 
@@ -473,19 +474,19 @@ wsub_d4[, Level := "within"]
 
 sub_d4 <- rbind(bsub_d4, wsub_d4)
 
-sub_d4[, rint_sd := NA_real_]
-sub_d4[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
-sub_d4[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
-sub_d4[, rint_sd := ifelse(condition == "REbase_RESlarge", 1, rint_sd)]
-sub_d4[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
-sub_d4[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
+sub_d4[, sd_ID_Intercept := NA_real_]
+sub_d4[, sd_ID_Intercept := ifelse(condition == "base", 1, sd_ID_Intercept)]
+sub_d4[, sd_ID_Intercept := ifelse(condition == "REbase_RESsmall", 1, sd_ID_Intercept)]
+sub_d4[, sd_ID_Intercept := ifelse(condition == "REbase_RESlarge", 1, sd_ID_Intercept)]
+sub_d4[, sd_ID_Intercept := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), sd_ID_Intercept)]
+sub_d4[, sd_ID_Intercept := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), sd_ID_Intercept)]
 
-sub_d4[, res_sd := NA_real_]
-sub_d4[, res_sd := ifelse(condition == "base", 1, res_sd)]
-sub_d4[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
-sub_d4[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
-sub_d4[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
-sub_d4[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
+sub_d4[, sigma := NA_real_]
+sub_d4[, sigma := ifelse(condition == "base", 1, sigma)]
+sub_d4[, sigma := ifelse(condition == "REbase_RESsmall", sqrt(0.5), sigma)]
+sub_d4[, sigma := ifelse(condition == "REbase_RESlarge", sqrt(1.5), sigma)]
+sub_d4[, sigma := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), sigma)]
+sub_d4[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 
 sub_d4[, D := 4]
 
@@ -667,19 +668,19 @@ brmcoda_d5[, by := factor(
   )
 )]
 
-brmcoda_d5[, rint_sd := NA_real_]
-brmcoda_d5[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
-brmcoda_d5[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
-brmcoda_d5[, rint_sd := ifelse(condition == "REbase_RESlarge", 1, rint_sd)]
-brmcoda_d5[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
-brmcoda_d5[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
+brmcoda_d5[, sd_ID_Intercept := NA_real_]
+brmcoda_d5[, sd_ID_Intercept := ifelse(condition == "base", 1, sd_ID_Intercept)]
+brmcoda_d5[, sd_ID_Intercept := ifelse(condition == "REbase_RESsmall", 1, sd_ID_Intercept)]
+brmcoda_d5[, sd_ID_Intercept := ifelse(condition == "REbase_RESlarge", 1, sd_ID_Intercept)]
+brmcoda_d5[, sd_ID_Intercept := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), sd_ID_Intercept)]
+brmcoda_d5[, sd_ID_Intercept := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), sd_ID_Intercept)]
 
-brmcoda_d5[, res_sd := NA_real_]
-brmcoda_d5[, res_sd := ifelse(condition == "base", 1, res_sd)]
-brmcoda_d5[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
-brmcoda_d5[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
-brmcoda_d5[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
-brmcoda_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
+brmcoda_d5[, sigma := NA_real_]
+brmcoda_d5[, sigma := ifelse(condition == "base", 1, sigma)]
+brmcoda_d5[, sigma := ifelse(condition == "REbase_RESsmall", sqrt(0.5), sigma)]
+brmcoda_d5[, sigma := ifelse(condition == "REbase_RESlarge", sqrt(1.5), sigma)]
+brmcoda_d5[, sigma := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), sigma)]
+brmcoda_d5[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 
 brmcoda_d5[, D := 5]
 
@@ -815,19 +816,19 @@ wsub_d5[, Level := "within"]
 
 sub_d5 <- rbind(bsub_d5, wsub_d5)
 
-sub_d5[, rint_sd := NA_real_]
-sub_d5[, rint_sd := ifelse(condition == "base", 1, rint_sd)]
-sub_d5[, rint_sd := ifelse(condition == "REbase_RESsmall", 1, rint_sd)]
-sub_d5[, rint_sd := ifelse(condition == "REbase_RESlarge", 1, rint_sd)]
-sub_d5[, rint_sd := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), rint_sd)]
-sub_d5[, rint_sd := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), rint_sd)]
+sub_d5[, sd_ID_Intercept := NA_real_]
+sub_d5[, sd_ID_Intercept := ifelse(condition == "base", 1, sd_ID_Intercept)]
+sub_d5[, sd_ID_Intercept := ifelse(condition == "REbase_RESsmall", 1, sd_ID_Intercept)]
+sub_d5[, sd_ID_Intercept := ifelse(condition == "REbase_RESlarge", 1, sd_ID_Intercept)]
+sub_d5[, sd_ID_Intercept := ifelse(condition == "REsmall_RESlarge", sqrt(0.5), sd_ID_Intercept)]
+sub_d5[, sd_ID_Intercept := ifelse(condition == "RElarge_RESsmall", sqrt(1.5), sd_ID_Intercept)]
 
-sub_d5[, res_sd := NA_real_]
-sub_d5[, res_sd := ifelse(condition == "base", 1, res_sd)]
-sub_d5[, res_sd := ifelse(condition == "REbase_RESsmall", sqrt(0.5), res_sd)]
-sub_d5[, res_sd := ifelse(condition == "REbase_RESlarge", sqrt(1.5), res_sd)]
-sub_d5[, res_sd := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), res_sd)]
-sub_d5[, res_sd := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), res_sd)]
+sub_d5[, sigma := NA_real_]
+sub_d5[, sigma := ifelse(condition == "base", 1, sigma)]
+sub_d5[, sigma := ifelse(condition == "REbase_RESsmall", sqrt(0.5), sigma)]
+sub_d5[, sigma := ifelse(condition == "REbase_RESlarge", sqrt(1.5), sigma)]
+sub_d5[, sigma := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), sigma)]
+sub_d5[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 
 sub_d5[, D := 5]
 
@@ -835,15 +836,58 @@ sub_d5[, D := 5]
 brmcoda_tab <- rbind(brmcoda_d3,
                      brmcoda_d4,
                      brmcoda_d5)
-brmcoda_tab[] <- as.data.table(lapply(brmcoda_tab, function(j) if(is.numeric(j)) round(j, 3) else j))
+
+brmcoda_tab <- brmcoda_tab[stat %in% c("bias", "cover", "becover")]
+brmcoda_tab[] <- as.data.table(lapply(brmcoda_tab, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
+brmcoda_tab <- brmcoda_tab[, D := as.numeric(D)]
+
+brmcoda_tab[, Estimand := NA]
+brmcoda_tab[, Estimand := ifelse(by == "  b0"             , "$\\beta_0$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "between ilr1 beta", "$\\beta_{(bilr1)}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "between ilr2 beta", "$\\beta_{(bilr1)}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "between ilr3 beta", "$\\beta_{(bilr1)}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "between ilr4 beta", "$\\beta_{(bilr1)}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "within ilr1 beta" , "$\\beta_{(bilr1)}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "within ilr2 beta" , "$\\beta_{(bilr1)}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "within ilr3 beta" , "$\\beta_{(bilr1)}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "within ilr4 beta" , "$\\beta_{(bilr1)}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "  u0"             , "$\\sigma_{u}$", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "  sigma"          , "$\\sigma_{\varepsilon}$", Estimand)]
+
+brmcoda_tab[, Estimate := paste0("    ", est, "    ", "[", lower, ", ", upper, "]")]
+
+brmcoda_tab[, `On Target` := NA]
+brmcoda_tab[stat == "bias", `On Target` := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
+brmcoda_tab[stat == "cover", `On Target` := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+brmcoda_tab[stat == "becover", `On Target` := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+# brmcoda_tab[stat == "mse", `On Target` := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
+# brmcoda_tab[stat == "empse", `On Target` := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
+brmcoda_tab[, `On Target` := ifelse(`On Target` == TRUE, "Y", "N")]
+
+setnames(brmcoda_tab, "stat", "Statistic")
+setnames(brmcoda_tab, "mcse", "MCSE")
 
 saveRDS(brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
 
-# save all sub dat for shiny tables -----------
+## save all sub dat for shiny tables -----------
 sub_tab <- rbind(sub_d3,
                  sub_d4,
                  sub_d5)
-sub_tab[] <- as.data.table(lapply(sub_tab, function(j) if(is.numeric(j)) round(j, 3) else j))
+
+sub_tab <- sub_tab[stat %in% c("bias", "cover", "becover")]
+sub_tab[] <- as.data.table(lapply(sub_tab, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
+
+sub_tab <- sub_tab[, D := as.numeric(D)]
+sub_tab[, Estimate := paste0("    ", est, "    ", "[", lower, ", ", upper, "]")]
+
+sub_tab[, `On Target` := NA]
+sub_tab[stat == "bias", `On Target` := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
+sub_tab[stat == "cover", `On Target` := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+sub_tab[stat == "becover", `On Target` := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+sub_tab[, `On Target` := ifelse(`On Target` == TRUE, "Y", "N")]
+
+setnames(sub_tab, "stat", "Statistic")
+setnames(sub_tab, "mcse", "MCSE")
 
 saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
 
@@ -854,7 +898,7 @@ brmcoda_dat <- list(brmcoda_d3,
 names(brmcoda_dat) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
 
 brmcoda_dat <- lapply(brmcoda_dat, function(i) {
-  i[] <- as.data.table(lapply(i, function(j) if(is.numeric(j)) round(j, 3) else j))
+  i[] <- as.data.table(lapply(i, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
   i[, NK := paste0("N: ", N, ", K: ", K)]
   i[, NK := factor(NK, levels = c("N: 30, K: 3",
                                   "N: 30, K: 5",
@@ -876,6 +920,19 @@ brmcoda_dat <- lapply(brmcoda_dat, function(i) {
                                   "N: 1200, K: 7",
                                   "N: 1200, K: 14"))]
 })
+
+brmcoda_dat[, Parameter := NA_character_]
+brmcoda_dat[, Parameter := ifelse(by == "  b0"             , TeX("$\\beta_0$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "between ilr1 beta", TeX("$\\beta_{(bilr1)}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "between ilr2 beta", TeX("$\\beta_{(bilr1)}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "between ilr3 beta", TeX("$\\beta_{(bilr1)}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "between ilr4 beta", TeX("$\\beta_{(bilr1)}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "within ilr1 beta" , TeX("$\\beta_{(bilr1)}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "within ilr2 beta" , TeX("$\\beta_{(bilr1)}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "within ilr3 beta" , TeX("$\\beta_{(bilr1)}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "within ilr4 beta" , TeX("$\\beta_{(bilr1)}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "  u0"             , TeX("$\\sigma_{u}$"), Parameter)]
+brmcoda_dat[, Parameter := ifelse(by == "  sigma"          , TeX("$\\sigma_{\varepsilon}$"), Parameter)]
 
 saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
 
@@ -979,7 +1036,7 @@ sub_dat <- list(sub_d3,
 names(sub_dat) <- c("sub_d3", "sub_d4", "sub_d5")
 
 sub_dat <- lapply(sub_dat, function(i) {
-  i[] <- as.data.table(lapply(i, function(j) if(is.numeric(j)) round(j, 3) else j))
+  i[] <- as.data.table(lapply(i, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
   i[, NK := paste0("N: ", N, ", K: ", K)]
   i[, NK := factor(NK, levels = c("N: 30, K: 3",
                                   "N: 30, K: 5",
@@ -1001,5 +1058,67 @@ sub_dat <- lapply(sub_dat, function(i) {
                                   "N: 1200, K: 7",
                                   "N: 1200, K: 14"))]
 })
+
+sub_tab[, Estimand := NA]
+sub_tab[, Estimand := ifelse(by == "between Sleep - PA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - PA", "$\\Delta{\\hat{y}^{(w)}_{(Sleep - PA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - PA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - SB", "$\\Delta{\\hat{y}^{(w)}_{(Sleep - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between PA - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(PA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within PA - Sleep", "$\\Delta{\\hat{y}^{(w)}_{(PA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between PA - SB", "$\\Delta{\\hat{y}^{(b)}_{(PA - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within PA - SB", "$\\Delta{\\hat{y}^{(w)}_{(PA - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(SB - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - Sleep", "$\\Delta{\\hat{y}^{(w)}_{(SB - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - PA", "$\\Delta{\\hat{y}^{(b)}_{(SB - PA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - PA", "$\\Delta{\\hat{y}^{(w)}_{(SB - PA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(Sleep - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - LPA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - LPA", "$\\Delta{\\hat{y}^{(w)}_{(Sleep - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - Sleep", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - LPA", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - LPA", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - SB", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - SB", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(LPA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - Sleep", "$\\Delta{\\hat{y}^{(w)}_{(LPA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - MVPA","$\\Delta{\\hat{y}^{(b)}_{(LPA - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(LPA - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - SB", "$\\Delta{\\hat{y}^{(b)}_{(LPA - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - SB", "$\\Delta{\\hat{y}^{(w)}_{(LPA - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(SB - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(SB - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - LPA", "$\\Delta{\\hat{y}^{(b)}_{(SB - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - LPA", "$\\Delta{\\hat{y}^{(w)}_{(SB - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(TST - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(TST - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - WAKE", "$\\Delta{\\hat{y}^{(b)}_{(TST - WAKE)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - WAKE", "$\\Delta{\\hat{y}^{(w)}_{(TST - WAKE)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - LPA", "$\\Delta{\\hat{y}^{(b)}_{(TST - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - LPA", "$\\Delta{\\hat{y}^{(w)}_{(TST - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - SB", "$\\Delta{\\hat{y}^{(b)}_{(TST - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - SB", "$\\Delta{\\hat{y}^{(w)}_{(TST - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - TST", "$\\Delta{\\hat{y}^{(b)}_{(WAKE - TST)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - TST", "$\\Delta{\\hat{y}^{(w)}_{(WAKE - TST)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(WAKE - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(WAKE - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - LPA", "$\\Delta{\\hat{y}^{(b)}_{(WAKE - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - LPA", "$\\Delta{\\hat{y}^{(w)}_{(WAKE - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - SB", "$\\Delta{\\hat{y}^{(b)}_{(WAKE - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - SB", "$\\Delta{\\hat{y}^{(w)}_{(WAKE - SB)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - TST", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - TST)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - TST", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - TST)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - WAKE", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - WAKE)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - WAKE", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - WAKE)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - TST", "$\\Delta{\\hat{y}^{(b)}_{(LPA - TST)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - TST", "$\\Delta{\\hat{y}^{(w)}_{(LPA - TST)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - WAKE", "$\\Delta{\\hat{y}^{(b)}_{(LPA - WAKE)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - WAKE", "$\\Delta{\\hat{y}^{(w)}_{(LPA - WAKE)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - TST", "$\\Delta{\\hat{y}^{(b)}_{(SB - TST)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - TST", "$\\Delta{\\hat{y}^{(w)}_{(SB - TST)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - WAKE", "$\\Delta{\\hat{y}^{(b)}_{(SB - WAKE)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - WAKE", "$\\Delta{\\hat{y}^{(w)}_{(SB - WAKE)}}$", Estimand)]
 
 saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
