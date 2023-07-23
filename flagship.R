@@ -64,14 +64,28 @@ t <- ggplot(d[Stat == "bias" & condition == "base" & N == 30 & K == 3], aes(y = 
   # geom_text(aes(x = -0.5, label = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimand), 
   #           vjust = -1.5, colour = "black",
   #           fontface = ifelse(d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimand == "Estimand", "bold", "plain")) +
-  geom_text(aes(x = -0.25, label = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates), 
-            vjust = 0.5, colour = "black",
+  geom_text(aes(x = -0.25, label = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates, family = "Arial Narrow"), 
+            vjust = 1, colour = "black",
             fontface = ifelse(d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$OnTarget == "Y", "bold", "plain")) + 
-  xlim(-0.3, -0.2) + theme_void()
+  xlim(-0.3, -0.2) + 
+  theme_void() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    axis.title.y      = element_blank(),
+    axis.title.x      = element_blank(),
+    axis.text.x       = element_blank(),
+    axis.text.y       = element_blank()
+    # strip.text.x      = element_blank()
+  )
 
 layout <- c(
-  area(t = 0, l = 0, b = 10, r = 3),
-  area(t = 1, l = 2, b = 10, r = 6)
+  area(t = 0, l = 0, b = 10, r = 4),
+  area(t = 2, l = 4, b = 10, r = 7)
 )
 plot(layout)
 
@@ -81,8 +95,8 @@ t + p + plot_layout(design = layout)
 # execute
 comm_col <- 
   ggplot(d[Stat == "bias" & condition == "base" & N == 30 & K == 3], aes(y = Estimand)) +
-  geom_text(aes(x = -0.35, label = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimand),
-            vjust = -1.5, colour = "black",
+  geom_text(aes(x = -0.35, label = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimand, family = "Arial Narrow"),
+            vjust = 1.0, colour = "black",
             fontface = ifelse(d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimand == "Estimand", "bold", "plain")) +
   xlim(-0.4, -0.3) + theme_void()
 comm_col
@@ -91,10 +105,7 @@ out = list()
 for (n in levels(brmcoda_dat_d4[Stat == "bias" & condition == "base"]$N)) {
   for (k in levels(brmcoda_dat_d4[Stat == "bias" & condition == "base"]$K)) {
     
-    layout <- c(
-      area(t = 0, l = 0, b = 20, r = 2),
-      area(t = 2, l = 3, b = 20, r = 4)
-    )
+    layout <- layout
     
     tmp <- brmcoda_dat_d4[Stat == "bias" & condition == "base" & N == n & K == k]
     p <- .par_plot(tmp)
@@ -109,11 +120,25 @@ for (n in levels(brmcoda_dat_d4[Stat == "bias" & condition == "base"]$N)) {
                              OnTarget = "Y"), fill = TRUE)
     
     t <- ggplot(tmp1, aes(y = Estimand)) +
-      geom_text(aes(x = -0.25, label = tmp1$Estimates),
-                vjust = 0,
+      geom_text(aes(x = -0.25, label = tmp1$Estimates, family = "Arial Narrow"),
+                vjust = 1,
                 # colour = "black",
                 fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-      xlim(-0.55, 0) + theme_void()
+      xlim(-0.3, -0.2) + 
+      theme_ipsum() +
+      theme(
+        axis.ticks        = element_blank(),
+        panel.background  = element_blank(),
+        panel.border      = element_blank(),
+        panel.grid.major  = element_blank(),
+        panel.grid.minor  = element_blank(),
+        plot.background   = element_rect(fill = "transparent", colour = NA),
+        axis.title.y      = element_blank(),
+        axis.title.x      = element_blank(),
+        axis.text.x       = element_blank(),
+        axis.text.y       = element_blank()
+        # strip.text.x      = element_blank()
+      )
     
     pt <- t + p + plot_layout(design = layout)
     out[[n]][[k]] <- list(pt)
@@ -121,27 +146,13 @@ for (n in levels(brmcoda_dat_d4[Stat == "bias" & condition == "base"]$N)) {
 }
 out <- do.call(c, do.call(c, out))
 
-
-# layout for all
-# layout <- c(
-#   area(t = 0, l = 0, b = 10, r = 2),
-#   area(t = 0, l = 3, b = 10, r = 5),
-#   area(t = 0, l = 6, b = 10, r = 9)
-#   # area(t = 0, l = 16, b = 10, r = 21),
-#   # area(t = 0, l = 21, b = 10, r = 26)
-# )
-# plot(layout)
+comm_col | out[[1]] | out[[2]] | out[[3]] | out[[4]]
 
 p1 <- out[[1]] | out[[2]] | out[[3]] | out[[4]]
 p2 <- out[[5]] | out[[6]] | out[[7]] | out[[8]]
 p3 <- out[[9]] | out[[10]] | out[[1]] | out[[12]]
 p4 <- out[[13]] | out[[14]] | out[[15]] | out[[16]]
 
-layout <- c(
-  area(t = 0, l = 0, b = 20, r = 2),
-  area(t = 2, l = 3, b = 20, r = 50)
-)
-plot(layout)
 comm_col | p1 + plot_layout(ncol = 4)
 
 p1 / p2 / p3 / p4

@@ -252,6 +252,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
     scale_x_discrete(drop = FALSE) +
     # facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
     facet_wrap(ggplot2::vars(NK), labeller = ggplot2::label_context, strip.position = "top") +
+    hrbrthemes::theme_ipsum() +
     coord_flip()
     theme(
       axis.ticks        = element_blank(),
@@ -271,7 +272,6 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
     )
   if (shiny == TRUE) {
     gg <- gg +
-      hrbrthemes::theme_ipsum() +
       theme(
         legend.position   = "none",
         panel.spacing.y   = unit(0, "lines"),
@@ -279,12 +279,16 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       )
     plotly::ggplotly(gg, height = 1300)
   } else {
-    gg + theme_void() +
+    gg +
       theme(legend.position   = "none",
+            panel.grid.major  = element_blank(),
+            panel.grid.minor  = element_blank(),
             axis.title.x      = element_blank(),
+            axis.line.x       = element_line(linewidth = 0.25),
+            axis.text.x       = element_text(size = text_size),
             strip.text.x      = element_text(size = text_size),
             strip.background  = element_blank(),
-            strip.placement   = "outside"
+            strip.placement = "outside"
       )
   }
 }
