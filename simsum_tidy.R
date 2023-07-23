@@ -1,6 +1,5 @@
 source("simsum_brmcoda_out.R")
 source("simsum_sub_out.R")
-library(latex2exp)
 
 ## d3 fixed ----------------
 b0_d3    <- as.data.table(tidy(summary(s_b0_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
@@ -216,6 +215,18 @@ sub_d3[, sigma := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), sigma)]
 sub_d3[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 
 sub_d3[, D := 3]
+
+sub_d3[, by := paste0(Level, " ", From, " - ", To)]
+sub_d3[, by := factor(by, levels = c(
+  "between Sleep - PA", "within Sleep - PA",
+  "between Sleep - SB", "within Sleep - SB",
+  
+  "between PA - Sleep", "within PA - Sleep",
+  "between PA - SB",    "within PA - SB",
+  
+  "between SB - Sleep", "within SB - Sleep",
+  "between SB - PA",    "within SB - PA"
+))]
 
 ## d4 fixed----------------
 b0_d4    <- as.data.table(tidy(summary(s_b0_d4), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
@@ -489,6 +500,25 @@ sub_d4[, sigma := ifelse(condition == "REsmall_RESlarge", sqrt(1.5), sigma)]
 sub_d4[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 
 sub_d4[, D := 4]
+
+sub_d4[, by := paste0(Level, " ", From, " - ", To)]
+sub_d4[, by := factor(by, levels = c(
+  "between Sleep - MVPA", "within Sleep - MVPA",
+  "between Sleep - LPA",  "within Sleep - LPA",
+  "between Sleep - SB",   "within Sleep - SB",
+  
+  "between MVPA - Sleep", "within MVPA - Sleep",
+  "between MVPA - LPA",   "within MVPA - LPA",
+  "between MVPA - SB",    "within MVPA - SB",
+  
+  "between LPA - Sleep",  "within LPA - Sleep",
+  "between LPA - MVPA",   "within LPA - MVPA",
+  "between LPA - SB",     "within LPA - SB",
+  
+  "between SB - Sleep",   "within SB - Sleep",
+  "between SB - MVPA",    "within SB - MVPA",
+  "between SB - LPA",     "within SB - LPA"
+))]
 
 ## d5 fixed----------------
 b0_d5    <- as.data.table(tidy(summary(s_b0_d5), stats = c("bias", "becover", "cover", "empse", "mse", "power")))
@@ -832,162 +862,7 @@ sub_d5[, sigma := ifelse(condition == "RElarge_RESsmall", sqrt(0.5), sigma)]
 
 sub_d5[, D := 5]
 
-## save brmcoda data for shiny tables  -----------
-brmcoda_tab <- rbind(brmcoda_d3,
-                     brmcoda_d4,
-                     brmcoda_d5)
-
-brmcoda_tab <- brmcoda_tab[stat %in% c("bias", "cover", "becover")]
-brmcoda_tab[] <- as.data.table(lapply(brmcoda_tab, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
-brmcoda_tab <- brmcoda_tab[, D := as.numeric(D)]
-
-brmcoda_tab[, Estimand := NA]
-brmcoda_tab[, Estimand := ifelse(by == "  b0"             , "$\\beta_0$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "between ilr1 beta", "$\\beta_{(bilr1)}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "between ilr2 beta", "$\\beta_{(bilr1)}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "between ilr3 beta", "$\\beta_{(bilr1)}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "between ilr4 beta", "$\\beta_{(bilr1)}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "within ilr1 beta" , "$\\beta_{(bilr1)}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "within ilr2 beta" , "$\\beta_{(bilr1)}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "within ilr3 beta" , "$\\beta_{(bilr1)}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "within ilr4 beta" , "$\\beta_{(bilr1)}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "  u0"             , "$\\sigma_{u}$", Estimand)]
-brmcoda_tab[, Estimand := ifelse(by == "  sigma"          , "$\\sigma_{\varepsilon}$", Estimand)]
-
-brmcoda_tab[, Estimate := paste0("    ", est, "    ", "[", lower, ", ", upper, "]")]
-
-brmcoda_tab[, `On Target` := NA]
-brmcoda_tab[stat == "bias", `On Target` := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
-brmcoda_tab[stat == "cover", `On Target` := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
-brmcoda_tab[stat == "becover", `On Target` := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
-# brmcoda_tab[stat == "mse", `On Target` := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
-# brmcoda_tab[stat == "empse", `On Target` := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
-brmcoda_tab[, `On Target` := ifelse(`On Target` == TRUE, "Y", "N")]
-
-setnames(brmcoda_tab, "stat", "Statistic")
-setnames(brmcoda_tab, "mcse", "MCSE")
-
-saveRDS(brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
-
-## save all sub dat for shiny tables -----------
-sub_tab <- rbind(sub_d3,
-                 sub_d4,
-                 sub_d5)
-
-sub_tab <- sub_tab[stat %in% c("bias", "cover", "becover")]
-sub_tab[] <- as.data.table(lapply(sub_tab, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
-
-sub_tab <- sub_tab[, D := as.numeric(D)]
-sub_tab[, Estimate := paste0("    ", est, "    ", "[", lower, ", ", upper, "]")]
-
-sub_tab[, `On Target` := NA]
-sub_tab[stat == "bias", `On Target` := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
-sub_tab[stat == "cover", `On Target` := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
-sub_tab[stat == "becover", `On Target` := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
-sub_tab[, `On Target` := ifelse(`On Target` == TRUE, "Y", "N")]
-
-setnames(sub_tab, "stat", "Statistic")
-setnames(sub_tab, "mcse", "MCSE")
-
-saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
-
-# save all brmcoda dat for plots -----------
-brmcoda_dat <- list(brmcoda_d3,
-                    brmcoda_d4,
-                    brmcoda_d5)
-names(brmcoda_dat) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
-
-brmcoda_dat <- lapply(brmcoda_dat, function(i) {
-  i[] <- as.data.table(lapply(i, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
-  i[, NK := paste0("N: ", N, ", K: ", K)]
-  i[, NK := factor(NK, levels = c("N: 30, K: 3",
-                                  "N: 30, K: 5",
-                                  "N: 30, K: 7",
-                                  "N: 30, K: 14",
-                                  
-                                  "N: 50, K: 3",
-                                  "N: 50, K: 5",
-                                  "N: 50, K: 7",
-                                  "N: 50, K: 14",
-                                  
-                                  "N: 360, K: 3",
-                                  "N: 360, K: 5",
-                                  "N: 360, K: 7",
-                                  "N: 360, K: 14",
-                                  
-                                  "N: 1200, K: 3",
-                                  "N: 1200, K: 5",
-                                  "N: 1200, K: 7",
-                                  "N: 1200, K: 14"))]
-})
-
-brmcoda_dat[, Parameter := NA_character_]
-brmcoda_dat[, Parameter := ifelse(by == "  b0"             , TeX("$\\beta_0$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "between ilr1 beta", TeX("$\\beta_{(bilr1)}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "between ilr2 beta", TeX("$\\beta_{(bilr1)}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "between ilr3 beta", TeX("$\\beta_{(bilr1)}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "between ilr4 beta", TeX("$\\beta_{(bilr1)}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "within ilr1 beta" , TeX("$\\beta_{(bilr1)}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "within ilr2 beta" , TeX("$\\beta_{(bilr1)}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "within ilr3 beta" , TeX("$\\beta_{(bilr1)}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "within ilr4 beta" , TeX("$\\beta_{(bilr1)}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "  u0"             , TeX("$\\sigma_{u}$"), Parameter)]
-brmcoda_dat[, Parameter := ifelse(by == "  sigma"          , TeX("$\\sigma_{\varepsilon}$"), Parameter)]
-
-saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
-
-# subset sub dat for plots --------
-sub_d3[, by := paste0(Level, " ", From, " - ", To)]
-unique(sub_d3$by)
-sub_d3[, by := factor(by, levels = c(
-  "between Sleep - PA", "within Sleep - PA",
-  "between Sleep - SB", "within Sleep - SB",
-  
-  "between PA - Sleep", "within PA - Sleep",
-  "between PA - SB",    "within PA - SB",
-  
-  "between SB - Sleep", "within SB - Sleep",
-  "between SB - PA",    "within SB - PA"
-))]
-sub_d3 <- sub_d3[by %in% c(
-  "between Sleep - PA", "within Sleep - PA",
-  "between Sleep - SB", "within Sleep - SB",
-  
-  "between PA - SB",    "within PA - SB"
-)]
-
-sub_d4[, by := paste0(Level, " ", From, " - ", To)]
-unique(sub_d4$by)
-sub_d4[, by := factor(by, levels = c(
-  "between Sleep - MVPA", "within Sleep - MVPA",
-  "between Sleep - LPA",  "within Sleep - LPA",
-  "between Sleep - SB",   "within Sleep - SB",
-  
-  "between MVPA - Sleep", "within MVPA - Sleep",
-  "between MVPA - LPA",   "within MVPA - LPA",
-  "between MVPA - SB",    "within MVPA - SB",
-  
-  "between LPA - Sleep",  "within LPA - Sleep",
-  "between LPA - MVPA",   "within LPA - MVPA",
-  "between LPA - SB",     "within LPA - SB",
-  
-  "between SB - Sleep",   "within SB - Sleep",
-  "between SB - MVPA",    "within SB - MVPA",
-  "between SB - LPA",     "within SB - LPA"
-))]
-sub_d4 <- sub_d4[by %in% c(
-  "between Sleep - MVPA", "within Sleep - MVPA",
-  "between Sleep - LPA",  "within Sleep - LPA",
-  "between Sleep - SB",   "within Sleep - SB",
-  
-  "between MVPA - LPA",   "within MVPA - LPA",
-  "between MVPA - SB",    "within MVPA - SB",
-  
-  "between LPA - SB",     "within LPA - SB"
-)]
-
 sub_d5[, by := paste0(Level, " ", From, " - ", To)]
-unique(sub_d5$by)
 sub_d5[, by := factor(by, levels = c(
   "between TST - MVPA",  "within TST - MVPA",
   "between TST - WAKE",  "within TST - WAKE",
@@ -1014,6 +889,168 @@ sub_d5[, by := factor(by, levels = c(
   "between SB - MVPA",   "within SB - MVPA",
   "between SB - LPA",    "within SB - LPA"
 ))]
+
+## save brmcoda data for shiny tables  -----------
+brmcoda_tab <- rbind(brmcoda_d3,
+                     brmcoda_d4,
+                     brmcoda_d5)
+
+# brmcoda_tab[] <- as.data.table(lapply(brmcoda_tab, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
+
+brmcoda_tab[, Est   := format(round(est, 2), nsmall = 2)]
+brmcoda_tab[, Lower := format(round(lower, 2), nsmall = 2)]
+brmcoda_tab[, Upper := format(round(upper, 2), nsmall = 2)]
+brmcoda_tab[, MCSE := format(round(mcse, 2), nsmall = 2)]
+brmcoda_tab[, `$\\sigma_u$` := format(round(sd_ID_Intercept, 2), nsmall = 2)]
+brmcoda_tab[, `$\\sigma_{\varepsilon}$` := format(round(sigma, 2), nsmall = 2)]
+
+brmcoda_tab[, Estimates := paste0(Est, " [", Lower, ",", Upper, "]")]
+
+brmcoda_tab[, Estimand := NA]
+brmcoda_tab[, Estimand := ifelse(by == "  b0"             , "b_Intercept", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "between ilr1 beta", "b_bilr1", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "between ilr2 beta", "b_bilr2", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "between ilr3 beta", "b_bilr3", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "between ilr4 beta", "b_bilr4", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "within ilr1 beta" , "b_wilr1", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "within ilr2 beta" , "b_wilr2", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "within ilr3 beta" , "b_wilr3", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "within ilr4 beta" , "b_wilr4", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "  u0"             , "sd_ID_Intercept", Estimand)]
+brmcoda_tab[, Estimand := ifelse(by == "  sigma"          , "sigma", Estimand)]
+brmcoda_tab[, Estimand := factor(Estimand, levels = c(
+  "sigma",
+  "sd_ID_Intercept", 
+  "b_wilr4", "b_wilr3", "b_wilr2", "b_wilr1",
+  "b_bilr4", "b_bilr3", "b_bilr2", "b_bilr1",
+  "b_Intercept"
+))]
+
+brmcoda_tab[, EstimandF := NA]
+brmcoda_tab[, EstimandF := ifelse(by == "  b0"             , "$\\beta_{0}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "between ilr1 beta", "$\\beta_{(bilr1)}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "between ilr2 beta", "$\\beta_{(bilr2)}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "between ilr3 beta", "$\\beta_{(bilr3)}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "between ilr4 beta", "$\\beta_{(bilr4)}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "within ilr1 beta" , "$\\beta_{(wilr1)}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "within ilr2 beta" , "$\\beta_{(wilr2)}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "within ilr3 beta" , "$\\beta_{(wilr3)}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "within ilr4 beta" , "$\\beta_{(wilr4)}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "  u0"             , "$\\sigma_{u}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(by == "  sigma"          , "$\\sigma_{\varepsilon}$", EstimandF)]
+brmcoda_tab[, EstimandF := factor(EstimandF, levels = c(
+  "$\\sigma_{\varepsilon}$", 
+  "$\\sigma_{u}$",
+  "\\beta_{(wilr4)}$",  "\\beta_{(wilr3)}$", "\\beta_{(wilr2)}$","\\beta_{(wilr1)}$",
+  "\\beta_{(bilr4)}$", "\\beta_{(bilr3)}$", "\\beta_{(bilr2)}$", "\\beta_{(bilr1)}$",
+  "$\\beta_{0}$"
+))]
+
+brmcoda_tab[, OnTarget := NA]
+brmcoda_tab[stat == "bias", OnTarget := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
+brmcoda_tab[stat == "cover", OnTarget := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+brmcoda_tab[stat == "becover", OnTarget := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+# brmcoda_tab[stat == "mse", OnTarget := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
+# brmcoda_tab[stat == "empse", OnTarget := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
+brmcoda_tab[, OnTarget := ifelse(OnTarget == TRUE, "Y", "N")]
+
+brmcoda_tab[, NK := paste0("N: ", N, ", K: ", K)]
+brmcoda_tab[, NK := factor(NK, levels = c("N: 30, K: 3",
+                                          "N: 30, K: 5",
+                                          "N: 30, K: 7",
+                                          "N: 30, K: 14",
+                                          
+                                          "N: 50, K: 3",
+                                          "N: 50, K: 5",
+                                          "N: 50, K: 7",
+                                          "N: 50, K: 14",
+                                          
+                                          "N: 360, K: 3",
+                                          "N: 360, K: 5",
+                                          "N: 360, K: 7",
+                                          "N: 360, K: 14",
+                                          
+                                          "N: 1200, K: 3",
+                                          "N: 1200, K: 5",
+                                          "N: 1200, K: 7",
+                                          "N: 1200, K: 14"))]
+
+brmcoda_tab <- brmcoda_tab[stat %in% c("bias", "cover", "becover")]
+setnames(brmcoda_tab, "stat", "Stat")
+
+saveRDS(brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
+
+## save all sub dat for shiny tables -------------------------
+sub_tab <- rbind(sub_d3,
+                 sub_d4,
+                 sub_d5)
+
+# sub_tab[] <- as.data.table(lapply(sub_tab, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
+
+sub_tab[, Est   := format(round(est, 2), nsmall = 2)]
+sub_tab[, Lower := format(round(lower, 2), nsmall = 2)]
+sub_tab[, Upper := format(round(upper, 2), nsmall = 2)]
+sub_tab[, MCSE := format(round(mcse, 2), nsmall = 2)]
+sub_tab[, `$\\sigma_u$` := format(round(sd_ID_Intercept, 2), nsmall = 2)]
+sub_tab[, `$\\sigma_{\varepsilon}$` := format(round(sigma, 2), nsmall = 2)]
+
+sub_tab[, Estimates := paste0(Est, " [", Lower, ",", Upper, "]")]
+
+sub_tab[, OnTarget := NA]
+sub_tab[stat == "bias", OnTarget := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
+sub_tab[stat == "cover", OnTarget := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+sub_tab[stat == "becover", OnTarget := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+sub_tab[, OnTarget := ifelse(OnTarget == TRUE, "Y", "N")]
+
+sub_tab[, NK := paste0("N: ", N, ", K: ", K)]
+sub_tab[, NK := factor(NK, levels = c("N: 30, K: 3",
+                                      "N: 30, K: 5",
+                                      "N: 30, K: 7",
+                                      "N: 30, K: 14",
+                                      
+                                      "N: 50, K: 3",
+                                      "N: 50, K: 5",
+                                      "N: 50, K: 7",
+                                      "N: 50, K: 14",
+                                      
+                                      "N: 360, K: 3",
+                                      "N: 360, K: 5",
+                                      "N: 360, K: 7",
+                                      "N: 360, K: 14",
+                                      
+                                      "N: 1200, K: 3",
+                                      "N: 1200, K: 5",
+                                      "N: 1200, K: 7",
+                                      "N: 1200, K: 14"))]
+
+sub_tab <- sub_tab[stat %in% c("bias", "cover", "becover")]
+setnames(sub_tab, "stat", "Stat")
+
+saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
+
+# save all brmcoda dat for plots -----------
+brmcoda_dat <- split(brmcoda_tab, by = "D")
+names(brmcoda_dat) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
+
+saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
+
+# subset sub dat for plots --------
+sub_d3 <- sub_d3[by %in% c(
+  "between Sleep - PA", "within Sleep - PA",
+  "between Sleep - SB", "within Sleep - SB",
+  
+  "between PA - SB",    "within PA - SB"
+)]
+sub_d4 <- sub_d4[by %in% c(
+  "between Sleep - MVPA", "within Sleep - MVPA",
+  "between Sleep - LPA",  "within Sleep - LPA",
+  "between Sleep - SB",   "within Sleep - SB",
+  
+  "between MVPA - LPA",   "within MVPA - LPA",
+  "between MVPA - SB",    "within MVPA - SB",
+  
+  "between LPA - SB",     "within LPA - SB"
+)]
 sub_d5 <- sub_d5[by %in% c(
   "between TST - MVPA",  "within TST - MVPA",
   "between TST - WAKE",  "within TST - WAKE",
@@ -1035,90 +1072,66 @@ sub_dat <- list(sub_d3,
                 sub_d5)
 names(sub_dat) <- c("sub_d3", "sub_d4", "sub_d5")
 
-sub_dat <- lapply(sub_dat, function(i) {
-  i[] <- as.data.table(lapply(i, function(j) if(is.numeric(j)) format(round(j, 2), nsmall = 2) else j))
-  i[, NK := paste0("N: ", N, ", K: ", K)]
-  i[, NK := factor(NK, levels = c("N: 30, K: 3",
-                                  "N: 30, K: 5",
-                                  "N: 30, K: 7",
-                                  "N: 30, K: 14",
-                                  
-                                  "N: 50, K: 3",
-                                  "N: 50, K: 5",
-                                  "N: 50, K: 7",
-                                  "N: 50, K: 14",
-                                  
-                                  "N: 360, K: 3",
-                                  "N: 360, K: 5",
-                                  "N: 360, K: 7",
-                                  "N: 360, K: 14",
-                                  
-                                  "N: 1200, K: 3",
-                                  "N: 1200, K: 5",
-                                  "N: 1200, K: 7",
-                                  "N: 1200, K: 14"))]
-})
-
 sub_tab[, Estimand := NA]
-sub_tab[, Estimand := ifelse(by == "between Sleep - PA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within Sleep - PA", "$\\Delta{\\hat{y}^{(w)}_{(Sleep - PA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between Sleep - PA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within Sleep - SB", "$\\Delta{\\hat{y}^{(w)}_{(Sleep - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between PA - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(PA - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within PA - Sleep", "$\\Delta{\\hat{y}^{(w)}_{(PA - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between PA - SB", "$\\Delta{\\hat{y}^{(b)}_{(PA - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within PA - SB", "$\\Delta{\\hat{y}^{(w)}_{(PA - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(SB - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - Sleep", "$\\Delta{\\hat{y}^{(w)}_{(SB - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - PA", "$\\Delta{\\hat{y}^{(b)}_{(SB - PA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - PA", "$\\Delta{\\hat{y}^{(w)}_{(SB - PA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - PA"  , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - PA"   , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - PA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - PA"  , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - SB"   , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - SB)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between PA - Sleep"  , "$\\Delta{\\hat{y}^{(b)}_{(PA - Sleep)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within PA - Sleep"   , "$\\Delta{\\hat{y}^{(w)}_{(PA - Sleep)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between PA - SB"     , "$\\Delta{\\hat{y}^{(b)}_{(PA - SB)}}$"     , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within PA - SB"      , "$\\Delta{\\hat{y}^{(w)}_{(PA - SB)}}$"     , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - Sleep"  , "$\\Delta{\\hat{y}^{(b)}_{(SB - Sleep)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - Sleep"   , "$\\Delta{\\hat{y}^{(w)}_{(SB - Sleep)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - PA"     , "$\\Delta{\\hat{y}^{(b)}_{(SB - PA)}}$"     , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - PA"      , "$\\Delta{\\hat{y}^{(w)}_{(SB - PA)}}$"     , Estimand)]
 sub_tab[, Estimand := ifelse(by == "between Sleep - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within Sleep - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(Sleep - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between Sleep - LPA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within Sleep - LPA", "$\\Delta{\\hat{y}^{(w)}_{(Sleep - LPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - MVPA" , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - LPA" , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - LPA)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - LPA"  , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - LPA)}}$" , Estimand)]
 sub_tab[, Estimand := ifelse(by == "between MVPA - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - Sleep", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - LPA", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - LPA", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - SB", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - SB", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(LPA - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - Sleep", "$\\Delta{\\hat{y}^{(w)}_{(LPA - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - MVPA","$\\Delta{\\hat{y}^{(b)}_{(LPA - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(LPA - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - SB", "$\\Delta{\\hat{y}^{(b)}_{(LPA - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - SB", "$\\Delta{\\hat{y}^{(w)}_{(LPA - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(SB - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(SB - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - LPA", "$\\Delta{\\hat{y}^{(b)}_{(SB - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - LPA", "$\\Delta{\\hat{y}^{(w)}_{(SB - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between TST - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(TST - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within TST - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(TST - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between TST - WAKE", "$\\Delta{\\hat{y}^{(b)}_{(TST - WAKE)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within TST - WAKE", "$\\Delta{\\hat{y}^{(w)}_{(TST - WAKE)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between TST - LPA", "$\\Delta{\\hat{y}^{(b)}_{(TST - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within TST - LPA", "$\\Delta{\\hat{y}^{(w)}_{(TST - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between TST - SB", "$\\Delta{\\hat{y}^{(b)}_{(TST - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within TST - SB", "$\\Delta{\\hat{y}^{(w)}_{(TST - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between WAKE - TST", "$\\Delta{\\hat{y}^{(b)}_{(WAKE - TST)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within WAKE - TST", "$\\Delta{\\hat{y}^{(w)}_{(WAKE - TST)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between WAKE - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(WAKE - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within WAKE - MVPA", "$\\Delta{\\hat{y}^{(w)}_{(WAKE - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between WAKE - LPA", "$\\Delta{\\hat{y}^{(b)}_{(WAKE - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within WAKE - LPA", "$\\Delta{\\hat{y}^{(w)}_{(WAKE - LPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between WAKE - SB", "$\\Delta{\\hat{y}^{(b)}_{(WAKE - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within WAKE - SB", "$\\Delta{\\hat{y}^{(w)}_{(WAKE - SB)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - TST", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - TST)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - TST", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - TST)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - WAKE", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - WAKE)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - WAKE", "$\\Delta{\\hat{y}^{(w)}_{(MVPA - WAKE)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - TST", "$\\Delta{\\hat{y}^{(b)}_{(LPA - TST)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - TST", "$\\Delta{\\hat{y}^{(w)}_{(LPA - TST)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - WAKE", "$\\Delta{\\hat{y}^{(b)}_{(LPA - WAKE)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - WAKE", "$\\Delta{\\hat{y}^{(w)}_{(LPA - WAKE)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - TST", "$\\Delta{\\hat{y}^{(b)}_{(SB - TST)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - TST", "$\\Delta{\\hat{y}^{(w)}_{(SB - TST)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - WAKE", "$\\Delta{\\hat{y}^{(b)}_{(SB - WAKE)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - WAKE", "$\\Delta{\\hat{y}^{(w)}_{(SB - WAKE)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - Sleep" , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - LPA"  , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - LPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - LPA"   , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - LPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - SB"   , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - SB)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - SB"    , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - SB)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - Sleep" , "$\\Delta{\\hat{y}^{(b)}_{(LPA - Sleep)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - Sleep"  , "$\\Delta{\\hat{y}^{(w)}_{(LPA - Sleep)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - MVPA"  , "$\\Delta{\\hat{y}^{(b)}_{(LPA - MVPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - MVPA"   , "$\\Delta{\\hat{y}^{(w)}_{(LPA - MVPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - SB"    , "$\\Delta{\\hat{y}^{(b)}_{(LPA - SB)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - SB"     , "$\\Delta{\\hat{y}^{(w)}_{(LPA - SB)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - MVPA"   , "$\\Delta{\\hat{y}^{(b)}_{(SB - MVPA)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - MVPA"    , "$\\Delta{\\hat{y}^{(w)}_{(SB - MVPA)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - LPA"    , "$\\Delta{\\hat{y}^{(b)}_{(SB - LPA)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - LPA"     , "$\\Delta{\\hat{y}^{(w)}_{(SB - LPA)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - MVPA"  , "$\\Delta{\\hat{y}^{(b)}_{(TST - MVPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - MVPA"   , "$\\Delta{\\hat{y}^{(w)}_{(TST - MVPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - WAKE"  , "$\\Delta{\\hat{y}^{(b)}_{(TST - WAKE)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - WAKE"   , "$\\Delta{\\hat{y}^{(w)}_{(TST - WAKE)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - LPA"   , "$\\Delta{\\hat{y}^{(b)}_{(TST - LPA)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - LPA"    , "$\\Delta{\\hat{y}^{(w)}_{(TST - LPA)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - SB"    , "$\\Delta{\\hat{y}^{(b)}_{(TST - SB)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - SB"     , "$\\Delta{\\hat{y}^{(w)}_{(TST - SB)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - TST"  , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - TST)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - TST"   , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - TST)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - MVPA" , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - MVPA)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - MVPA"  , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - MVPA)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - LPA"  , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - LPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - LPA"   , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - LPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - SB"   , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - SB)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - SB"    , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - SB)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - TST"  , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - TST)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - TST"   , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - TST)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - WAKE" , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - WAKE)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - WAKE"  , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - WAKE)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - TST"   , "$\\Delta{\\hat{y}^{(b)}_{(LPA - TST)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - TST"    , "$\\Delta{\\hat{y}^{(w)}_{(LPA - TST)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - WAKE"  , "$\\Delta{\\hat{y}^{(b)}_{(LPA - WAKE)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - WAKE"   , "$\\Delta{\\hat{y}^{(w)}_{(LPA - WAKE)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - TST"    , "$\\Delta{\\hat{y}^{(b)}_{(SB - TST)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - TST"     , "$\\Delta{\\hat{y}^{(w)}_{(SB - TST)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - WAKE"   , "$\\Delta{\\hat{y}^{(b)}_{(SB - WAKE)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - WAKE"    , "$\\Delta{\\hat{y}^{(w)}_{(SB - WAKE)}}$"   , Estimand)]
 
 saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
