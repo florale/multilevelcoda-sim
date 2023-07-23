@@ -217,45 +217,46 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
     }
   }
 
-  if (nlevels(data$by) == 7) {
+  if (nlevels(data$Estimand) == 7) {
     col <- col_brmcoda_d3
-  } else if (nlevels(data$by) == 9) {
+  } else if (nlevels(data$Estimand) == 9) {
     col <- col_brmcoda_d4
-  } else if (nlevels(data$by) == 11) {
+  } else if (nlevels(data$Estimand) == 11) {
     col <- col_brmcoda_d5
-  } else if (nlevels(data$by) == 12) {
+  } else if (nlevels(data$Estimand) == 12) {
     col <- col_sub_d3
-  } else if (nlevels(data$by) == 24) {
+  } else if (nlevels(data$Estimand) == 24) {
     col <- col_sub_d4
-  } else if (nlevels(data$by) == 40) {
+  } else if (nlevels(data$Estimand) == 40) {
     col <- col_sub_d5
   }
   
-  point_size <- ifelse(shiny == TRUE, 2, 1.5)
-  line_size <- ifelse(shiny == TRUE, 0.75, 0.5)
+  point_size <- ifelse(shiny == TRUE, 2, 2)
+  line_size <- ifelse(shiny == TRUE, 0.75, 0.75)
   btext_size <- ifelse(shiny == TRUE, 14, 12)
   text_size <- ifelse(shiny == TRUE, 12, 11)
   
   gg <- 
     ggplot(data, 
-           aes(x = by, y = est, 
+           aes(x = Estimand, y = est, 
                ymin = lower, ymax = upper,
-               colour = by)) +
-    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dotted", linewidth = 0.5) +
+               colour = Estimand)) +
+    # geom_hline(yintercept = yintercept, color = "#666666", linetype = "dashed", linewidth = 0.5) +
     geom_point(size = point_size) +
     geom_linerange(linewidth = line_size) +
+    geom_segment(aes(x = "sigma", xend = "b_Intercept", y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
     labs(x = "", y = ylab, colour = "Parameter") +
     scale_colour_manual(values = col) +
     scale_y_continuous(limits = y_lims,
                        breaks = y_breaks) +
+    scale_x_discrete(drop = FALSE) +
     # facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
-    facet_wrap(ggplot2::vars(NK), labeller = ggplot2::label_context) +
-    coord_flip() +
-    hrbrthemes::theme_ipsum() +
+    facet_wrap(ggplot2::vars(NK), labeller = ggplot2::label_context, strip.position = "top") +
+    coord_flip()
     theme(
       axis.ticks        = element_blank(),
       panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = line_size),
-      panel.border      = element_rect(fill = "transparent", color = "black", linewidth = line_size),
+      panel.border      = element_rect(fill = "transparent", colour = "black", linewidth = line_size),
       # panel.grid.major  = element_blank(),
       # panel.grid.minor  = element_blank(),
       plot.background   = element_rect(fill = "transparent", colour = NA),
@@ -265,12 +266,12 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       axis.text.y       = element_blank(),
       title             = element_text(size = btext_size, face = "bold"),
       legend.text       = element_text(size = text_size),
-      strip.text.x      = element_text(size = text_size, hjust = 0, vjust = 1)
+      strip.text.x      = element_text(size = text_size)
       # strip.text.x      = element_blank()
-      
     )
   if (shiny == TRUE) {
     gg <- gg +
+      hrbrthemes::theme_ipsum() +
       theme(
         legend.position   = "none",
         panel.spacing.y   = unit(0, "lines"),
@@ -278,7 +279,12 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       )
     plotly::ggplotly(gg, height = 1300)
   } else {
-    gg + theme(legend.position   = "bottom")
+    gg + theme_void() +
+      theme(legend.position   = "none",
+            axis.title.x      = element_blank(),
+            strip.text.x      = element_text(size = text_size),
+            strip.background  = element_blank(),
+            strip.placement   = "outside"
+      )
   }
 }
-
