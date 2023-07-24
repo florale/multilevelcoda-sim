@@ -168,7 +168,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   if (all(data$Stat == "bias")) {
     ylab <- "Bias"
     yintercept <- 0
-    if ("Predictor" %in% colnames(data)) {
+    if ("Estimand" %in% colnames(data)) {
       y_lims <- c(-0.16, 0.16)
       y_breaks <- c(-0.1, 0, 0.1)
     } else {
@@ -178,7 +178,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   } else if (all(data$Stat == "cover")) {
     ylab <- "Coverage"
     yintercept <- 0.95
-    if ("Predictor" %in% colnames(data)) {
+    if ("Estimand" %in% colnames(data)) {
       y_lims <- c(0.9, 1)
       y_breaks <- c(0.9, 0.95, 1)
     } else {
@@ -188,7 +188,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   } else if (all(data$Stat == "becover")) {
     ylab <- "Bias-Eliminated Coverage"
     yintercept <- 0.95
-    if ("Predictor" %in% colnames(data)) {
+    if ("Estimand" %in% colnames(data)) {
       y_lims <- c(0.9, 1)
       y_breaks <- c(0.9, 0.95, 1)
     } else {
@@ -198,7 +198,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   } else if (all(data$Stat == "mse")) {
     ylab <- "Empirical Standard Error"
     yintercept <- 0
-    if ("Predictor" %in% colnames(data)) {
+    if ("Estimand" %in% colnames(data)) {
       y_lims <- c(0, 3.5)
       y_breaks <- c(0, 1.5, 3)
     } else {
@@ -208,7 +208,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   } else if (all(data$Stat == "empse")) {
     ylab <- "Mean-squared Error"
     yintercept <- 0
-    if ("Predictor" %in% colnames(data)) {
+    if ("Estimand" %in% colnames(data)) {
       y_lims <- c(0, 3)
       y_breaks <- c(0, 1.5, 3)
     } else {
@@ -217,17 +217,25 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
     }
   }
 
-  if (nlevels(data$Estimand) == 7) {
+  if ("Substitution" %in% colnames(data)) {
+    xvar <- data$Substitution
+    xtext <- 13
+  } else {
+    xvar <- data$Estimand
+    xtext <- 10
+  }
+  
+  if (nlevels(xvar) == 7) {
     col <- col_brmcoda_d3
-  } else if (nlevels(data$Estimand) == 9) {
+  } else if (nlevels(xvar) == 9) {
     col <- col_brmcoda_d4
-  } else if (nlevels(data$Estimand) == 11) {
+  } else if (nlevels(xvar) == 11) {
     col <- col_brmcoda_d5
-  } else if (nlevels(data$Estimand) == 12) {
+  } else if (nlevels(xvar) == 6) {
     col <- col_sub_d3
-  } else if (nlevels(data$Estimand) == 24) {
+  } else if (nlevels(xvar) == 12) {
     col <- col_sub_d4
-  } else if (nlevels(data$Estimand) == 40) {
+  } else if (nlevels(xvar) == 20) {
     col <- col_sub_d5
   }
   
@@ -235,13 +243,14 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   line_size <- ifelse(shiny == TRUE, 0.75, 0.75)
   btext_size <- ifelse(shiny == TRUE, 14, 12)
   text_size <- ifelse(shiny == TRUE, 12, 11)
-  
+  yseg <- y_breaks[[1]]
+  yendseg <- y_breaks[[3]]
   if (shiny == TRUE) {
   gg <- 
     ggplot(data, 
-           aes(x = Estimand, y = est, 
+           aes(x = xvar, y = est, 
                ymin = lower, ymax = upper,
-               colour = Estimand)) +
+               colour = xvar)) +
     geom_hline(yintercept = yintercept, color = "#666666", linetype = "dashed", linewidth = 0.5) +
     geom_point(size = point_size) +
     geom_linerange(linewidth = line_size) +
@@ -278,24 +287,16 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   } else {
     gg <- 
       ggplot(data, 
-             aes(x = Estimand, y = est, 
+             aes(x = xvar, y = est, 
                  ymin = lower, ymax = upper,
-                 colour = Estimand))
-    if (all(data$Stat == "bias")) {
-      gg <- gg + 
-        geom_segment(aes(x = 0.5, xend = Estimand, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
-        geom_segment(aes(y = -0.1, yend = 0.1, x = 0.5, xend = 0.5), color = "black", linewidth = 0.25) 
-    } else if (all(data$Stat == "cover")) {
-      gg <- gg + 
-        geom_segment(aes(x = 0.5, xend = Estimand, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
-        geom_segment(aes(y = 0.9, yend = 1, x = 0.5, xend = 0.5), color = "black", linewidth = 0.25)
-    }
-    gg <- gg +
-      geom_text(aes(label = NK, y = yintercept, x = 10), color = "black", family = "Arial Narrow", vjust = "inward", hjust = "inward") +
+                 colour = xvar)) +
+      geom_segment(aes(x = 0.5, xend = xvar, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
+      geom_segment(aes(y = yseg, yend = yendseg, x = 0.5, xend = 0.5), color = "black", linewidth = 0.25) +
+      geom_text(aes(label = NK, y = yintercept, x = xtext), color = "black", family = "Arial Narrow", vjust = "inward", hjust = "inward") +
       # geom_hline(yintercept = yintercept, color = "#666666", linetype = "dashed", linewidth = 0.5) +
       geom_point(size = point_size) +
       geom_linerange(linewidth = line_size) +
-      # geom_segment(aes(x = "sigma", xend = Estimand, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
+      # geom_segment(aes(x = "sigma", xend = xvar, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
       labs(x = "", y = ylab, colour = "Parameter") +
       scale_colour_manual(values = col) +
       scale_y_continuous(limits = y_lims,
@@ -316,7 +317,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
         # axis.title.x      = element_text(size = btext_size, face = "bold"),
         # axis.text.x       = element_text(size = text_size),
         # axis.text.y       = element_blank(),
-        title             = element_blank(),
+        # title             = element_blank(),
         legend.text       = element_blank(),
         # strip.text.x      = element_text(size = text_size),
         legend.position   = "none",
