@@ -165,7 +165,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
 ## Forest parameter plot
 .par_plot <- function(data, shiny = FALSE) {
   
-  if (all(data$stat == "bias")) {
+  if (all(data$Stat == "bias")) {
     ylab <- "Bias"
     yintercept <- 0
     if ("Predictor" %in% colnames(data)) {
@@ -175,7 +175,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       y_lims <- c(-0.075, 0.075)
       y_breaks <- c(-0.05, 0, 0.05)
     }
-  } else if (all(data$stat == "cover")) {
+  } else if (all(data$Stat == "cover")) {
     ylab <- "Coverage"
     yintercept <- 0.95
     if ("Predictor" %in% colnames(data)) {
@@ -185,7 +185,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       y_lims <- c(0.9, 1)
       y_breaks <- c(0.9, 0.95, 1)
     }
-  } else if (all(data$stat == "becover")) {
+  } else if (all(data$Stat == "becover")) {
     ylab <- "Bias-Eliminated Coverage"
     yintercept <- 0.95
     if ("Predictor" %in% colnames(data)) {
@@ -195,7 +195,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       y_lims <- c(0.9, 1)
       y_breaks <- c(0.9, 0.95, 1)
     }
-  } else if (all(data$stat == "mse")) {
+  } else if (all(data$Stat == "mse")) {
     ylab <- "Empirical Standard Error"
     yintercept <- 0
     if ("Predictor" %in% colnames(data)) {
@@ -205,7 +205,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       y_lims <- c(0, 1)
       y_breaks <- c(0, 0.5, 1)
     }
-  } else if (all(data$stat == "empse")) {
+  } else if (all(data$Stat == "empse")) {
     ylab <- "Mean-squared Error"
     yintercept <- 0
     if ("Predictor" %in% colnames(data)) {
@@ -231,20 +231,20 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
     col <- col_sub_d5
   }
   
-  point_size <- ifelse(shiny == TRUE, 2, 2)
+  point_size <- ifelse(shiny == TRUE, 2, 2.25)
   line_size <- ifelse(shiny == TRUE, 0.75, 0.75)
   btext_size <- ifelse(shiny == TRUE, 14, 12)
   text_size <- ifelse(shiny == TRUE, 12, 11)
   
+  if (shiny == TRUE) {
   gg <- 
     ggplot(data, 
            aes(x = Estimand, y = est, 
                ymin = lower, ymax = upper,
                colour = Estimand)) +
-    # geom_hline(yintercept = yintercept, color = "#666666", linetype = "dashed", linewidth = 0.5) +
+    geom_hline(yintercept = yintercept, color = "#666666", linetype = "dashed", linewidth = 0.5) +
     geom_point(size = point_size) +
     geom_linerange(linewidth = line_size) +
-    geom_segment(aes(x = "sigma", xend = "b_Intercept", y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
     labs(x = "", y = ylab, colour = "Parameter") +
     scale_colour_manual(values = col) +
     scale_y_continuous(limits = y_lims,
@@ -253,7 +253,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
     # facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
     facet_wrap(ggplot2::vars(NK), labeller = ggplot2::label_context, strip.position = "top") +
     hrbrthemes::theme_ipsum() +
-    coord_flip()
+    coord_flip() +
     theme(
       axis.ticks        = element_blank(),
       panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = line_size),
@@ -267,28 +267,72 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       axis.text.y       = element_blank(),
       title             = element_text(size = btext_size, face = "bold"),
       legend.text       = element_text(size = text_size),
-      strip.text.x      = element_text(size = text_size)
+      strip.text.x      = element_text(size = text_size),
+      legend.position   = "none",
+      panel.spacing.y   = unit(0, "lines"),
+      panel.spacing.x   = unit(0.75, "lines")
       # strip.text.x      = element_blank()
     )
-  if (shiny == TRUE) {
-    gg <- gg +
-      theme(
-        legend.position   = "none",
-        panel.spacing.y   = unit(0, "lines"),
-        panel.spacing.x   = unit(0.75, "lines")
-      )
     plotly::ggplotly(gg, height = 1300)
+    
   } else {
-    gg +
-      theme(legend.position   = "none",
-            panel.grid.major  = element_blank(),
-            panel.grid.minor  = element_blank(),
-            axis.title.x      = element_blank(),
-            axis.line.x       = element_line(linewidth = 0.25),
-            axis.text.x       = element_text(size = text_size),
-            strip.text.x      = element_text(size = text_size),
-            strip.background  = element_blank(),
-            strip.placement = "outside"
+    gg <- 
+      ggplot(data, 
+             aes(x = Estimand, y = est, 
+                 ymin = lower, ymax = upper,
+                 colour = Estimand))
+    if (all(data$Stat == "bias")) {
+      gg <- gg + 
+        geom_segment(aes(x = 0.5, xend = Estimand, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
+        geom_segment(aes(y = -0.1, yend = 0.1, x = 0.5, xend = 0.5), color = "black", linewidth = 0.25) 
+    } else if (all(data$Stat == "cover")) {
+      gg <- gg + 
+        geom_segment(aes(x = 0.5, xend = Estimand, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
+        geom_segment(aes(y = 0.9, yend = 1, x = 0.5, xend = 0.5), color = "black", linewidth = 0.25)
+    }
+    gg <- gg +
+      geom_text(aes(label = NK, y = yintercept, x = 10), color = "black", family = "Arial Narrow", vjust = "inward", hjust = "inward") +
+      # geom_hline(yintercept = yintercept, color = "#666666", linetype = "dashed", linewidth = 0.5) +
+      geom_point(size = point_size) +
+      geom_linerange(linewidth = line_size) +
+      # geom_segment(aes(x = "sigma", xend = Estimand, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
+      labs(x = "", y = ylab, colour = "Parameter") +
+      scale_colour_manual(values = col) +
+      scale_y_continuous(limits = y_lims,
+                         breaks = y_breaks) +
+      scale_x_discrete(drop = FALSE) +
+      # facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
+      # facet_wrap(ggplot2::vars(NK), labeller = ggplot2::label_context, strip.position = "top") +
+      hrbrthemes::theme_ipsum() + theme_void() +
+      coord_flip() +
+      theme(
+        axis.ticks        = element_blank(),
+        panel.background  = element_rect(fill = "transparent", colour = NA, linewidth = line_size),
+        panel.border      = element_rect(fill = "transparent", colour = NA, linewidth = line_size),
+        panel.grid.major  = element_blank(),
+        panel.grid.minor  = element_blank(),
+        plot.background   = element_rect(fill = "transparent", colour = NA),
+        axis.title.y      = element_text(size = btext_size, face = "bold"),
+        # axis.title.x      = element_text(size = btext_size, face = "bold"),
+        # axis.text.x       = element_text(size = text_size),
+        # axis.text.y       = element_blank(),
+        title             = element_blank(),
+        legend.text       = element_blank(),
+        # strip.text.x      = element_text(size = text_size),
+        legend.position   = "none",
+        # panel.grid.major  = element_blank(),
+        # panel.grid.minor  = element_blank(),
+        axis.title.x      = element_blank(),
+        axis.line.y       = element_blank(),
+        axis.text.x       = element_text(size = text_size, family = "Arial Narrow"),
+        axis.text.y       = element_blank()
+        # strip.text.x      = element_text(size = text_size, family = "Arial Narrow"),
+        # strip.background  = element_blank(),
+        # strip.placement   = "outside"
+        # strip.text.x      = element_blank()
       )
+    gg
+    
   }
 }
+
