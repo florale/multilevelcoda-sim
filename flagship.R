@@ -39,8 +39,23 @@ str(brmcoda_dat_d4$Estimand)
 sub_dat_d4 <- sub_dat[["sub_d4"]]
 levels(sub_dat_d4$Substitution)
 
-brmcoda_tab_d4 <- brmcoda_tab[["brmcoda_d4"]]
-sub_tab_d4 <- sub_tab[["sub_d4"]]
+# DESCRIPTIVES
+egltable("OnTarget", data = brmcoda_dat_d4[Stat == "bias" & condition == "base"])
+egltable("OnTarget", data = brmcoda_dat_d4[Stat == "cover" & condition == "base"])
+egltable("OnTarget", data = brmcoda_dat_d4[Stat == "becover" & condition == "base"])
+
+egltable("est", data = brmcoda_dat_d4[Stat == "bias" & condition == "base"])
+egltable("est", data = brmcoda_dat_d4[Stat == "cover" & condition == "base"])
+egltable("est", data = brmcoda_dat_d4[Stat == "becover" & condition == "base"])
+
+egltable("OnTarget", data = sub_dat_d4[Stat == "bias" & condition == "base"])
+egltable("OnTarget", data = sub_dat_d4[Stat == "cover" & condition == "base"])
+egltable("OnTarget", data = sub_dat_d4[Stat == "becover" & condition == "base"])
+
+egltable("est", data = sub_dat_d4[Stat == "bias" & condition == "base"])
+egltable("est", data = sub_dat_d4[Stat == "cover" & condition == "base"])
+egltable("est", data = sub_dat_d4[Stat == "becover" & condition == "base"])
+
 
 ## PLOTS ------------
 ## common column ---------------
@@ -320,7 +335,7 @@ ggarrange(p1, p2, p3, p4,
           nrow = 4)
 dev.off()
 
-## subcommon column ---------------
+## sub common column ---------------
 sub_par <- 
   ggplot(sub_dat_d4[Stat == "bias" & condition == "base" & N == 30 & K == 3], aes(y = Substitution)) +
   geom_text(aes(x = 0, label = sub_dat_d4[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Substitution, 
@@ -452,12 +467,10 @@ p3 <- sub_par | p[[9]] | p[[10]] | p[[1]] | p[[12]] + theme(plot.margin = unit(c
 p4 <- sub_par | p[[13]] | p[[14]] | p[[15]] | p[[16]] + theme(plot.margin = unit(c(1,1,0,0), "lines"))
 p1 / p2 / p3 / p4
 
-png("sub_bias.png", width = 14, height = 15, units = 'in', res = 1000)
+png("sub_bias.png", width = 15, height = 15, units = 'in', res = 1000)
 ggarrange(p1, p2, p3, p4,
           nrow = 4)
 dev.off()
-
-
 
 
 # sub cover plots ---------------------
@@ -561,7 +574,7 @@ p3 <- sub_par | p[[9]] | p[[10]] | p[[1]] | p[[12]] + theme(plot.margin = unit(c
 p4 <- sub_par | p[[13]] | p[[14]] | p[[15]] | p[[16]] + theme(plot.margin = unit(c(1,1,0,0), "lines"))
 p1 / p2 / p3 / p4
 
-png("sub_cover.png", width = 14, height = 15, units = 'in', res = 1000)
+png("sub_cover.png", width = 15, height = 15, units = 'in', res = 1000)
 ggarrange(p1, p2, p3, p4,
           nrow = 4)
 dev.off()
