@@ -905,6 +905,7 @@ brmcoda_tab[, `$\\sigma_u$` := format(round(sd_ID_Intercept, 2), nsmall = 2)]
 brmcoda_tab[, `$\\sigma_{\varepsilon}$` := format(round(sigma, 2), nsmall = 2)]
 
 brmcoda_tab[, Estimates := paste0(Est, " [", Lower, ",", Upper, "]")]
+brmcoda_tab[, `Est [95% CI], MCSE` := paste0(Est, " [", Lower, ",", Upper, "]", ", ", MCSE)]
 
 brmcoda_tab[, Estimand := NA]
 brmcoda_tab[, Estimand := ifelse(by == "  b0"             , "b_Intercept", Estimand)]
@@ -947,9 +948,9 @@ brmcoda_tab[, EstimandF := factor(EstimandF, levels = c(
 ))]
 
 brmcoda_tab[, OnTarget := NA]
-brmcoda_tab[stat == "bias", OnTarget := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
-brmcoda_tab[stat == "cover", OnTarget := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
-brmcoda_tab[stat == "becover", OnTarget := ifelse(data.table::between(0.95, lower, upper), TRUE, FALSE)]
+brmcoda_tab[stat == "bias", OnTarget := ifelse(data.table::between(0, lower, upper, incbounds = TRUE), TRUE, FALSE)]
+brmcoda_tab[stat == "cover", OnTarget := ifelse(data.table::between(0.95, lower, upper, incbounds = TRUE), TRUE, FALSE)]
+brmcoda_tab[stat == "becover", OnTarget := ifelse(data.table::between(0.95, lower, upper, incbounds = TRUE), TRUE, FALSE)]
 # brmcoda_tab[stat == "mse", OnTarget := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
 # brmcoda_tab[stat == "empse", OnTarget := ifelse(data.table::between(0, lower, upper), TRUE, FALSE)]
 brmcoda_tab[, OnTarget := ifelse(OnTarget == TRUE, "Y", "N")]
