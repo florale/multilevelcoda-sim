@@ -163,7 +163,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
 
 
 ## Forest parameter plot
-.par_plot <- function(data, shiny = FALSE) {
+.par_plot <- function(data, shiny = FALSE, d = 4, font = "Arial Narrow") {
   
   if (all(data$Stat == "bias")) {
     ylab <- "Bias"
@@ -216,13 +216,31 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       y_breaks <- c(0, 0.5, 1)
     }
   }
-
-  if ("Substitution" %in% colnames(data)) {
-    xvar <- data$Substitution
-    xtext <- 13
-  } else {
-    xvar <- data$Estimand
-    xtext <- 10
+  
+  if (d == 4) {
+    if ("Substitution" %in% colnames(data)) {
+      xvar <- data$Substitution
+      xtext <- 13
+    } else {
+      xvar <- data$Estimand
+      xtext <- 10
+    }
+  } else if (d == 3) {
+    if ("Substitution" %in% colnames(data)) {
+      xvar <- data$Substitution
+      xtext <- 7
+    } else {
+      xvar <- data$Estimand
+      xtext <- 8
+    }
+  } else if (d == 5) {
+    if ("Substitution" %in% colnames(data)) {
+      xvar <- data$Substitution
+      xtext <- 21
+    } else {
+      xvar <- data$Estimand
+      xtext <- 12
+    }
   }
   
   if (nlevels(xvar) == 7) {
@@ -242,9 +260,10 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
   point_size <- ifelse(shiny == TRUE, 2, 2.25)
   line_size <- ifelse(shiny == TRUE, 0.75, 0.75)
   btext_size <- ifelse(shiny == TRUE, 14, 12)
-  text_size <- ifelse(shiny == TRUE, 12, 11)
+  text_size <- ifelse(shiny == TRUE, 12, 13)
   yseg <- y_breaks[[1]]
   yendseg <- y_breaks[[3]]
+  
   if (shiny == TRUE) {
   gg <- 
     ggplot(data, 
@@ -290,9 +309,9 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
              aes(x = xvar, y = est, 
                  ymin = lower, ymax = upper,
                  colour = xvar)) +
-      geom_segment(aes(x = 0.5, xend = xvar, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.25) +
-      geom_segment(aes(y = yseg, yend = yendseg, x = 0.5, xend = 0.5), color = "black", linewidth = 0.25) +
-      geom_text(aes(label = NK, y = yintercept, x = xtext), color = "black", family = "Arial Narrow", vjust = "inward", hjust = "inward") +
+      geom_segment(aes(x = 0.5, xend = xvar, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.5) +
+      geom_segment(aes(y = yseg, yend = yendseg, x = 0.5, xend = 0.5), color = "black", linewidth = 0.5) +
+      geom_text(aes(label = NK, y = yintercept, x = xtext), color = "black", family = font, vjust = "inward", hjust = "inward") +
       # geom_hline(yintercept = yintercept, color = "#666666", linetype = "dashed", linewidth = 0.5) +
       geom_point(size = point_size) +
       geom_linerange(linewidth = line_size) +
@@ -301,7 +320,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
       scale_colour_manual(values = col) +
       scale_y_continuous(limits = y_lims,
                          breaks = y_breaks) +
-      scale_x_discrete(drop = FALSE) +
+      scale_x_discrete(drop = FALSE, expand = c(0,1.05)) +
       # facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
       # facet_wrap(ggplot2::vars(NK), labeller = ggplot2::label_context, strip.position = "top") +
       hrbrthemes::theme_ipsum() + theme_void() +
@@ -325,9 +344,9 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
         # panel.grid.minor  = element_blank(),
         axis.title.x      = element_blank(),
         axis.line.y       = element_blank(),
-        axis.text.x       = element_text(size = text_size, family = "Arial Narrow"),
+        axis.text.x       = element_text(size = text_size, family = font),
         axis.text.y       = element_blank()
-        # strip.text.x      = element_text(size = text_size, family = "Arial Narrow"),
+        # strip.text.x      = element_text(size = text_size, family = font),
         # strip.background  = element_blank(),
         # strip.placement   = "outside"
         # strip.text.x      = element_blank()
