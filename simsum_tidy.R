@@ -970,16 +970,16 @@ brmcoda_tab[, Estimand := factor(Estimand, levels = c(
 ))]
 
 brmcoda_tab[, EstimandF := NA]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_Intercept"                  , "$\\beta_{0}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_bilr1", "$\\beta_{bilr1}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_bilr2", "$\\beta_{bilr2}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_bilr3", "$\\beta_{bilr3}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_bilr4", "$\\beta_{bilr4}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_wilr1" , "$\\beta_{wilr1}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_wilr2" , "$\\beta_{wilr2}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_wilr3" , "$\\beta_{wilr3}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "b_wilr4" , "$\\beta_{wilr4}$", EstimandF)]
-brmcoda_tab[, EstimandF := ifelse(Estimand == "sd_ID_Intercept"             , "$u_{0j}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_Intercept"    , "$\\gamma_{0}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_bilr1"        , "$\\beta{z^{(b)}_{1}}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_bilr2"        , "$\\beta{z^{(b)}_{2}}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_bilr3"        , "$\\beta{z^{(b)}_{3}}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_bilr4"        , "$\\beta{z^{(b)}_{4}}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_wilr1"        , "$\\beta{z^{(w)}_{1}}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_wilr2"        , "$\\beta{z^{(w)}_{2}}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_wilr3"        , "$\\beta{z^{(w)}_{3}}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "b_wilr4"        , "$\\beta{z^{(w)}_{4}}$", EstimandF)]
+brmcoda_tab[, EstimandF := ifelse(Estimand == "sd_ID_Intercept", "$\\sigma_{u}$", EstimandF)]
 brmcoda_tab[, EstimandF := ifelse(Estimand == "sigma"          , "$\\sigma_{\\epsilon}$", EstimandF)]
 # brmcoda_tab[, EstimandF := factor(EstimandF, levels = c(
 #   "$\\sigma_{\\varepsilon}$", 
@@ -1022,6 +1022,13 @@ brmcoda_tab <- brmcoda_tab[stat %in% c("bias", "cover", "becover")]
 setnames(brmcoda_tab, "stat", "Stat")
 
 saveRDS(brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
+
+## save all brmcoda dat for plots -----------
+brmcoda_dat <- split(brmcoda_tab, by = "D")
+names(brmcoda_dat) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
+
+saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
+
 
 ## save all sub dat for shiny tables -------------------------
 sub_tab <- rbind(sub_d3,
@@ -1068,18 +1075,74 @@ sub_tab[, NK := factor(NK, levels = c("N: 30, K: 3",
                                       "N: 1200, K: 7",
                                       "N: 1200, K: 14"))]
 
+sub_tab[, Estimand := NA]
+sub_tab[, Estimand := ifelse(by == "between Sleep - PA"  , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - PA"   , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - PA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - SB"  , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - SB)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - SB"   , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - SB)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between PA - Sleep"  , "$\\Delta{\\hat{y}^{(b)}_{(PA - Sleep)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within PA - Sleep"   , "$\\Delta{\\hat{y}^{(w)}_{(PA - Sleep)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between PA - SB"     , "$\\Delta{\\hat{y}^{(b)}_{(PA - SB)}}$"     , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within PA - SB"      , "$\\Delta{\\hat{y}^{(w)}_{(PA - SB)}}$"     , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - Sleep"  , "$\\Delta{\\hat{y}^{(b)}_{(SB - Sleep)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - Sleep"   , "$\\Delta{\\hat{y}^{(w)}_{(SB - Sleep)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - PA"     , "$\\Delta{\\hat{y}^{(b)}_{(SB - PA)}}$"     , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - PA"      , "$\\Delta{\\hat{y}^{(w)}_{(SB - PA)}}$"     , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - MVPA" , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - MVPA)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between Sleep - LPA" , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - LPA)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within Sleep - LPA"  , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - LPA)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - Sleep" , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - Sleep)}}$", Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - LPA"  , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - LPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - LPA"   , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - LPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - SB"   , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - SB)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - SB"    , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - SB)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - Sleep" , "$\\Delta{\\hat{y}^{(b)}_{(LPA - Sleep)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - Sleep"  , "$\\Delta{\\hat{y}^{(w)}_{(LPA - Sleep)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - MVPA"  , "$\\Delta{\\hat{y}^{(b)}_{(LPA - MVPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - MVPA"   , "$\\Delta{\\hat{y}^{(w)}_{(LPA - MVPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - SB"    , "$\\Delta{\\hat{y}^{(b)}_{(LPA - SB)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - SB"     , "$\\Delta{\\hat{y}^{(w)}_{(LPA - SB)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - MVPA"   , "$\\Delta{\\hat{y}^{(b)}_{(SB - MVPA)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - MVPA"    , "$\\Delta{\\hat{y}^{(w)}_{(SB - MVPA)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - LPA"    , "$\\Delta{\\hat{y}^{(b)}_{(SB - LPA)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - LPA"     , "$\\Delta{\\hat{y}^{(w)}_{(SB - LPA)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - MVPA"  , "$\\Delta{\\hat{y}^{(b)}_{(TST - MVPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - MVPA"   , "$\\Delta{\\hat{y}^{(w)}_{(TST - MVPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - WAKE"  , "$\\Delta{\\hat{y}^{(b)}_{(TST - WAKE)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - WAKE"   , "$\\Delta{\\hat{y}^{(w)}_{(TST - WAKE)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - LPA"   , "$\\Delta{\\hat{y}^{(b)}_{(TST - LPA)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - LPA"    , "$\\Delta{\\hat{y}^{(w)}_{(TST - LPA)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between TST - SB"    , "$\\Delta{\\hat{y}^{(b)}_{(TST - SB)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within TST - SB"     , "$\\Delta{\\hat{y}^{(w)}_{(TST - SB)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - TST"  , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - TST)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - TST"   , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - TST)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - MVPA" , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - MVPA)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - MVPA"  , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - MVPA)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - LPA"  , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - LPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - LPA"   , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - LPA)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between WAKE - SB"   , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - SB)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within WAKE - SB"    , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - SB)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - TST"  , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - TST)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - TST"   , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - TST)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between MVPA - WAKE" , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - WAKE)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within MVPA - WAKE"  , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - WAKE)}}$" , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - TST"   , "$\\Delta{\\hat{y}^{(b)}_{(LPA - TST)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - TST"    , "$\\Delta{\\hat{y}^{(w)}_{(LPA - TST)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between LPA - WAKE"  , "$\\Delta{\\hat{y}^{(b)}_{(LPA - WAKE)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within LPA - WAKE"   , "$\\Delta{\\hat{y}^{(w)}_{(LPA - WAKE)}}$"  , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - TST"    , "$\\Delta{\\hat{y}^{(b)}_{(SB - TST)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - TST"     , "$\\Delta{\\hat{y}^{(w)}_{(SB - TST)}}$"    , Estimand)]
+sub_tab[, Estimand := ifelse(by == "between SB - WAKE"   , "$\\Delta{\\hat{y}^{(b)}_{(SB - WAKE)}}$"   , Estimand)]
+sub_tab[, Estimand := ifelse(by == "within SB - WAKE"    , "$\\Delta{\\hat{y}^{(w)}_{(SB - WAKE)}}$"   , Estimand)]
+
 sub_tab <- sub_tab[stat %in% c("bias", "cover", "becover")]
 setnames(sub_tab, "stat", "Stat")
 
 saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
 
-# save all brmcoda dat for plots -----------
-brmcoda_tab <- split(brmcoda_tab, by = "D")
-names(brmcoda_tab) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
-
-saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
-
-# subset sub dat for plots --------
+## subset sub dat for plots --------
 sub_dat <- split(sub_tab, by = "D")
 names(sub_dat) <- c("sub_d3", "sub_d4", "sub_d5")
 
@@ -1190,67 +1253,5 @@ sub_dat[["sub_d5"]][, Substitution := factor(
     "between TST - MVPA"
   )
 )]
-
-sub_tab[, Estimand := NA]
-sub_tab[, Estimand := ifelse(by == "between Sleep - PA"  , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within Sleep - PA"   , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - PA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between Sleep - PA"  , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within Sleep - SB"   , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - SB)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between PA - Sleep"  , "$\\Delta{\\hat{y}^{(b)}_{(PA - Sleep)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within PA - Sleep"   , "$\\Delta{\\hat{y}^{(w)}_{(PA - Sleep)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between PA - SB"     , "$\\Delta{\\hat{y}^{(b)}_{(PA - SB)}}$"     , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within PA - SB"      , "$\\Delta{\\hat{y}^{(w)}_{(PA - SB)}}$"     , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - Sleep"  , "$\\Delta{\\hat{y}^{(b)}_{(SB - Sleep)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - Sleep"   , "$\\Delta{\\hat{y}^{(w)}_{(SB - Sleep)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - PA"     , "$\\Delta{\\hat{y}^{(b)}_{(SB - PA)}}$"     , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - PA"      , "$\\Delta{\\hat{y}^{(w)}_{(SB - PA)}}$"     , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between Sleep - MVPA", "$\\Delta{\\hat{y}^{(b)}_{(Sleep - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within Sleep - MVPA" , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - MVPA)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between Sleep - LPA" , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - LPA)}}$" , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within Sleep - LPA"  , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - LPA)}}$" , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - Sleep", "$\\Delta{\\hat{y}^{(b)}_{(MVPA - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - Sleep" , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - Sleep)}}$", Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - LPA"  , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - LPA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - LPA"   , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - LPA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - SB"   , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - SB)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - SB"    , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - SB)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - Sleep" , "$\\Delta{\\hat{y}^{(b)}_{(LPA - Sleep)}}$" , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - Sleep"  , "$\\Delta{\\hat{y}^{(w)}_{(LPA - Sleep)}}$" , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - MVPA"  , "$\\Delta{\\hat{y}^{(b)}_{(LPA - MVPA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - MVPA"   , "$\\Delta{\\hat{y}^{(w)}_{(LPA - MVPA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - SB"    , "$\\Delta{\\hat{y}^{(b)}_{(LPA - SB)}}$"    , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - SB"     , "$\\Delta{\\hat{y}^{(w)}_{(LPA - SB)}}$"    , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - MVPA"   , "$\\Delta{\\hat{y}^{(b)}_{(SB - MVPA)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - MVPA"    , "$\\Delta{\\hat{y}^{(w)}_{(SB - MVPA)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - LPA"    , "$\\Delta{\\hat{y}^{(b)}_{(SB - LPA)}}$"    , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - LPA"     , "$\\Delta{\\hat{y}^{(w)}_{(SB - LPA)}}$"    , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between TST - MVPA"  , "$\\Delta{\\hat{y}^{(b)}_{(TST - MVPA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within TST - MVPA"   , "$\\Delta{\\hat{y}^{(w)}_{(TST - MVPA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between TST - WAKE"  , "$\\Delta{\\hat{y}^{(b)}_{(TST - WAKE)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within TST - WAKE"   , "$\\Delta{\\hat{y}^{(w)}_{(TST - WAKE)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between TST - LPA"   , "$\\Delta{\\hat{y}^{(b)}_{(TST - LPA)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within TST - LPA"    , "$\\Delta{\\hat{y}^{(w)}_{(TST - LPA)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between TST - SB"    , "$\\Delta{\\hat{y}^{(b)}_{(TST - SB)}}$"    , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within TST - SB"     , "$\\Delta{\\hat{y}^{(w)}_{(TST - SB)}}$"    , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between WAKE - TST"  , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - TST)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within WAKE - TST"   , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - TST)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between WAKE - MVPA" , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - MVPA)}}$" , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within WAKE - MVPA"  , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - MVPA)}}$" , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between WAKE - LPA"  , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - LPA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within WAKE - LPA"   , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - LPA)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between WAKE - SB"   , "$\\Delta{\\hat{y}^{(b)}_{(WAKE - SB)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within WAKE - SB"    , "$\\Delta{\\hat{y}^{(w)}_{(WAKE - SB)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - TST"  , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - TST)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - TST"   , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - TST)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between MVPA - WAKE" , "$\\Delta{\\hat{y}^{(b)}_{(MVPA - WAKE)}}$" , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within MVPA - WAKE"  , "$\\Delta{\\hat{y}^{(w)}_{(MVPA - WAKE)}}$" , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - TST"   , "$\\Delta{\\hat{y}^{(b)}_{(LPA - TST)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - TST"    , "$\\Delta{\\hat{y}^{(w)}_{(LPA - TST)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between LPA - WAKE"  , "$\\Delta{\\hat{y}^{(b)}_{(LPA - WAKE)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within LPA - WAKE"   , "$\\Delta{\\hat{y}^{(w)}_{(LPA - WAKE)}}$"  , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - TST"    , "$\\Delta{\\hat{y}^{(b)}_{(SB - TST)}}$"    , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - TST"     , "$\\Delta{\\hat{y}^{(w)}_{(SB - TST)}}$"    , Estimand)]
-sub_tab[, Estimand := ifelse(by == "between SB - WAKE"   , "$\\Delta{\\hat{y}^{(b)}_{(SB - WAKE)}}$"   , Estimand)]
-sub_tab[, Estimand := ifelse(by == "within SB - WAKE"    , "$\\Delta{\\hat{y}^{(w)}_{(SB - WAKE)}}$"   , Estimand)]
 
 saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
