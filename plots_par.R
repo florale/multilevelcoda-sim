@@ -2,8 +2,8 @@ source("simsum_tidy.R")
 
 # library, colours ----------------------
 colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")
-col4 <- c("#EFE3E0", "#BEACA2", "#708885", "#5A6367")
-col3 <- wes_palette("IsleofDogs1", 3)
+col4 <- c("#C99696", "#BEACA2", "#DCD5CE", "#647A77", "#878E91") #sleep #wake #mvpa #lpa #sb
+col4 <- wes_palette("IsleofDogs1", 4)
 col20 <- c(
   "#1C1718",
   "#5A6367",
