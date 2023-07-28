@@ -239,7 +239,7 @@ pb5 <-
     axis.title.x      = element_text(size = 12),
     plot.margin = margin(.5, .5, .5, .5, "cm")
     ) 
-# figureb <- ggarrange(pb1, pb2, pb3, pb4, pb5, nrow = 5)
+figureb <- ggarrange(pb1, pb2, pb3, pb4, pb5, nrow = 5, legend = "none")
 # figureb <- annotate_figure(figureb,
 #                            left = text_grob("Predicted change in sleepiness", size = 13, rot = 90, family = "Arial Narrow"))
 pw1 <- 
@@ -337,8 +337,9 @@ pw5 <-
     axis.title.x      = element_text(size = 12),
     plot.margin = margin(.5, .5, .5, .5, "cm")
   )
+figurew <- ggarrange(pw1, pw2, pw3, pw4, pw5, nrow = 5, legend = "none")
 
-figure <- ggarrange(pb1, pb2, pb3, pb4, pb5, pw1, pw2, pw3, pw4, pw5, nrow = 5, ncol = 2, common.legend = TRUE, legend = "top")
+figure <- ggarrange(figureb, figurew, ncol = 2, common.legend = TRUE, legend = "none")
 annotate_figure(figure,
                 left = text_grob("Predicted change in sleepiness", size = 13, rot = 90, family = "Arial Narrow", face = "bold"))
 ```
