@@ -58,3 +58,9 @@ multilevelcoda-sim.Rproj
 .RDataTmp1
 
 .sass_cache_keys
+
+brmcoda_bias.png
+
+*.png
+
+*.pdf
