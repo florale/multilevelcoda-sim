@@ -97,22 +97,53 @@ simsum_brmcoda_14 <- lapply(allout, function(y) {
   colnames(res_results) <- c("sigma", "se_sigma", "ll_sigma", "ul_sigma")
   
   ### others 
-  r_hat <- do.call(rbind, lapply(y, function(x) {
+  r_hat_fe <- do.call(rbind, lapply(y, function(x) {
     x$Result$ModelSummary$fixed$Rhat
   }))
-  colnames(r_hat) <- paste0("rhat_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  r_hat_re <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$random$ID$Rhat
+  }))
+  r_hat_res <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$spec_pars$Rhat
+  }))
   
-  b_ess <- do.call(rbind, lapply(y, function(x) {
+  colnames(r_hat_fe) <- paste0("rhat_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  colnames(r_hat_re) <- paste0("rhat_", "u0")
+  colnames(r_hat_res) <- paste0("rhat_", "sigma")
+  
+  b_ess_fe <- do.call(rbind, lapply(y, function(x) {
     x$Result$ModelSummary$fixed$Bulk_ESS
   }))
-  colnames(b_ess) <- paste0("bess_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  b_ess_re <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$random$ID$Bulk_ESS
+  }))
+  b_ess_res <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$spec_pars$Bulk_ESS
+  }))
   
-  t_ess <- do.call(rbind, lapply(y, function(x) {
+  colnames(b_ess_fe) <- paste0("bess_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  colnames(b_ess_re) <- paste0("bess_", "u0")
+  colnames(b_ess_res) <- paste0("bess_", "sigma")
+  
+  t_ess_fe <- do.call(rbind, lapply(y, function(x) {
     x$Result$ModelSummary$fixed$Tail_ESS
   }))
-  colnames(t_ess) <- paste0("tess_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  t_ess_re <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$random$ID$Tail_ESS
+  }))
+  t_ess_res <- do.call(rbind, lapply(y, function(x) {
+    x$Result$ModelSummary$spec_pars$Tail_ESS
+  }))
   
-  others <- cbind(r_hat, b_ess, t_ess)
+  colnames(t_ess_fe) <- paste0("tess_", rownames(y[[1]]$Result$ModelSummary$fixed))
+  colnames(t_ess_re) <- paste0("tess_", "u0")
+  colnames(t_ess_res) <- paste0("tess_", "sigma")
+  
+  
+  others <- cbind(r_hat_fe, r_hat_re, r_hat_res,
+                  b_ess_fe, b_ess_re, b_ess_res,
+                  t_ess_fe, t_ess_re, t_ess_res
+  )
   
   ### conditions
   cond_results <- cbind(

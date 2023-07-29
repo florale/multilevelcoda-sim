@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=simsum_brmcoda_17
-#SBATCH --time=0-2:00:00
+#SBATCH --time=0-1:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem-per-cpu=50GB
 #SBATCH --cpus-per-task=1
