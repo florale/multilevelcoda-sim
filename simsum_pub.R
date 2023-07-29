@@ -288,7 +288,7 @@ for (i in seq_along(levels(brmcoda_dat_d4[Stat == "bias" & condition == "base"]$
               vjust = 0.5,
               # colour = "black",
               # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-              colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
+              # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
     ) + 
     # colour = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates,
     geom_text(aes(label = "Est [95% CI], MCSE", 
@@ -333,10 +333,11 @@ p3 <- brmcoda_par_d4 | p[[9]] | p[[10]] | p[[1]] | p[[12]] + theme(plot.margin =
 p4 <- brmcoda_par_d4 | p[[13]] | p[[14]] | p[[15]] | p[[16]] + theme(plot.margin = unit(c(1,1,0,0), "lines"))
 p1 / p2 / p3 / p4
 
-png("brmcoda_bias_d4.png", width = 14, height = 14, units = 'in', res = 900)
+# png("brmcoda_bias_d4.png", width = 14, height = 14, units = 'in', res = 900)
+# pdf("brmcoda_bias_d4.pdf", width = 14, height = 14)
 ggarrange(p1, p2, p3, p4,
           nrow = 4)
-dev.off()
+# dev.off()
 
 # pdf("brmcoda_bias_d4.pdf", width = 16, height = 13, units = 'in')
 # ggarrange(p1, p2, p3, p4,
@@ -397,7 +398,7 @@ for (i in seq_along(levels(brmcoda_dat_d4[Stat == "cover" & condition == "base"]
               vjust = 0.5,
               # colour = "black",
               # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-              colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
+              # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
     ) + 
     # colour = d[Stat == "cover" & condition == "base" & N == 30 & K == 3]$Estimates,
     geom_text(aes(label = "Est [95% CI], MCSE", 
@@ -442,10 +443,11 @@ p3 <- brmcoda_par_d4 | p[[9]] | p[[10]] | p[[1]] | p[[12]] + theme(plot.margin =
 p4 <- brmcoda_par_d4 | p[[13]] | p[[14]] | p[[15]] | p[[16]] + theme(plot.margin = unit(c(1,1,0,0), "lines"))
 p1 / p2 / p3 / p4
 
-png("brmcoda_cover_d4.png", width = 14, height = 14, units = 'in', res = 900)
+# png("brmcoda_cover_d4.png", width = 14, height = 14, units = 'in', res = 900)
+# pdf("brmcoda_cover_d4.pdf", width = 14, height = 14)
 ggarrange(p1, p2, p3, p4,
           nrow = 4)
-dev.off()
+# dev.off()
 
 ### sub common column ---------------
 sub_par_d4 <- 
@@ -565,7 +567,7 @@ for (i in seq_along(levels(sub_dat_d4[Stat == "bias" & condition == "base"]$NK))
               vjust = 0.5,
               # colour = "black",
               # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-              colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
+              # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
     ) + 
     # colour = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates,
     geom_text(aes(label = "Est [95% CI], MCSE", y = 13, x = -0.25, 
@@ -609,10 +611,11 @@ p3 <- sub_par_d4 | p[[9]] | p[[10]] | p[[1]] | p[[12]] + theme(plot.margin = uni
 p4 <- sub_par_d4 | p[[13]] | p[[14]] | p[[15]] | p[[16]] + theme(plot.margin = unit(c(1,1,0,0), "lines"))
 p1 / p2 / p3 / p4
 
-png("sub_bias_d4.png", width = 14, height = 18, units = 'in', res = 900)
+# png("sub_bias_d4.png", width = 14, height = 18, units = 'in', res = 900)
+# pdf("sub_bias_d4.pdf", width = 14, height = 18)
 ggarrange(p1, p2, p3, p4,
           nrow = 4)
-dev.off()
+# dev.off()
 
 ### sub cover plots ---------------------
 # test plot
@@ -667,7 +670,7 @@ for (i in seq_along(levels(sub_dat_d4[Stat == "cover" & condition == "base"]$NK)
               vjust = 0.5,
               # colour = "black",
               # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-              colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
+              # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
     ) + 
     # colour = d[Stat == "cover" & condition == "base" & N == 30 & K == 3]$Estimates,
     geom_text(aes(label = "Est [95% CI], MCSE", y = 13, x = -0.25, 
@@ -711,10 +714,11 @@ p3 <- sub_par_d4 | p[[9]] | p[[10]] | p[[1]] | p[[12]] + theme(plot.margin = uni
 p4 <- sub_par_d4 | p[[13]] | p[[14]] | p[[15]] | p[[16]] + theme(plot.margin = unit(c(1,1,0,0), "lines"))
 p1 / p2 / p3 / p4
 
-png("sub_cover_d4.png", width = 14, height = 18, units = 'in', res = 900)
+# png("sub_cover_d4.png", width = 14, height = 18, units = 'in', res = 900)
+# pdf("sub_cover_d4.pdf", width = 14, height = 18)
 ggarrange(p1, p2, p3, p4,
           nrow = 4)
-dev.off()
+# dev.off()
 
 
 # D3 -------------------
@@ -1978,49 +1982,3 @@ dev.off()
 # ggarrange(p1, p2, p3, p4,
 #           nrow = 4)
 # dev.off()
-
-## formatting groundtruth values -----------------------
-#priors
-xtable::xtable(brmcoda_gt$m4$Model$prior)
-
-# D3
-sub_gt_d3_b <- substutitution_gt_d3[, -c("diff_delta_y_w")]
-setnames(sub_gt_d3_b, "diff_delta_y_b", "Delta_y")
-sub_gt_d3_b[, Level := "between"]
-
-sub_gt_d3_w <- substutitution_gt_d3[, -c("diff_delta_y_b")]
-setnames(sub_gt_d3_w, "diff_delta_y_w", "Delta_y")
-sub_gt_d3_w[, Level := "within"]
-
-sub_gt_d3 <- rbind(sub_gt_d3_b, sub_gt_d3_w)
-sub_gt_d3[, Delta_y := format(round(Delta_y, 2), nsmall = 2)]
-sub_gt_d3 <- sub_gt_d3[, .(To, From, Level, Delta_y, Sleep, PA, SB)]
-xtable::xtable(sub_gt_d3, digits = 0)
-
-# D4
-sub_gt_d4_b <- substutitution_gt_d4[, -c("diff_delta_y_w")]
-setnames(sub_gt_d4_b, "diff_delta_y_b", "Delta_y")
-sub_gt_d4_b[, Level := "between"]
-
-sub_gt_d4_w <- substutitution_gt_d4[, -c("diff_delta_y_b")]
-setnames(sub_gt_d4_w, "diff_delta_y_w", "Delta_y")
-sub_gt_d4_w[, Level := "within"]
-
-sub_gt_d4 <- rbind(sub_gt_d4_b, sub_gt_d4_w)
-sub_gt_d4[, Delta_y := format(round(Delta_y, 2), nsmall = 2)]
-sub_gt_d4 <- sub_gt_d4[, .(To, From, Level, Delta_y, Sleep, MVPA, LPA, SB)]
-xtable::xtable(sub_gt_d4, digits = 0)
-
-# D5
-sub_gt_d5_b <- substutitution_gt_d5[, -c("diff_delta_y_w")]
-setnames(sub_gt_d5_b, "diff_delta_y_b", "Delta_y")
-sub_gt_d5_b[, Level := "between"]
-
-sub_gt_d5_w <- substutitution_gt_d5[, -c("diff_delta_y_b")]
-setnames(sub_gt_d5_w, "diff_delta_y_w", "Delta_y")
-sub_gt_d5_w[, Level := "within"]
-
-sub_gt_d5 <- rbind(sub_gt_d5_b, sub_gt_d5_w)
-sub_gt_d5[, Delta_y := format(round(Delta_y, 2), nsmall = 2)]
-sub_gt_d5 <- sub_gt_d5[, .(To, From, Level, Delta_y, TST, WAKE, MVPA, LPA, SB)]
-xtable::xtable(sub_gt_d5, digits = 0)

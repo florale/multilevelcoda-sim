@@ -156,4 +156,53 @@ for (i in seq_along(n_parts)) {
 }
 
 str(substutitution_gt)
-saveRDS(substutitution_gt, "substutitution_gt.RDS")
+# saveRDS(substutitution_gt, "substutitution_gt.RDS")
+
+
+## formatting groundtruth values for publication -----------------------
+#priors
+xtable::xtable(brmcoda_gt$m5$Model$prior)
+xtable::xtable(brmcoda_gt$m4$Model$prior)
+xtable::xtable(brmcoda_gt$m3$Model$prior)
+
+# D3
+sub_gt_d3_b <- substutitution_gt_d3[, -c("diff_delta_y_w")]
+setnames(sub_gt_d3_b, "diff_delta_y_b", "Delta_y")
+sub_gt_d3_b[, Level := "between"]
+
+sub_gt_d3_w <- substutitution_gt_d3[, -c("diff_delta_y_b")]
+setnames(sub_gt_d3_w, "diff_delta_y_w", "Delta_y")
+sub_gt_d3_w[, Level := "within"]
+
+sub_gt_d3 <- rbind(sub_gt_d3_b, sub_gt_d3_w)
+sub_gt_d3[, Delta_y := format(round(Delta_y, 2), nsmall = 2)]
+sub_gt_d3 <- sub_gt_d3[, .(To, From, Level, Delta_y, Sleep, PA, SB)]
+xtable::xtable(sub_gt_d3, digits = 0)
+
+# D4
+sub_gt_d4_b <- substutitution_gt_d4[, -c("diff_delta_y_w")]
+setnames(sub_gt_d4_b, "diff_delta_y_b", "Delta_y")
+sub_gt_d4_b[, Level := "between"]
+
+sub_gt_d4_w <- substutitution_gt_d4[, -c("diff_delta_y_b")]
+setnames(sub_gt_d4_w, "diff_delta_y_w", "Delta_y")
+sub_gt_d4_w[, Level := "within"]
+
+sub_gt_d4 <- rbind(sub_gt_d4_b, sub_gt_d4_w)
+sub_gt_d4[, Delta_y := format(round(Delta_y, 2), nsmall = 2)]
+sub_gt_d4 <- sub_gt_d4[, .(To, From, Level, Delta_y, Sleep, MVPA, LPA, SB)]
+xtable::xtable(sub_gt_d4, digits = 0)
+
+# D5
+sub_gt_d5_b <- substutitution_gt_d5[, -c("diff_delta_y_w")]
+setnames(sub_gt_d5_b, "diff_delta_y_b", "Delta_y")
+sub_gt_d5_b[, Level := "between"]
+
+sub_gt_d5_w <- substutitution_gt_d5[, -c("diff_delta_y_b")]
+setnames(sub_gt_d5_w, "diff_delta_y_w", "Delta_y")
+sub_gt_d5_w[, Level := "within"]
+
+sub_gt_d5 <- rbind(sub_gt_d5_b, sub_gt_d5_w)
+sub_gt_d5[, Delta_y := format(round(Delta_y, 2), nsmall = 2)]
+sub_gt_d5 <- sub_gt_d5[, .(To, From, Level, Delta_y, TST, WAKE, MVPA, LPA, SB)]
+xtable::xtable(sub_gt_d5, digits = 0)
