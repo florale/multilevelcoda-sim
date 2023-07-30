@@ -946,8 +946,9 @@ brmcoda_tab[, MCSE := format(round(mcse, 2), nsmall = 2)]
 brmcoda_tab[, `$\\sigma_u$` := format(round(sd_ID_Intercept, 2), nsmall = 2)]
 brmcoda_tab[, `$\\sigma_{\varepsilon}$` := format(round(sigma, 2), nsmall = 2)]
 
-brmcoda_tab[, Estimates := paste0(Est, " [", Lower, ",", Upper, "]")]
+brmcoda_tab[, Estimates := paste0(Est, ", ", MCSE)]
 brmcoda_tab[, `Est [95% CI], MCSE` := paste0(Est, " [", Lower, ",", Upper, "]", ", ", MCSE)]
+
 
 brmcoda_tab[, Estimand := NA]
 brmcoda_tab[, Estimand := ifelse(by == "  b0"             , "b_Intercept", Estimand)]
@@ -1018,6 +1019,29 @@ brmcoda_tab[, NK := factor(NK, levels = c("N: 30, K: 3",
                                           "N: 1200, K: 7",
                                           "N: 1200, K: 14"))]
 
+brmcoda_tab[, I := K]
+brmcoda_tab[, J := N]
+brmcoda_tab[, JI := paste0("J: ", J, ", I: ", I)]
+brmcoda_tab[, JI := factor(JI, levels = c("J: 30, I: 3",
+                                          "J: 30, I: 5",
+                                          "J: 30, I: 7",
+                                          "J: 30, I: 14",
+                                          
+                                          "J: 50, I: 3",
+                                          "J: 50, I: 5",
+                                          "J: 50, I: 7",
+                                          "J: 50, I: 14",
+                                          
+                                          "J: 360, I: 3",
+                                          "J: 360, I: 5",
+                                          "J: 360, I: 7",
+                                          "J: 360, I: 14",
+                                          
+                                          "J: 1200, I: 3",
+                                          "J: 1200, I: 5",
+                                          "J: 1200, I: 7",
+                                          "J: 1200, I: 14"))]
+
 brmcoda_tab <- brmcoda_tab[stat %in% c("bias", "cover", "becover")]
 setnames(brmcoda_tab, "stat", "Stat")
 
@@ -1044,7 +1068,7 @@ sub_tab[, MCSE := format(round(mcse, 2), nsmall = 2)]
 sub_tab[, `$\\sigma_u$` := format(round(sd_ID_Intercept, 2), nsmall = 2)]
 sub_tab[, `$\\sigma_{\varepsilon}$` := format(round(sigma, 2), nsmall = 2)]
 
-sub_tab[, Estimates := paste0(Est, " [", Lower, ",", Upper, "]")]
+sub_tab[, Estimates := paste0(Est, ", ", MCSE)]
 sub_tab[, `Est [95% CI], MCSE` := paste0(Est, " [", Lower, ",", Upper, "]", ", ", MCSE)]
 
 sub_tab[, OnTarget := NA]
@@ -1054,6 +1078,8 @@ sub_tab[stat == "becover", OnTarget := ifelse(data.table::between(0.95, lower, u
 sub_tab[, OnTarget := ifelse(OnTarget == TRUE, "Y", "N")]
 sub_tab[, Substitution := by]
 
+sub_tab[, I := K]
+sub_tab[, J := N]
 sub_tab[, NK := paste0("N: ", N, ", K: ", K)]
 sub_tab[, NK := factor(NK, levels = c("N: 30, K: 3",
                                       "N: 30, K: 5",
@@ -1075,6 +1101,26 @@ sub_tab[, NK := factor(NK, levels = c("N: 30, K: 3",
                                       "N: 1200, K: 7",
                                       "N: 1200, K: 14"))]
 
+sub_tab[, JI := paste0("J: ", J, ", I: ", I)]
+sub_tab[, JI := factor(JI, levels = c("J: 30, I: 3",
+                                      "J: 30, I: 5",
+                                      "J: 30, I: 7",
+                                      "J: 30, I: 14",
+                                      
+                                      "J: 50, I: 3",
+                                      "J: 50, I: 5",
+                                      "J: 50, I: 7",
+                                      "J: 50, I: 14",
+                                      
+                                      "J: 360, I: 3",
+                                      "J: 360, I: 5",
+                                      "J: 360, I: 7",
+                                      "J: 360, I: 14",
+                                      
+                                      "J: 1200, I: 3",
+                                      "J: 1200, I: 5",
+                                      "J: 1200, I: 7",
+                                      "J: 1200, I: 14"))]
 sub_tab[, Estimand := NA]
 sub_tab[, Estimand := ifelse(by == "between Sleep - PA"  , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$"  , Estimand)]
 sub_tab[, Estimand := ifelse(by == "within Sleep - PA"   , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - PA)}}$"  , Estimand)]
