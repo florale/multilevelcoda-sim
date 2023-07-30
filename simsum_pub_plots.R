@@ -38,68 +38,6 @@ brmcoda_dat <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUnive
 sub_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
 sub_dat <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
 
-## DESC ----------
-psych::describe(brmcoda_tab[Stat == "bias"]$est)
-psych::describe(brmcoda_tab[Stat == "cover"]$est)
-psych::describe(brmcoda_tab[Stat == "becover"]$est)
-
-psych::describe(sub_tab[Stat == "bias"]$est)
-psych::describe(sub_tab[Stat == "cover"]$est)
-psych::describe(sub_tab[Stat == "becover"]$est)
-
-psych::describe(brmcoda_tab[Stat == "bias" & D == 3]$est)
-psych::describe(brmcoda_tab[Stat == "bias" & D == 4]$est)
-psych::describe(brmcoda_tab[Stat == "bias" & D == 5]$est)
-
-psych::describe(sub_tab[Stat == "bias" & D == 3]$est)
-psych::describe(sub_tab[Stat == "bias" & D == 4]$est)
-psych::describe(sub_tab[Stat == "bias" & D == 5]$est)
-
-psych::describe(brmcoda_tab[Stat == "cover" & D == 3]$est)
-psych::describe(brmcoda_tab[Stat == "cover" & D == 4]$est)
-psych::describe(brmcoda_tab[Stat == "cover" & D == 5]$est)
-
-psych::describe(sub_tab[Stat == "cover" & D == 3]$est)
-psych::describe(sub_tab[Stat == "cover" & D == 4]$est)
-psych::describe(sub_tab[Stat == "cover" & D == 5]$est)
-
-psych::describe(brmcoda_tab[Stat == "becover" & D == 3]$est)
-psych::describe(brmcoda_tab[Stat == "becover" & D == 4]$est)
-psych::describe(brmcoda_tab[Stat == "becover" & D == 5]$est)
-
-psych::describe(sub_tab[Stat == "becover" & D == 3]$est)
-psych::describe(sub_tab[Stat == "becover" & D == 4]$est)
-psych::describe(sub_tab[Stat == "becover" & D == 5]$est)
-
-
-## 
-simsum_sub_d3 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d3.RDS")
-simsum_sub_d4 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d4.RDS")
-simsum_sub_d5 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_d5.RDS")
-
-simsum_brmcoda_d3 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_d3.RDS")
-simsum_brmcoda_d4 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_d4.RDS")
-simsum_brmcoda_d5 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_d5.RDS")
-
-# ndt
-nrow(simsum_brmcoda_d3[is.na(b_Intercept)])
-nrow(simsum_brmcoda_d4[is.na(b_Intercept)])
-nrow(simsum_brmcoda_d5[is.na(b_Intercept)])
-
-# rhat
-egltable(c("rhat_Intercept", 
-           "rhat_bilr1", "rhat_bilr2", 
-           "rhat_wilr1", "rhat_wilr2"
-           ), data = simsum_brmcoda_d3)
-egltable(c("rhat_Intercept", 
-           "rhat_bilr1", "rhat_bilr2", "rhat_bilr3", 
-           "rhat_wilr1", "rhat_wilr2", "rhat_wilr3"
-           ), data = simsum_brmcoda_d4)
-egltable(c("rhat_Intercept", 
-           "rhat_bilr1", "rhat_bilr2", "rhat_bilr3", "rhat_bilr4",
-           "rhat_wilr1", "rhat_wilr2", "rhat_wilr3", "rhat_wilr4"
-), data = simsum_brmcoda_d5)
-
 # D4 -------------------
 brmcoda_dat_d4 <- brmcoda_dat[["brmcoda_d4"]]
 brmcoda_dat_d4[, Estimand := droplevels(Estimand)]
@@ -570,7 +508,8 @@ for (i in seq_along(levels(sub_dat_d4[Stat == "bias" & condition == "base"]$NK))
               # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
     ) + 
     # colour = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates,
-    geom_text(aes(label = "Est [95% CI], MCSE", y = 13, x = -0.25, 
+    geom_text(aes(label = "Est [95% CI], MCSE", 
+                  y = 13, x = -0.25, 
                   family = font), 
               color = "black",
               fontface = "bold",
@@ -673,7 +612,8 @@ for (i in seq_along(levels(sub_dat_d4[Stat == "cover" & condition == "base"]$NK)
               # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
     ) + 
     # colour = d[Stat == "cover" & condition == "base" & N == 30 & K == 3]$Estimates,
-    geom_text(aes(label = "Est [95% CI], MCSE", y = 13, x = -0.25, 
+    geom_text(aes(label = "Est [95% CI], MCSE", 
+                  y = 13, x = -0.25, 
                   family = font), 
               color = "black",
               fontface = "bold",
@@ -893,55 +833,53 @@ p01 + p02 + plot_layout(design = layout)
 
 # execute 
 out = list()
-for (n in levels(brmcoda_dat_d3[Stat == "bias" & condition == "base"]$N)) {
-  for (k in levels(brmcoda_dat_d3[Stat == "bias" & condition == "base"]$K)) {
-    
-    layout <- layout
-    
-    tmp <- brmcoda_dat_d3[Stat == "bias" & condition == "base" & N == n & K == k]
-    p01 <- .par_plot(tmp, d = 3, font = font)
-    
-    p02 <- ggplot(tmp, aes(y = Estimand)) +
-      geom_text(aes(x = -0.25, label = tmp$`Est [95% CI], MCSE`, family = font),
-                vjust = 0.5,
-                # colour = "black",
-                # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-                colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")) + 
-      # colour = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates,
-      geom_text(aes(label = "Est [95% CI], MCSE", 
-                    y = 8, x = -0.25, 
-                    family = font), 
-                color = "black",
-                fontface = "bold",
-                vjust = "inward", hjust = "inward") + 
-      xlim(-0.3, -0.2) +
-      scale_x_discrete(drop = FALSE) +
-      scale_y_discrete(expand = c(0,1.05)) +
-      hrbrthemes::theme_ipsum() + theme_void() +
-      theme(
-        axis.ticks        = element_blank(),
-        panel.background  = element_blank(),
-        panel.border      = element_blank(),
-        panel.grid.major  = element_blank(),
-        panel.grid.minor  = element_blank(),
-        plot.background   = element_rect(fill = "transparent", colour = NA),
-        axis.title.y      = element_blank(),
-        axis.title.x      = element_blank(),
-        axis.text.x       = element_blank(),
-        axis.text.y       = element_blank()
-      ) 
-    
-    out[[n]][[k]] <- list(list(p01, p02))
-  }
+for (i in seq_along(levels(brmcoda_dat_d3[Stat == "bias" & condition == "base"]$NK))) {
+  
+  layout <- layout
+  nk <- levels(brmcoda_dat_d3[Stat == "bias" & condition == "base"]$NK)[i]
+  
+  tmp <- brmcoda_dat_d3[Stat == "bias" & condition == "base" & NK == nk]
+  p01 <- .par_plot(tmp, d = 3, font = font)
+  
+  p02 <- ggplot(tmp, aes(y = Estimand)) +
+    geom_text(aes(x = -0.25, label = `Est [95% CI], MCSE`, family = font),
+              vjust = 0.5,
+              # colour = "black",
+              # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
+              # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
+    ) + 
+    # colour = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates,
+    geom_text(aes(label = "Est [95% CI], MCSE", 
+                  y = 8, x = -0.25, 
+                  family = font), 
+              color = "black",
+              fontface = "bold",
+              vjust = "inward", hjust = "inward") + 
+    xlim(-0.3, -0.2) +
+    scale_x_discrete(drop = FALSE) +
+    scale_y_discrete(expand = c(0, 1.05)) +
+    hrbrthemes::theme_ipsum() + theme_void() +
+    theme(
+      axis.ticks        = element_blank(),
+      panel.background  = element_blank(),
+      panel.border      = element_blank(),
+      panel.grid.major  = element_blank(),
+      panel.grid.minor  = element_blank(),
+      plot.background   = element_rect(fill = "transparent", colour = NA),
+      axis.title.y      = element_blank(),
+      axis.title.x      = element_blank(),
+      axis.text.x       = element_blank(),
+      axis.text.y       = element_blank()
+    ) 
+  out[[i]] <- list(list(p01, p02))
 }
 # patch 1st layer
-p <- lapply(do.call(c, do.call(c, out)), function(i){
+p <- lapply(do.call(c, out), function(i){
   p <- 
     i[[1]] + geom_segment(aes(y = -Inf, x = 7.45, yend = Inf, xend = 7.45), color = "black", linewidth = 0.5) +
     i[[2]] + geom_segment(aes(x = -Inf, y = 7.45, xend = Inf, yend = 7.45), color = "black", linewidth = 0.5) +
     plot_layout(design = layout)
 })
-
 # check - looks good
 brmcoda_par_d3 | p[[1]] | p[[2]] | p[[3]] | p[[4]]
 
@@ -1000,51 +938,50 @@ p02
 
 p01 + p02 + plot_layout(design = layout)
 
-# execute
+# execute 
 out = list()
-for (n in levels(brmcoda_dat_d3[Stat == "cover" & condition == "base"]$N)) {
-  for (k in levels(brmcoda_dat_d3[Stat == "cover" & condition == "base"]$K)) {
-    
-    layout <- layout
-    
-    tmp <- brmcoda_dat_d3[Stat == "cover" & condition == "base" & N == n & K == k]
-    p01 <- .par_plot(tmp, d = 3, font = font)
-    
-    p02 <- ggplot(tmp, aes(y = Estimand)) +
-      geom_text(aes(x = -0.25, label = tmp$`Est [95% CI], MCSE`, family = font),
-                vjust = 0.5,
-                # colour = "black",
-                # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-                colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")) + 
-      # colour = d[Stat == "cover" & condition == "base" & N == 30 & K == 3]$Estimates,
-      geom_text(aes(label = "Est [95% CI], MCSE", 
-                    y = 8, x = -0.25, 
-                    family = font), 
-                color = "black",
-                fontface = "bold",
-                vjust = "inward", hjust = "inward") + 
-      xlim(-0.3, -0.2) +
-      scale_x_discrete(drop = FALSE) +
-      scale_y_discrete(expand = c(0,1.05)) +
-      hrbrthemes::theme_ipsum() + theme_void() +
-      theme(
-        axis.ticks        = element_blank(),
-        panel.background  = element_blank(),
-        panel.border      = element_blank(),
-        panel.grid.major  = element_blank(),
-        panel.grid.minor  = element_blank(),
-        plot.background   = element_rect(fill = "transparent", colour = NA),
-        axis.title.y      = element_blank(),
-        axis.title.x      = element_blank(),
-        axis.text.x       = element_blank(),
-        axis.text.y       = element_blank()
-      ) 
-    
-    out[[n]][[k]] <- list(list(p01, p02))
-  }
+for (i in seq_along(levels(brmcoda_dat_d3[Stat == "cover" & condition == "base"]$NK))) {
+  
+  layout <- layout
+  nk <- levels(brmcoda_dat_d3[Stat == "cover" & condition == "base"]$NK)[i]
+  
+  tmp <- brmcoda_dat_d3[Stat == "cover" & condition == "base" & NK == nk]
+  p01 <- .par_plot(tmp, d = 3, font = font)
+  
+  p02 <- ggplot(tmp, aes(y = Estimand)) +
+    geom_text(aes(x = -0.25, label = `Est [95% CI], MCSE`, family = font),
+              vjust = 0.5,
+              # colour = "black",
+              # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
+              # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
+    ) + 
+    # colour = d[Stat == "cover" & condition == "base" & N == 30 & K == 3]$Estimates,
+    geom_text(aes(label = "Est [95% CI], MCSE", 
+                  y = 8, x = -0.25, 
+                  family = font), 
+              color = "black",
+              fontface = "bold",
+              vjust = "inward", hjust = "inward") + 
+    xlim(-0.3, -0.2) +
+    scale_x_discrete(drop = FALSE) +
+    scale_y_discrete(expand = c(0, 1.05)) +
+    hrbrthemes::theme_ipsum() + theme_void() +
+    theme(
+      axis.ticks        = element_blank(),
+      panel.background  = element_blank(),
+      panel.border      = element_blank(),
+      panel.grid.major  = element_blank(),
+      panel.grid.minor  = element_blank(),
+      plot.background   = element_rect(fill = "transparent", colour = NA),
+      axis.title.y      = element_blank(),
+      axis.title.x      = element_blank(),
+      axis.text.x       = element_blank(),
+      axis.text.y       = element_blank()
+    ) 
+  out[[i]] <- list(list(p01, p02))
 }
 # patch 1st layer
-p <- lapply(do.call(c, do.call(c, out)), function(i){
+p <- lapply(do.call(c, out), function(i){
   p <- 
     i[[1]] + geom_segment(aes(y = -Inf, x = 7.45, yend = Inf, xend = 7.45), color = "black", linewidth = 0.5) +
     i[[2]] + geom_segment(aes(x = -Inf, y = 7.45, xend = Inf, yend = 7.45), color = "black", linewidth = 0.5) +
@@ -1175,54 +1112,54 @@ p01 + p02 + plot_layout(design = layout)
 
 # execute 
 out = list()
-for (n in levels(sub_dat_d3[Stat == "bias" & condition == "base"]$N)) {
-  for (k in levels(sub_dat_d3[Stat == "bias" & condition == "base"]$K)) {
-    
-    layout <- layout
-    
-    tmp <- sub_dat_d3[Stat == "bias" & condition == "base" & N == n & K == k]
-    p01 <- .par_plot(tmp, d = 3, font = font)
-    
-    p02 <- ggplot(tmp, aes(y = Substitution)) +
-      geom_text(aes(x = -0.25, label = tmp$`Est [95% CI], MCSE`, family = font),
-                vjust = 0.5,
-                # colour = "black",
-                # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-                colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")) + 
-      # colour = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates,
-      geom_text(aes(label = "Est [95% CI], MCSE", y = 7, x = -0.25, 
-                    family = font), 
-                color = "black",
-                fontface = "bold",
-                vjust = "inward", hjust = "inward") + 
-      xlim(-0.3, -0.2) +
-      scale_x_discrete(drop = FALSE) +
-      scale_y_discrete(expand = c(0,1.05)) +
-      hrbrthemes::theme_ipsum() + theme_void() +
-      theme(
-        axis.ticks        = element_blank(),
-        panel.background  = element_blank(),
-        panel.border      = element_blank(),
-        panel.grid.major  = element_blank(),
-        panel.grid.minor  = element_blank(),
-        plot.background   = element_rect(fill = "transparent", colour = NA),
-        axis.title.y      = element_blank(),
-        axis.title.x      = element_blank(),
-        axis.text.x       = element_blank(),
-        axis.text.y       = element_blank()
-      ) 
-    
-    out[[n]][[k]] <- list(list(p01, p02))
-  }
+for (i in seq_along(levels(sub_dat_d3[Stat == "bias" & condition == "base"]$NK))) {
+  
+  layout <- layout
+  nk <- levels(sub_dat_d3[Stat == "bias" & condition == "base"]$NK)[i]
+  
+  tmp <- sub_dat_d3[Stat == "bias" & condition == "base" & NK == nk]
+  p01 <- .par_plot(tmp, d = 3, font = font)
+  
+  p02 <- ggplot(tmp, aes(y = Substitution)) +
+    geom_text(aes(x = -0.25, label = `Est [95% CI], MCSE`, family = font),
+              vjust = 0.5,
+              # colour = "black",
+              # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
+              # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
+    ) + 
+    # colour = d[Stat == "bias" & condition == "base" & N == 30 & K == 3]$Estimates,
+    geom_text(aes(label = "Est [95% CI], MCSE",
+                  y = 7, x = -0.25, 
+                  family = font), 
+              color = "black",
+              fontface = "bold",
+              vjust = "inward", hjust = "inward") + 
+    xlim(-0.3, -0.2) +
+    scale_x_discrete(drop = FALSE) +
+    scale_y_discrete(expand = c(0,1.05)) +
+    hrbrthemes::theme_ipsum() + theme_void() +
+    theme(
+      axis.ticks        = element_blank(),
+      panel.background  = element_blank(),
+      panel.border      = element_blank(),
+      panel.grid.major  = element_blank(),
+      panel.grid.minor  = element_blank(),
+      plot.background   = element_rect(fill = "transparent", colour = NA),
+      axis.title.y      = element_blank(),
+      axis.title.x      = element_blank(),
+      axis.text.x       = element_blank(),
+      axis.text.y       = element_blank()
+    ) 
+  out[[i]] <- list(list(p01, p02))
 }
+
 # patch 1st layer
-p <- lapply(do.call(c, do.call(c, out)), function(i){
+p <- lapply(do.call(c, out), function(i){
   p <- 
     i[[1]] + geom_segment(aes(y = -Inf, x = 6.5, yend = Inf, xend = 6.5), color = "black", linewidth = 0.5) +
     i[[2]] + geom_segment(aes(x = -Inf, y = 6.5, xend = Inf, yend = 6.5), color = "black", linewidth = 0.5) +
     plot_layout(design = layout)
 })
-
 # check - looks good
 sub_par_d3 | p[[1]] | p[[2]] | p[[3]] | p[[4]]
 
@@ -1283,48 +1220,49 @@ p01 + p02 + plot_layout(design = layout)
 
 # execute 
 out = list()
-for (n in levels(sub_dat_d3[Stat == "cover" & condition == "base"]$N)) {
-  for (k in levels(sub_dat_d3[Stat == "cover" & condition == "base"]$K)) {
-    
-    layout <- layout
-    
-    tmp <- sub_dat_d3[Stat == "cover" & condition == "base" & N == n & K == k]
-    p01 <- .par_plot(tmp, d = 3, font = font)
-    
-    p02 <- ggplot(tmp, aes(y = Substitution)) +
-      geom_text(aes(x = -0.25, label = tmp$`Est [95% CI], MCSE`, family = font),
-                vjust = 0.5,
-                # colour = "black",
-                # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
-                colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")) + 
-      # colour = d[Stat == "cover" & condition == "base" & N == 30 & K == 3]$Estimates,
-      geom_text(aes(label = "Est [95% CI], MCSE", y = 7, x = -0.25, 
-                    family = font), 
-                color = "black",
-                fontface = "bold",
-                vjust = "inward", hjust = "inward") + 
-      xlim(-0.3, -0.2) +
-      scale_x_discrete(drop = FALSE) +
-      scale_y_discrete(expand = c(0,1.05)) +
-      hrbrthemes::theme_ipsum() + theme_void() +
-      theme(
-        axis.ticks        = element_blank(),
-        panel.background  = element_blank(),
-        panel.border      = element_blank(),
-        panel.grid.major  = element_blank(),
-        panel.grid.minor  = element_blank(),
-        plot.background   = element_rect(fill = "transparent", colour = NA),
-        axis.title.y      = element_blank(),
-        axis.title.x      = element_blank(),
-        axis.text.x       = element_blank(),
-        axis.text.y       = element_blank()
-      ) 
-    
-    out[[n]][[k]] <- list(list(p01, p02))
-  }
+for (i in seq_along(levels(sub_dat_d3[Stat == "cover" & condition == "base"]$NK))) {
+  
+  layout <- layout
+  nk <- levels(sub_dat_d3[Stat == "cover" & condition == "base"]$NK)[i]
+  
+  tmp <- sub_dat_d3[Stat == "cover" & condition == "base" & NK == nk]
+  p01 <- .par_plot(tmp, d = 3, font = font)
+  
+  p02 <- ggplot(tmp, aes(y = Substitution)) +
+    geom_text(aes(x = -0.25, label = `Est [95% CI], MCSE`, family = font),
+              vjust = 0.5,
+              # colour = "black",
+              # fontface = ifelse(tmp1$OnTarget == "Y", "bold", "plain")) +
+              # colour = ifelse(tmp$OnTarget == "Y", "black", "#A3A3A3")
+    ) + 
+    # colour = d[Stat == "cover" & condition == "base" & N == 30 & K == 3]$Estimates,
+    geom_text(aes(label = "Est [95% CI], MCSE",
+                  y = 7, x = -0.25, 
+                  family = font), 
+              color = "black",
+              fontface = "bold",
+              vjust = "inward", hjust = "inward") + 
+    xlim(-0.3, -0.2) +
+    scale_x_discrete(drop = FALSE) +
+    scale_y_discrete(expand = c(0,1.05)) +
+    hrbrthemes::theme_ipsum() + theme_void() +
+    theme(
+      axis.ticks        = element_blank(),
+      panel.background  = element_blank(),
+      panel.border      = element_blank(),
+      panel.grid.major  = element_blank(),
+      panel.grid.minor  = element_blank(),
+      plot.background   = element_rect(fill = "transparent", colour = NA),
+      axis.title.y      = element_blank(),
+      axis.title.x      = element_blank(),
+      axis.text.x       = element_blank(),
+      axis.text.y       = element_blank()
+    ) 
+  out[[i]] <- list(list(p01, p02))
 }
+
 # patch 1st layer
-p <- lapply(do.call(c, do.call(c, out)), function(i){
+p <- lapply(do.call(c, out), function(i){
   p <- 
     i[[1]] + geom_segment(aes(y = -Inf, x = 6.5, yend = Inf, xend = 6.5), color = "black", linewidth = 0.5) +
     i[[2]] + geom_segment(aes(x = -Inf, y = 6.5, xend = Inf, yend = 6.5), color = "black", linewidth = 0.5) +
