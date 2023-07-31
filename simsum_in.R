@@ -111,6 +111,8 @@ simsum_brmcoda <- lapply(simsum_brmcoda, function(simsum_brmcoda_d) {
     "large"
   ))]
   
+  simsum_brmcoda_d[, cond := paste0("J: ", J, ", ", "I: ", I, ", ", "sigma: ", condition)]
+  
 })
 names(simsum_brmcoda) <- c("simsum_brmcoda_d3",
                            "simsum_brmcoda_d4",
@@ -194,6 +196,9 @@ simsum_sub <- lapply(simsum_sub, function(simsum_sub_d) {
     "REbase_RESlarge",
     "REbase_RESsmall"
   ))]
+  
+  simsum_sub_d[, cond := paste0("J: ", J, ", ", "I: ", I, ", ", "sigma: ", condition)]
+  
 })
 names(simsum_sub) <- c("simsum_sub_d3",
                        "simsum_sub_d4",

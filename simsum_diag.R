@@ -17,7 +17,7 @@ simsum_brmcoda <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUn
 
 # diag var names
 condvars <- c("N", "K", "J", "I", "D", "rint_sd", "res_sd", "run", 
-              "ndt", "zero",
+              "ndt", "zero", "cond",
               "condition", "sigma_condition", "u0_condition")
 
 rhatvars_d3 <- c("rhat_Intercept", 
@@ -191,65 +191,41 @@ nrow(simsum_sub_d5[is.na(b_Intercept)]) #439120
 simsum_sub_d5 <- simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5], (estnames_sub_d5) := NA]
 nrow(simsum_sub_d5[is.na(b_Intercept)]) #462000
 
+## DESC -------------------------
+## Descriptive of conditions of problematic runs
+egltable(condvars, data = simsum_brmcoda_d3[is.na(b_Intercept)])
+egltable(condvars, data = simsum_brmcoda_d4[is.na(b_Intercept)])
+egltable(condvars, data = simsum_brmcoda_d5[is.na(b_Intercept)])
+
+egltable("cond", data = simsum_brmcoda_d3[is.na(b_Intercept)])
+egltable("cond", data = simsum_brmcoda_d4[is.na(b_Intercept)])
+egltable("cond", data = simsum_brmcoda_d5[is.na(b_Intercept)])
+
+nrow(simsum_brmcoda_d3[is.na(b_Intercept)])/nrow(simsum_brmcoda_d3)*100
+nrow(simsum_brmcoda_d4[is.na(b_Intercept)])/nrow(simsum_brmcoda_d4)*100
+nrow(simsum_brmcoda_d5[is.na(b_Intercept)])/nrow(simsum_brmcoda_d5)*100
 
 
+nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: RElarge_RESsmall" & !is.na(b_Intercept)]) 
+nrow(simsum_brmcoda_d4[cond == "J: 1200, I: 14, sigma: RElarge_RESsmall" & !is.na(b_Intercept)]) 
+nrow(simsum_brmcoda_d5[cond == "J: 1200, I: 14, sigma: RElarge_RESsmall" & !is.na(b_Intercept)]) 
 
+nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REsmall_RESlarge" & !is.na(b_Intercept)]) 
+nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: RElarge_RESsmall" & !is.na(b_Intercept)]) 
+nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESlarge" & !is.na(b_Intercept)]) 
+nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESsmall" & !is.na(b_Intercept)]) 
+nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: base" & !is.na(b_Intercept)]) 
 
+lapply(simsum_sub_d3[, essvars_d3, with = FALSE], min)
+lapply(simsum_sub_d4[, essvars_d4, with = FALSE], min)
+lapply(simsum_sub_d5[, essvars_d5, with = FALSE], min)
 
+lapply(simsum_sub_d3[, essvars_d3, with = FALSE], max)
+lapply(simsum_sub_d4[, essvars_d4, with = FALSE], max)
+lapply(simsum_sub_d5[, essvars_d5, with = FALSE], max)
 
+simsum_sub_d3[, ICC := (rint_sd^2)/(rint_sd^2 + res_sd^2)]
+simsum_brmcoda_d3[, ICC := (rint_sd^2)/(rint_sd^2 + res_sd^2)]
 
+egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: RElarge_RESsmall"])
 
-
-
-
-
-
-
-
-
-
-
-
-
-egltable(c("rhat_Intercept", 
-           "rhat_bilr1", "rhat_bilr2", 
-           "rhat_wilr1", "rhat_wilr2"
-), data = simsum_brmcoda_d3)
-egltable(c("rhat_Intercept", 
-           "rhat_bilr1", "rhat_bilr2", "rhat_bilr3", 
-           "rhat_wilr1", "rhat_wilr2", "rhat_wilr3"
-), data = simsum_brmcoda_d4)
-egltable(c("rhat_Intercept", 
-           "rhat_bilr1", "rhat_bilr2", "rhat_bilr3", "rhat_bilr4",
-           "rhat_wilr1", "rhat_wilr2", "rhat_wilr3", "rhat_wilr4"
-), data = simsum_brmcoda_d5)
-
-
-egltable(c("bess_Intercept", 
-           "bess_bilr1", "bess_bilr2", 
-           "bess_wilr1", "bess_wilr2"
-), data = simsum_brmcoda_d3)
-egltable(c("tess_Intercept", 
-           "tess_bilr1", "tess_bilr2", 
-           "tess_wilr1", "tess_wilr2"
-), data = simsum_brmcoda_d3)
-
-
-egltable(c("bess_Intercept", 
-           "bess_bilr1", "bess_bilr2", "bess_bilr3", 
-           "bess_wilr1", "bess_wilr2", "bess_wilr3"
-), data = simsum_brmcoda_d4)
-egltable(c("tess_Intercept", 
-           "tess_bilr1", "tess_bilr2", "tess_bilr3", 
-           "tess_wilr1", "tess_wilr2", "tess_wilr3"
-), data = simsum_brmcoda_d4)
-
-
-egltable(c("bess_Intercept", 
-           "bess_bilr1", "bess_bilr2", "bess_bilr3", "bess_bilr4", 
-           "bess_wilr1", "bess_wilr2", "bess_wilr3", "bess_wilr4"
-), data = simsum_brmcoda_d5)
-egltable(c("tess_Intercept", 
-           "tess_bilr1", "tess_bilr2", "tess_bilr3", "tess_bilr4", 
-           "tess_wilr1", "tess_wilr2", "tess_wilr3", "tess_wilr4"
-), data = simsum_brmcoda_d5)
