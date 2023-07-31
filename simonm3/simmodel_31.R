@@ -20,11 +20,11 @@ prefit5 <- input$prefit5
 prefit4 <- input$prefit4
 prefit3 <- input$prefit3
 
-source("input.R") # groundtruth, conditions and functions
+source("input_2.R") # groundtruth, conditions and functions
 
 ## set different for each script -------
 set.seed(31) 
-sampled_cond <- cond[600001:620000] 
+sampled_cond <- cond[120001:140000] 
 
 ## model -------------------
 registerDoFuture()
