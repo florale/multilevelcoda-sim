@@ -1,18 +1,18 @@
 ---
-title: "Diagnostics of Bayesian Compositional Multilevel Models"
+title: "Improving MCMC Sampling for Bayesian Compositional Multilevel Models"
 author: "Flora Le"
 date: "`r Sys.Date()`"
 output: 
   html_document:
     theme: spacelab
-    highlight: zenburn
+    highlight: kate
     toc: yes
     toc_float: no
     collapsed: no
     smooth_scroll: no
     toc_depth: 4
     fig_width: 14
-    fig_height: 9
+    fig_height: 10
     fig_caption: yes
     number_sections: true
 bibliography: refs.bib  
@@ -21,7 +21,7 @@ bibliography: refs.bib
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = '  ',
+  comment = ' ',
   dev = "CairoPNG", dpi = 150, 
   fig.path = "mlmcoda-", fig.align = "center"
 )
@@ -72,7 +72,7 @@ methods to improve the within-chain autocorrelation.
 # Generating Data from Simulation Study
 We first generated a dataset consisting of a 3-part behaviour composition with
 1200 individuals, 14 observations per individuals, and
-large random intercept variation ($\sigma^2_{u} = 1.5$, coupled with 
+large random intercept variation ($\sigma^2_{u} = 1.5$), coupled with 
 small residual variation ($\sigma^2_{\varepsilon}: 0.5$).
 ```{r}
 set.seed(1) 
@@ -194,37 +194,33 @@ summary(fit)
 The bulk ESS values for the constant and varying intercept as well as the constant coefficients
 of the between $ilr$ coordinates are low.
 
-Further inspection of the pairs plots of the MCMC draws (below) showed that 
-here are some autocorrelation between the constant-intercept
-and the constant coefficients for the first between $ilr$ coordinate ($b_{bilr1}$),
-and the constant-intercept
-and the constant coefficients for the second between $ilr$ coordinate ($b_{bilr2}$).
-
-```{r pairs-fit, warning=FALSE}
-pairs(fit)
-```
-
-
-We can also use `plot()` fucntion to check both density and trace lots for these parameters.
-There is some areas of the samples are drawn from outside of the target distribution,
+Further inspection of density and trace lots for these parameters show 
+some areas of the samples being drawn from outside of the parameter space,
 but no strong evidence for non-convergence.
 
 ```{r plot-fit, fig.height=8}
 plot(fit, variable = c("b_Intercept", "b_bilr1", "b_bilr2", "sd_ID__Intercept"), regex = TRUE)
 ```
 
-# Improving within-chain autocorrelation
+# Improving within-chain autocorrelation of MCMC sampling
+The low bulk ESS for random intercept model has been observed previously, for example,
+see  
+[here](https://discourse.mc-stan.org/t/low-ess-and-high-rhat-for-random-intercept-slope-simulation-rstan-and-rstanarm/9985/6)
+and [here](https://discourse.mc-stan.org/t/low-bulk-ess-simple-random-intercept-model/23181/2).
+We explored two potential solution to improve MCMC sampling efficiency:
+increasing posterior draws and reparameterisation.
+
 ## Increased posterior draws
 As a first step, we test if increasing iterations and warmups help.
 
 ```{r fit-it, eval = run, results = "hide", echo = TRUE}
 fit_it <- brmcoda(cilr, 
-               bf,
-               cores = 4,
-               chains = 4,
-               iter = 10000,
-               warmup = 1000,
-               backend = "cmdstanr"
+                  bf,
+                  cores = 4,
+                  chains = 4,
+                  iter = 10000,
+                  warmup = 1000,
+                  backend = "cmdstanr"
 )
 ```
 
@@ -252,21 +248,20 @@ The ratios of ESS of `b_Intercept`, `b_bilr1`, `b_bilr2` and `sd_ID_intercept`
 to `b_wilr1`, `b_wilr2`, and `sigma` remain somewhat a concern. 
 
 ## Centered Parameterisation
-By default, brms uses the non-centered parametrization.
+By default, `brms` uses the non-centered parametrization.
 However, 
-@betancourt2015 point out that correlation
+@betancourt2015 explains correlation
 depends on the amount of data, and
 the efficacy of the parameterization depends on the relative strength of the data.
 For small data sets, the computational implementation of the model using non-parameterisation is more efficient. 
 When there is enough data, however,
 this parameterization is unnecessary and it may be more efficient to use the centered parameterisation.
+Reparameterisation is further discussed 
+in [Betancourt's case study](https://betanalpha.github.io/assets/case_studies/hierarchical_modeling.html) and
+[Nicenboim, Schad, and Vasishth's chapter on complex models and reparameterisation](https://vasishth.github.io/bayescogsci/book/ch-complexstan.html).
 
-The low bulk ESS for random intercept model has been observed previously, for example,
-see  
-[here](https://discourse.mc-stan.org/t/low-ess-and-high-rhat-for-random-intercept-slope-simulation-rstan-and-rstanarm/9985/6).
-and [here](https://discourse.mc-stan.org/t/low-bulk-ess-simple-random-intercept-model/23181/2).
 Given that there is a small variation in our large simulated data set,
-we are going to test if centered parameterisation improves the correlation.
+we are going to test if centered parameterisation improves the sampling.
 We first obtain the Stan code for the example model
 
 ```{r stancode}
@@ -276,7 +271,7 @@ make_stancode(sleepy ~ bilr1 + bilr2 + wilr1 + wilr2 + (1 | ID), data = dat)
 We then can manually edit the generated brms code to center all parameters.
 The modified Stan code is
 
-```{r mod-stancode, warning = FALSE}
+```{r mod-stancode, warning = FALSE, message=FALSE}
 m_centered <- cmdstan_model("fit_centered.stan")
 print(m_centered)
 ```
@@ -311,46 +306,17 @@ summary(bm_centered)
 Indeed, the centered parameterisation has improved the ESS for all parameters.
 
 ```{r pair-fit-centered, warning=FALSE}
-plot(bm_manual, pars = c("b_Intercept", "b_bilr1", "b_bilr2", "sd_ID__Intercept"), regex = TRUE)
+plot(bm_centered, pars = c("b_Intercept", "b_bilr1", "b_bilr2", "sd_ID__Intercept"), regex = TRUE)
 ```
 
-The last method I'm going to try to improve the within-chain correlation is a
-soft parameterisation that satisfying sum-to-zero constraint.
-We will also do this by manually editing Stan code.
+# Conclusion
+`multilevelcoda` demonstrates excellent performances across different conditions
+of number of individuals, number of observations, number of compositional parts, and
+magnitude of modeled variance (read more about our simulation study at)
+However,
+in the case of large data and small sample variation, 
+we recommend centered parameterisation or increase in iterations to 
+achieve efficient MCMC sampling and 
+acceptable ESS.
 
-```{r mod-stancode, warning = FALSE}
-m_scentered <- cmdstan_model("fit_scentered.stan")
-print(m_scentered)
-```
-
-Now we build data for the model and sample with `cmdstanr`
-
-```{r fit-centered, eval = run, results = "hide", echo = TRUE}
-fit_scentered <- m_scentered$sample(data = sdat,
-                                    parallel_chains = 4,
-                                    iter_sampling = 2500,
-                                    iter_warmup = 500)
-```
-
-
-```{r run-fit-centered, include = FALSE}
-if (run) {
-  saveRDS(fit_scentered, file = "fit_scentered.RDS")
-} else {
-  fit_scentered <- readRDS("fit_scentered.RDS")
-}
-```
-
-
-```{r sum-fit-centered, message=FALSE}
-bm_scentered <- brm(sleepy ~ bilr1 + bilr2 + wilr1 + wilr2 + (1 | ID), data = dat, empty = TRUE)
-bm_scentered$fit <- rstan::read_stan_csv(fit_scentered$output_files())
-bm_scentered <- rename_pars(bm_scentered)
-summary(bm_scentered)
-plot(bm_scentered, pars = c("b_Intercept", "b_bilr1", "b_bilr2", "sd_ID__Intercept"), regex = TRUE)
-```
-This model took a lifetime so I would not recommend it.
-
-## References
-Nicenboim, B., Schad, D., & Vasishth, S. (2023). An introduction to Bayesian data analysis for cognitive science. Under contract with Chapman and Hall/CRC statistics in the social and behavioral sciences series.
-Betancourt, Michael J., and Mark Girolami. 2013. “Hamiltonian Monte Carlo for Hierarchical Models.”
+# References

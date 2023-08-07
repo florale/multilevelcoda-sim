@@ -31,9 +31,9 @@ parameters {
    vector[N_1] r_1_1;  // actual group-level effects
 }
 //transformed parameters {
- // vector[N_1] r_1_1;  // actual group-level effects
+//  vector[N_1] r_1_1;  // actual group-level effects
 //  real lprior = 0;  // prior contributions to the log posterior
-  //r_1_1 = (sd_1[1] * (z_1[1]));
+//  r_1_1 = (sd_1[1] * (z_1[1]));
 //  lprior += student_t_lpdf(Intercept | 3, 2, 2.5);
 //  lprior += student_t_lpdf(sigma | 3, 0, 2.5)
 //    - 1 * student_t_lccdf(0 | 3, 0, 2.5);
@@ -64,8 +64,7 @@ model {
     - 1 * student_t_lccdf(0 | 3, 0, 2.5);
     
   // Manually added
-   target += normal_lpdf(r_1_1 | 0, sd_1[1]);
-  // target += normal_lpdf(z_1[1] | 0, 1);
+  target += normal_lpdf(r_1_1 | 0, sd_1[1]);
 
   // manual soft sum to zero constraint
   // target += normal_lpdf(sum(r_1_1) | 0, 0.0001 *N_1);
