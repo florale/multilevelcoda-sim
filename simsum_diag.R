@@ -15,7 +15,7 @@ library(parallel)
 simsum_sub <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub.RDS")
 simsum_brmcoda <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda.RDS")
 
-# diag var names
+# diag var names ----------------
 condvars <- c("N", "K", "J", "I", "D", "rint_sd", "res_sd", "run", 
               "ndt", "zero", "cond",
               "condition", "sigma_condition", "u0_condition")
@@ -41,6 +41,7 @@ essvars_d3 <- c("bess_Intercept",
                 "tess_bilr1", "tess_bilr2", 
                 "tess_wilr1", "tess_wilr2",
                 "tess_u0", "tess_sigma")
+
 essvars_d4 <- c("bess_Intercept", 
                 "bess_bilr1", "bess_bilr2", "bess_bilr3", 
                 "bess_wilr1", "bess_wilr2","bess_wilr3",
@@ -49,6 +50,7 @@ essvars_d4 <- c("bess_Intercept",
                 "tess_bilr1", "tess_bilr2", "tess_bilr3", 
                 "tess_wilr1", "tess_wilr2","tess_wilr3",
                 "tess_u0", "tess_sigma")
+
 essvars_d5 <- c("bess_Intercept", 
                 "bess_bilr1", "bess_bilr2", "bess_bilr3", "bess_bilr4",
                 "bess_wilr1", "bess_wilr2","bess_wilr3", "bess_wilr4",
@@ -244,3 +246,48 @@ egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REsmall
 egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESlarge"])
 egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESsmall"])
 
+# save diag stats ------------------
+## D3 --------------------
+diagvars_d3 <- c(essvars_d3, rhatvars_d3, "ndt")
+out <- list()
+simsum_diag_d3 <- lapply(diagvars_d3, function(x) {
+  out[[x]] <- as.data.table((t(egltable(x, g = "cond", data = simsum_brmcoda_d3))), keep.rownames = TRUE)
+  setnames(out[[x]], c("condition", "Value"))
+  out[[x]][, c("Stat", "par") := tstrsplit(x, "_")]
+  out[[x]][, D := 3]
+  out[[x]][, c("condition", "MSD") := tstrsplit(condition, " M")][, MSD := NULL]
+  out[[x]] <- out[[x]][-c(1, .N)]
+})
+names(simsum_diag_d3) <- diagvars_d3
+
+## D4 --------------------
+diagvars_d4 <- c(essvars_d4, rhatvars_d4, "ndt")
+out <- list()
+simsum_diag_d4 <- lapply(diagvars_d4, function(x) {
+  out[[x]] <- as.data.table((t(egltable(x, g = "cond", data = simsum_brmcoda_d4))), keep.rownames = TRUE)
+  setnames(out[[x]], c("condition", "Value"))
+  out[[x]][, c("Stat", "par") := tstrsplit(x, "_")]
+  out[[x]][, D := 4]
+  out[[x]][, c("condition", "MSD") := tstrsplit(condition, " M")][, MSD := NULL]
+  out[[x]] <- out[[x]][-c(1, .N)]
+})
+names(simsum_diag_d4) <- diagvars_d4
+
+## D5--------------------
+diagvars_d5 <- c(essvars_d5, rhatvars_d5, "ndt")
+out <- list()
+simsum_diag_d5 <- lapply(diagvars_d5, function(x) {
+  out[[x]] <- as.data.table((t(egltable(x, g = "cond", data = simsum_brmcoda_d5))), keep.rownames = TRUE)
+  setnames(out[[x]], c("condition", "Value"))
+  out[[x]][, c("Stat", "par") := tstrsplit(x, "_")]
+  out[[x]][, D := 5]
+  out[[x]][, c("condition", "MSD") := tstrsplit(condition, " M")][, MSD := NULL]
+  out[[x]] <- out[[x]][-c(1, .N)]
+})
+names(simsum_diag_d5) <- diagvars_d5
+
+simsum_diag <- rbind(rbindlist(simsum_diag_d3),
+                     rbindlist(simsum_diag_d4),
+                     rbindlist(simsum_diag_d5))
+
+# saveRDS(simsum_diag, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_diag.RDS")
