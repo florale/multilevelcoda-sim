@@ -302,15 +302,19 @@ simsum_diag[, Estimand := ifelse(par == "bilr4", "b_bilr4", Estimand)]
 simsum_diag[, Estimand := ifelse(par == "wilr4", "b_wilr4", Estimand)]
 simsum_diag[, Estimand := ifelse(par == "u0", "sd_ID_Intercept", Estimand)]
 simsum_diag[, Estimand := ifelse(par == "sigma", "sigma", Estimand)]
-simsum_diag[, Estimand := ifelse(par == "ndt", "ndt", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "ndt", NA, Estimand)]
 
+# reshape ndt
+simsum_diag_ndt <- reshape(simsum_diag[Diag_Stat == "ndt", -c("par")], idvar = c("condition", "D"), timevar = "Diag_Stat", direction = "wide")
+setnames(simsum_diag_ndt, "Value.ndt", "ndt")
 
-# reshape
+# reshape rest
+simsum_diag_rest <- reshape(simsum_diag[Diag_Stat != "ndt", -c("par")], idvar = c("Estimand", "condition", "D"), timevar = "Diag_Stat", direction = "wide")
+setnames(simsum_diag_rest, "Value.bess", "Bulk_ESS")
+setnames(simsum_diag_rest, "Value.tess", "Tail_ESS")
+setnames(simsum_diag_rest, "Value.rhat", "R_hat")
 
-simsum_diag <- reshape(simsum_diag[, -c("par")], idvar = c("Estimand", "condition", "D"), timevar = "Diag_Stat", direction = "wide")
-setnames(simsum_diag, "Value.bess", "Bulk_ESS")
-setnames(simsum_diag, "Value.tess", "Tail_ESS")
-setnames(simsum_diag, "Value.rhat", "R_hat")
-setnames(simsum_diag, "Value.ndt", "ndt")
+# merge
+simsum_diag <- merge(simsum_diag_rest, simsum_diag_ndt[, -c("Estimand.ndt")], by = c("condition", "D"))
 
 # saveRDS(simsum_diag, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_diag.RDS")
