@@ -969,6 +969,7 @@ brmcoda_tab[, Estimand := factor(Estimand, levels = c(
   "b_bilr4", "b_bilr3", "b_bilr2", "b_bilr1",
   "b_Intercept"
 ))]
+brmcoda_tab[, Parameter := Estimand]
 
 brmcoda_tab[, EstimandF := NA]
 brmcoda_tab[, EstimandF := ifelse(Estimand == "b_Intercept"    , "$\\gamma_{0}$", EstimandF)]
@@ -1044,19 +1045,33 @@ brmcoda_tab[, JI := factor(JI, levels = c("J: 30, I: 3",
 
 brmcoda_tab[, cond := paste0("J: ", J, ", ", "I: ", I, ", ", "sigma: ", condition)]
 
-
 brmcoda_tab <- brmcoda_tab[stat %in% c("bias", "cover", "becover")]
 setnames(brmcoda_tab, "stat", "Stat")
 
 # merge diag stats
+simsum_brmcoda_tab <- brmcoda_tab[, .(Stat, cond, D, JI, I, J, Parameter, Estimand, EstimandF, Estimates)]
 out <- list()
 out <- lapply(c("bias", "cover", "becover"), function(x){
-  out[[x]] <- merge(brmcoda_tab[Stat == x], simsum_diag[Estimand != "ndt"],
-             by.x = c("cond", "Estimand", "D"), by.y = c("condition", "Estimand", "D"), all = TRUE)
+  out[[x]] <- reshape(simsum_brmcoda_tab[Stat == x], idvar = c("Parameter", "Estimand", "EstimandF", "cond", "D", "JI", "I", "J"), timevar = "Stat", direction = "wide")
 })
-brmcoda_tab <- rbindlist(out)
+simsum_brmcoda_tab <- mergeDTs(out, by = c("Parameter", "Estimand", "EstimandF", "cond", "D", "JI", "I", "J"))
+setnames(simsum_brmcoda_tab, "Estimates.bias", "Bias")
+setnames(simsum_brmcoda_tab, "Estimates.cover", "Coverage")
+setnames(simsum_brmcoda_tab, "Estimates.becover", "Bias-Eliminated Coverage")
+setnames(simsum_brmcoda_tab, "cond", "condition")
 
-saveRDS(brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
+simsum_brmcoda_tab <- merge(simsum_brmcoda_tab, simsum_diag[Estimand != "ndt"],
+                            by.x = c("condition", "Estimand", "D"), by.y = c("condition", "Estimand", "D"), all = TRUE)
+
+simsum_brmcoda_tab[, Estimand := factor(Estimand, levels = c(
+  "sigma",
+  "sd_ID_Intercept", 
+  "b_wilr4", "b_wilr3", "b_wilr2", "b_wilr1",
+  "b_bilr4", "b_bilr3", "b_bilr2", "b_bilr1",
+  "b_Intercept"
+))]
+
+saveRDS(simsum_brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_tabb.RDS")
 
 ## save all brmcoda dat for plots -----------
 brmcoda_dat <- split(brmcoda_tab, by = "D")
@@ -1196,6 +1211,8 @@ sub_tab[, Estimand := ifelse(by == "between SB - TST"    , "$\\Delta{\\hat{y}^{(
 sub_tab[, Estimand := ifelse(by == "within SB - TST"     , "$\\Delta{\\hat{y}^{(w)}_{(SB - TST)}}$"    , Estimand)]
 sub_tab[, Estimand := ifelse(by == "between SB - WAKE"   , "$\\Delta{\\hat{y}^{(b)}_{(SB - WAKE)}}$"   , Estimand)]
 sub_tab[, Estimand := ifelse(by == "within SB - WAKE"    , "$\\Delta{\\hat{y}^{(w)}_{(SB - WAKE)}}$"   , Estimand)]
+
+sub_tab[, Parameter := Estimand]
 
 sub_tab <- sub_tab[stat %in% c("bias", "cover", "becover")]
 setnames(sub_tab, "stat", "Stat")
