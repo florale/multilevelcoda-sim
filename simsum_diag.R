@@ -253,7 +253,7 @@ out <- list()
 simsum_diag_d3 <- lapply(diagvars_d3, function(x) {
   out[[x]] <- as.data.table((t(egltable(x, g = "cond", data = simsum_brmcoda_d3))), keep.rownames = TRUE)
   setnames(out[[x]], c("condition", "Value"))
-  out[[x]][, c("Stat", "par") := tstrsplit(x, "_")]
+  out[[x]][, c("Diag_Stat", "par") := tstrsplit(x, "_")]
   out[[x]][, D := 3]
   out[[x]][, c("condition", "MSD") := tstrsplit(condition, " M")][, MSD := NULL]
   out[[x]] <- out[[x]][-c(1, .N)]
@@ -266,7 +266,7 @@ out <- list()
 simsum_diag_d4 <- lapply(diagvars_d4, function(x) {
   out[[x]] <- as.data.table((t(egltable(x, g = "cond", data = simsum_brmcoda_d4))), keep.rownames = TRUE)
   setnames(out[[x]], c("condition", "Value"))
-  out[[x]][, c("Stat", "par") := tstrsplit(x, "_")]
+  out[[x]][, c("Diag_Stat", "par") := tstrsplit(x, "_")]
   out[[x]][, D := 4]
   out[[x]][, c("condition", "MSD") := tstrsplit(condition, " M")][, MSD := NULL]
   out[[x]] <- out[[x]][-c(1, .N)]
@@ -279,7 +279,7 @@ out <- list()
 simsum_diag_d5 <- lapply(diagvars_d5, function(x) {
   out[[x]] <- as.data.table((t(egltable(x, g = "cond", data = simsum_brmcoda_d5))), keep.rownames = TRUE)
   setnames(out[[x]], c("condition", "Value"))
-  out[[x]][, c("Stat", "par") := tstrsplit(x, "_")]
+  out[[x]][, c("Diag_Stat", "par") := tstrsplit(x, "_")]
   out[[x]][, D := 5]
   out[[x]][, c("condition", "MSD") := tstrsplit(condition, " M")][, MSD := NULL]
   out[[x]] <- out[[x]][-c(1, .N)]
@@ -289,5 +289,28 @@ names(simsum_diag_d5) <- diagvars_d5
 simsum_diag <- rbind(rbindlist(simsum_diag_d3),
                      rbindlist(simsum_diag_d4),
                      rbindlist(simsum_diag_d5))
+
+simsum_diag[, Estimand := NA]
+simsum_diag[, Estimand := ifelse(par == "Intercept", "b_Intercept", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "bilr1", "b_bilr1", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "bilr2", "b_bilr2", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "wilr1", "b_wilr1", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "wilr2", "b_wilr2", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "bilr3", "b_bilr3", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "wilr3", "b_wilr3", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "bilr4", "b_bilr4", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "wilr4", "b_wilr4", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "u0", "sd_ID_Intercept", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "sigma", "sigma", Estimand)]
+simsum_diag[, Estimand := ifelse(par == "ndt", "ndt", Estimand)]
+
+
+# reshape
+
+simsum_diag <- reshape(simsum_diag[, -c("par")], idvar = c("Estimand", "condition", "D"), timevar = "Diag_Stat", direction = "wide")
+setnames(simsum_diag, "Value.bess", "Bulk_ESS")
+setnames(simsum_diag, "Value.tess", "Tail_ESS")
+setnames(simsum_diag, "Value.rhat", "R_hat")
+setnames(simsum_diag, "Value.ndt", "ndt")
 
 # saveRDS(simsum_diag, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_diag.RDS")

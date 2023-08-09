@@ -946,9 +946,9 @@ brmcoda_tab[, MCSE := format(round(mcse, 2), nsmall = 2)]
 brmcoda_tab[, `$\\sigma_u$` := format(round(sd_ID_Intercept, 2), nsmall = 2)]
 brmcoda_tab[, `$\\sigma_{\varepsilon}$` := format(round(sigma, 2), nsmall = 2)]
 
-brmcoda_tab[, Estimates := paste0(Est, ", ", MCSE)]
+brmcoda_tab[, Estimates := paste0(Est, " [", Lower, ",", Upper, "]")]
+# brmcoda_tab[, Estimates := paste0(Est, ", ", MCSE)]
 brmcoda_tab[, `Est [95% CI], MCSE` := paste0(Est, " [", Lower, ",", Upper, "]", ", ", MCSE)]
-
 
 brmcoda_tab[, Estimand := NA]
 brmcoda_tab[, Estimand := ifelse(by == "  b0"             , "b_Intercept", Estimand)]
@@ -1042,8 +1042,19 @@ brmcoda_tab[, JI := factor(JI, levels = c("J: 30, I: 3",
                                           "J: 1200, I: 7",
                                           "J: 1200, I: 14"))]
 
+brmcoda_tab[, cond := paste0("J: ", J, ", ", "I: ", I, ", ", "sigma: ", condition)]
+
+
 brmcoda_tab <- brmcoda_tab[stat %in% c("bias", "cover", "becover")]
 setnames(brmcoda_tab, "stat", "Stat")
+
+# merge diag stats
+out <- list()
+out <- lapply(c("bias", "cover", "becover"), function(x){
+  out[[x]] <- merge(brmcoda_tab[Stat == x], simsum_diag[Estimand != "ndt"],
+             by.x = c("cond", "Estimand", "D"), by.y = c("condition", "Estimand", "D"), all = TRUE)
+})
+brmcoda_tab <- rbindlist(out)
 
 saveRDS(brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
 
@@ -1052,7 +1063,6 @@ brmcoda_dat <- split(brmcoda_tab, by = "D")
 names(brmcoda_dat) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
 
 saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
-
 
 ## save all sub dat for shiny tables -------------------------
 sub_tab <- rbind(sub_d3,
@@ -1068,7 +1078,8 @@ sub_tab[, MCSE := format(round(mcse, 2), nsmall = 2)]
 sub_tab[, `$\\sigma_u$` := format(round(sd_ID_Intercept, 2), nsmall = 2)]
 sub_tab[, `$\\sigma_{\varepsilon}$` := format(round(sigma, 2), nsmall = 2)]
 
-sub_tab[, Estimates := paste0(Est, ", ", MCSE)]
+sub_tab[, Estimates := paste0(Est, " [", Lower, ",", Upper, "]")]
+# sub_tab[, Estimates := paste0(Est, ", ", MCSE)]
 sub_tab[, `Est [95% CI], MCSE` := paste0(Est, " [", Lower, ",", Upper, "]", ", ", MCSE)]
 
 sub_tab[, OnTarget := NA]
@@ -1121,6 +1132,9 @@ sub_tab[, JI := factor(JI, levels = c("J: 30, I: 3",
                                       "J: 1200, I: 5",
                                       "J: 1200, I: 7",
                                       "J: 1200, I: 14"))]
+
+sub_tab[, cond := paste0("J: ", J, ", ", "I: ", I, ", ", "sigma: ", condition)]
+
 sub_tab[, Estimand := NA]
 sub_tab[, Estimand := ifelse(by == "between Sleep - PA"  , "$\\Delta{\\hat{y}^{(b)}_{(Sleep - PA)}}$"  , Estimand)]
 sub_tab[, Estimand := ifelse(by == "within Sleep - PA"   , "$\\Delta{\\hat{y}^{(w)}_{(Sleep - PA)}}$"  , Estimand)]
