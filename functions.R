@@ -279,7 +279,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
                        breaks = y_breaks) +
     scale_x_discrete(drop = FALSE) +
     # facet_wrap(ggplot2::vars(N, K), labeller = ggplot2::label_both) +
-    facet_wrap(ggplot2::vars(NK), labeller = ggplot2::label_context, strip.position = "top") +
+    facet_wrap(ggplot2::vars(JI), labeller = ggplot2::label_context, strip.position = "top") +
     hrbrthemes::theme_ipsum() +
     coord_flip() +
     theme(
@@ -311,7 +311,7 @@ mergeDTs <- function(dt_list, by = NULL, sort = FALSE) {
                  colour = xvar)) +
       geom_segment(aes(x = 0.5, xend = xvar, y = yintercept, yend = yintercept), color = "#666666", linetype = "dashed", linewidth = 0.5) +
       geom_segment(aes(y = yseg, yend = yendseg, x = 0.5, xend = 0.5), color = "black", linewidth = 0.5) +
-      geom_text(aes(label = NK, y = yintercept, x = xtext), color = "black", family = font, vjust = "inward", hjust = "inward") +
+      geom_text(aes(label = JI, y = yintercept, x = xtext), color = "black", family = font, vjust = "inward", hjust = "inward") +
       # geom_hline(yintercept = yintercept, color = "#666666", linetype = "dashed", linewidth = 0.5) +
       geom_point(size = point_size) +
       geom_linerange(linewidth = line_size) +
