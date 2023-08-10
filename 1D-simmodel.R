@@ -20,7 +20,7 @@ prefit5 <- input$prefit5
 prefit4 <- input$prefit4
 prefit3 <- input$prefit3
 
-source("input.R") # groundtruth, conditions and functions
+source("1B-simmodel_input.R") # groundtruth, conditions and functions
 
 ## set different for each script -------
 set.seed(1) 
@@ -30,7 +30,7 @@ sampled_cond <- cond[c(1, 13, 81, 161)]
 registerDoFuture()
 # plan(list(tweak(multisession, workers = 20L),
 #           tweak(sequential)))
-plan(multisession, workers = 20L)
+plan(multisession, workers = 5L)
 
 starttime <- proc.time()
 out <- vector("list", length = nrow(sampled_cond))

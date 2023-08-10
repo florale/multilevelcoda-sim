@@ -73,7 +73,6 @@ estnames_brmcoda_d3 <- colnames(simsum_brmcoda_d3) %snin% c(condvars, rhatvars_d
 estnames_brmcoda_d4 <- colnames(simsum_brmcoda_d4) %snin% c(condvars, rhatvars_d4, essvars_d4)
 estnames_brmcoda_d5 <- colnames(simsum_brmcoda_d5) %snin% c(condvars, rhatvars_d5, essvars_d5)
 
-
 ## ndt -----------------------
 # ests of any runs with divergent transition to NA
 
@@ -97,9 +96,9 @@ apply(simsum_brmcoda_d4[, rhatvars_d4, with = FALSE], 2, function(x) sum(x > 1.0
 apply(simsum_brmcoda_d5[, rhatvars_d5, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
 
 # ests of any runs with R hat > 1.01 to NA
-nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3]]) #6246
-nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4]]) #9794
-nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5]]) #10978
+nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3]])
+nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4]])
+nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5]])
 
 # simsum_brmcoda_d3 <- simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], (estnames_brmcoda_d3) := NA]
 # simsum_brmcoda_d4 <- simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], (estnames_brmcoda_d4) := NA]
@@ -112,9 +111,9 @@ egltable(condvars, data = rbind(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`
 
 ## ess -----------------------
 # ests of any runs with ESS < 400 to NA
-nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3]]) #6890
-nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4]]) #10523
-nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5]]) #11550
+nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3]])
+nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4]])
+nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5]])
 
 # simsum_brmcoda_d3 <- simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3], (estnames_brmcoda_d3) := NA]
 # simsum_brmcoda_d4 <- simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4], (estnames_brmcoda_d4) := NA]
@@ -148,62 +147,70 @@ colnames(simsum_sub_d3)
 colnames(simsum_sub_d4)
 colnames(simsum_sub_d5)
 
-## 3 parts -----------------------
 estnames_sub_d3 <- colnames(simsum_sub_d3) %snin% c(condvars, rhatvars_d3, essvars_d3,
                                                     "Delta", "From", "To", "Level", "Reference")
+estnames_sub_d4 <- colnames(simsum_sub_d4) %snin% c(condvars, rhatvars_d4, essvars_d4,
+                                                    "Delta", "From", "To", "Level", "Reference")
+estnames_sub_d5 <- colnames(simsum_sub_d5) %snin% c(condvars, rhatvars_d5, essvars_d5,
+                                                    "Delta", "From", "To", "Level", "Reference")
+## ndt -----------------------
 # ests of any runs with divergent transition to NA
 simsum_sub_d3 <- simsum_sub_d3[ndt != 0 | zero != 0, (estnames_sub_d3) := NA]
 nrow(simsum_sub_d3[is.na(b_Intercept)]) #6240
 
-# rhat
-apply(simsum_sub_d3[, rhatvars_d3, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
-
-# ests of any runs with R hat > 1.01 to NA
-simsum_sub_d3 <- simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], (estnames_sub_d3) := NA]
-nrow(simsum_sub_d3[is.na(b_Intercept)]) #74952
-
-# ess
-# ests of any runs with ESS < 400 to NA
-simsum_sub_d3 <- simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3], (estnames_sub_d3) := NA]
-nrow(simsum_sub_d3[is.na(b_Intercept)]) #82680
-
-## 4 parts -----------------------
-estnames_sub_d4 <- colnames(simsum_sub_d4) %snin% c(condvars, rhatvars_d4, essvars_d4,
-                                                    "Delta", "From", "To", "Level", "Reference")
-
-# ests of any runs with divergent transition to NA
 simsum_sub_d4 <- simsum_sub_d4[ndt != 0 | zero != 0, (estnames_sub_d4) := NA]
 nrow(simsum_sub_d4[is.na(b_Intercept)]) #9408
 
-# rhat
-apply(simsum_sub_d4[, rhatvars_d4, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
-
-# ests of any runs with R hat > 1.01 to NA
-simsum_sub_d4 <- simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], (estnames_sub_d4) := NA]
-nrow(simsum_sub_d4[is.na(b_Intercept)]) #235056
-
-# ess
-# ests of any runs with ESS < 400 to NA
-simsum_sub_d4 <- simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4], (estnames_sub_d4) := NA]
-nrow(simsum_sub_d4[is.na(b_Intercept)]) #252552
-## 5 parts -----------------------
-estnames_sub_d5 <- colnames(simsum_sub_d5) %snin% c(condvars, rhatvars_d5, essvars_d5,
-                                                    "Delta", "From", "To", "Level", "Reference")
-# ests of any runs with divergent transition to NA
 simsum_sub_d5 <- simsum_sub_d5[ndt != 0 | zero != 0, (estnames_sub_d5) := NA]
 nrow(simsum_sub_d5[is.na(b_Intercept)]) #16000
 
-# rhat
-apply(simsum_sub_d5[, rhatvars_d5, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
+egltable(condvars, data = rbind(simsum_sub_d3[ndt != 0, ..condvars],
+                                simsum_sub_d4[ndt != 0, ..condvars],
+                                simsum_sub_d5[ndt != 0, ..condvars]
+))
 
-# ests of any runs with R hat > 1.01 to NA
-simsum_sub_d5 <- simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], (estnames_sub_d5) := NA]
-nrow(simsum_sub_d5[is.na(b_Intercept)]) #439120
+## rhat -----------------------
 
-# ess
+nrow(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3]])
+nrow(simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4]])
+nrow(simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5]])
+
+# simsum_sub_d3 <- simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], (estnames_sub_d3) := NA]
+# simsum_sub_d4 <- simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], (estnames_sub_d4) := NA]
+# simsum_sub_d5 <- simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], (estnames_sub_d5) := NA]
+
+egltable(condvars, data = rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
+                                simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
+                                simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
+))
+
+
+## ess -----------------------
 # ests of any runs with ESS < 400 to NA
-simsum_sub_d5 <- simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5], (estnames_sub_d5) := NA]
-nrow(simsum_sub_d5[is.na(b_Intercept)]) #462000
+
+# simsum_sub_d3 <- simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3], (estnames_sub_d3) := NA]
+# simsum_sub_d4 <- simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4], (estnames_sub_d4) := NA]
+# simsum_sub_d5 <- simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5], (estnames_sub_d5) := NA]
+
+egltable(condvars, data = rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3], ..condvars],
+                                simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4], ..condvars],
+                                simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5], ..condvars]
+))
+
+egltable(condvars, data = rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3] |
+                                                simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
+                                simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4] |
+                                                simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
+                                simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5] |
+                                                simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
+))
+nrow(rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3] |
+                           simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
+           simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4] |
+                           simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
+           simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5] |
+                           simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
+))
 
 ## DESC -------------------------
 ## Descriptive of conditions of problematic runs
@@ -286,6 +293,7 @@ simsum_diag_d5 <- lapply(diagvars_d5, function(x) {
 })
 names(simsum_diag_d5) <- diagvars_d5
 
+## save results by condition/parameter to present full results in shiny app -------------
 simsum_diag <- rbind(rbindlist(simsum_diag_d3),
                      rbindlist(simsum_diag_d4),
                      rbindlist(simsum_diag_d5))
@@ -317,4 +325,12 @@ setnames(simsum_diag_rest, "Value.rhat", "R_hat")
 # merge
 simsum_diag <- merge(simsum_diag_rest, simsum_diag_ndt[, -c("Estimand.ndt")], by = c("condition", "D"))
 
-# saveRDS(simsum_diag, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_diag.RDS")
+## save raw results to get descriptive stats ---------------------
+brmcoda_diag <- rbind(
+  melt(simsum_brmcoda_d3[, ..diagvars_d3]),
+  melt(simsum_brmcoda_d4[, ..diagvars_d4]),
+  melt(simsum_brmcoda_d5[, ..diagvars_d5])
+)
+brmcoda_diag[, c("Diag_Stat", "par") := tstrsplit(variable, "_")]
+saveRDS(brmcoda_diag, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_diag.RDS")
+saveRDS(simsum_diag, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_diag.RDS")

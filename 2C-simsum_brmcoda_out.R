@@ -23,10 +23,9 @@ library(ggpubr)
 
 data.table::setDTthreads(10)
 
-source("input.R") # groundtruth, conditions and functions
-source("functions.R") # functions for plots
-source("simmsum_in.R") # raw output from sim
-source("simsum_diag.R") # check diag and set problematic runs to missing
+source("1C-simmodel_input.R") # groundtruth, conditions and functions
+source("2B-simsum_diag.R") # check diag and set problematic runs to missing
+source("0A-functions.R")
 
 ## d3 -------------------
 s_b0_d3 <- simsum(

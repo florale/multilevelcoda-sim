@@ -1,8 +1,8 @@
 brmcoda_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
-brmcoda_dat <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
-
+simsum_brmcoda_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_tab.RDS")
 sub_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
-sub_dat <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
+brmcoda_diag <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_diag.RDS")
+simsum_diag <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_diag.RDS")
 
 ## DESC ----------
 psych::describe(brmcoda_tab[Stat == "bias"]$est)
@@ -12,6 +12,11 @@ psych::describe(brmcoda_tab[Stat == "becover"]$est)
 psych::describe(sub_tab[Stat == "bias"]$est)
 psych::describe(sub_tab[Stat == "cover"]$est)
 psych::describe(sub_tab[Stat == "becover"]$est)
+
+psych::describe(brmcoda_diag[Diag_Stat == "bess"]$value)
+psych::describe(brmcoda_diag[Diag_Stat == "tess"]$value)
+psych::describe(brmcoda_diag[Diag_Stat == "rhat"]$value)
+psych::describe(brmcoda_diag[Diag_Stat == "ndt"]$value)
 
 # by cond ---------------------------
 psych::describe(brmcoda_tab[Stat == "cover" & cond == "J: 30, I: 3, sigma: base"]$est)
@@ -461,10 +466,3 @@ psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "RE
 psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "REbase_RESsmall" & D == 3]$est)
 psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "REbase_RESsmall" & D == 4]$est)
 psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "REbase_RESsmall" & D == 5]$est)
-
-
-
-
-
-
-

@@ -23,10 +23,50 @@ library(ggpubr)
 
 data.table::setDTthreads(10)
 
-source("input.R") # groundtruth, conditions and functions
-source("functions.R") # functions for plots
-source("simmsum_in.R") # raw output from sim
-source("simsum_diag.R") # check diag and set problematic runs to missing
+source("1C-simmodel_input.R") # groundtruth, conditions and functions
+source("2B-simsum_diag.R") # check diag and set problematic runs to missing
+source("0A-functions.R")
+
+substutitution_gt <- readRDS("substutitution_gt.RDS")
+substutitution_gt_d3 <- substutitution_gt[[1]]
+substutitution_gt_d4 <- substutitution_gt[[2]]
+substutitution_gt_d5 <- substutitution_gt[[3]]
+
+substutitution_gt_d3[, To := NA]
+substutitution_gt_d3[, To := ifelse(Sleep == 30, "Sleep", To)]
+substutitution_gt_d3[, To := ifelse(PA == 30, "PA", To)]
+substutitution_gt_d3[, To := ifelse(SB == 30, "SB", To)]
+
+substutitution_gt_d3[, From := NA]
+substutitution_gt_d3[, From := ifelse(Sleep == -30, "Sleep", From)]
+substutitution_gt_d3[, From := ifelse(PA == -30, "PA", From)]
+substutitution_gt_d3[, From := ifelse(SB == -30, "SB", From)]
+
+substutitution_gt_d4[, To := NA]
+substutitution_gt_d4[, To := ifelse(Sleep == 30, "Sleep", To)]
+substutitution_gt_d4[, To := ifelse(MVPA == 30, "MVPA", To)]
+substutitution_gt_d4[, To := ifelse(LPA == 30, "LPA", To)]
+substutitution_gt_d4[, To := ifelse(SB == 30, "SB", To)]
+
+substutitution_gt_d4[, From := NA]
+substutitution_gt_d4[, From := ifelse(Sleep == -30, "Sleep", From)]
+substutitution_gt_d4[, From := ifelse(MVPA == -30, "MVPA", From)]
+substutitution_gt_d4[, From := ifelse(LPA == -30, "LPA", From)]
+substutitution_gt_d4[, From := ifelse(SB == -30, "SB", From)]
+
+substutitution_gt_d5[, To := NA]
+substutitution_gt_d5[, To := ifelse(TST == 30, "TST", To)]
+substutitution_gt_d5[, To := ifelse(WAKE == 30, "WAKE", To)]
+substutitution_gt_d5[, To := ifelse(MVPA == 30, "MVPA", To)]
+substutitution_gt_d5[, To := ifelse(LPA == 30, "LPA", To)]
+substutitution_gt_d5[, To := ifelse(SB == 30, "SB", To)]
+
+substutitution_gt_d5[, From := NA]
+substutitution_gt_d5[, From := ifelse(TST == -30, "TST", From)]
+substutitution_gt_d5[, From := ifelse(WAKE == -30, "WAKE", From)]
+substutitution_gt_d5[, From := ifelse(MVPA == -30, "MVPA", From)]
+substutitution_gt_d5[, From := ifelse(LPA == -30, "LPA", From)]
+substutitution_gt_d5[, From := ifelse(SB == -30, "SB", From)]
 
 ## bsub d3 ----------------
 s_bsub_sleep_pa_d3 <- simsum(

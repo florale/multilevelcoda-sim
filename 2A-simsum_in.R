@@ -10,10 +10,18 @@ library(foreach)
 library(doRNG)
 library(parallel)
 
-data.table::setDTthreads(10)
+library(rsimsum) # https://cran.r-project.org/web/packages/rsimsum/vignettes/A-introduction.html
+library(heatmaply)
+library(ggthemes)
+library(bayesplot)
 
-source("input.R") # groundtruth, conditions and functions
-source("functions.R") # functions for plots
+library(hrbrthemes)
+library(wesanderson)
+library(ggplot2)
+library(ggsci)
+library(ggpubr)
+
+data.table::setDTthreads(10)
 
 # brmcoda out --------------------------
 simsum_brmcoda_1 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_1.RDS")
@@ -63,6 +71,8 @@ simsum_brmcoda <- lapply(simsum_brmcoda, function(simsum_brmcoda_d) {
   simsum_brmcoda_d[, K := factor(K, levels = c("3", "5", "7", "14"))]
   simsum_brmcoda_d[, D := factor(n_parts, levels = c("3", "4", "5"))]
   simsum_brmcoda_d[, n_parts := NULL]
+  simsum_brmcoda_d[, I := K]
+  simsum_brmcoda_d[, J := N]
   
   simsum_brmcoda_d[, condition := NA]
   simsum_brmcoda_d[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
@@ -98,6 +108,8 @@ simsum_brmcoda <- lapply(simsum_brmcoda, function(simsum_brmcoda_d) {
     "large"
   ))]
   
+  simsum_brmcoda_d[, cond := paste0("J: ", J, ", ", "I: ", I, ", ", "sigma: ", condition)]
+  
 })
 names(simsum_brmcoda) <- c("simsum_brmcoda_d3",
                            "simsum_brmcoda_d4",
@@ -111,11 +123,6 @@ rm(simsum_brmcoda_1, simsum_brmcoda_2, simsum_brmcoda_3, simsum_brmcoda_4,
    simsum_brmcoda_21, simsum_brmcoda_22, simsum_brmcoda_23, simsum_brmcoda_24)
 
 # substitution out ----------------------------------
-substutitution_gt <- readRDS("substutitution_gt.RDS")
-substutitution_gt_d3 <- substutitution_gt[[1]]
-substutitution_gt_d4 <- substutitution_gt[[2]]
-substutitution_gt_d5 <- substutitution_gt[[3]]
-
 # simsum_sub <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_.RDS")
 simsum_sub_1 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_1.RDS")
 simsum_sub_2 <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub_2.RDS")
@@ -165,6 +172,8 @@ simsum_sub <- lapply(simsum_sub, function(simsum_sub_d) {
   simsum_sub_d[, D := factor(n_parts, levels = c("3", "4", "5"))]
   simsum_sub_d[, Level := factor(Level, levels = c("between", "within"))]
   simsum_sub_d[, n_parts := NULL]
+  simsum_sub_d[, I := K]
+  simsum_sub_d[, J := N]
   
   simsum_sub_d[, condition := NA]
   simsum_sub_d[, condition := ifelse(rint_sd == 1 & res_sd == 1, "base",  condition)]
@@ -179,6 +188,9 @@ simsum_sub <- lapply(simsum_sub, function(simsum_sub_d) {
     "REbase_RESlarge",
     "REbase_RESsmall"
   ))]
+  
+  simsum_sub_d[, cond := paste0("J: ", J, ", ", "I: ", I, ", ", "sigma: ", condition)]
+  
 })
 names(simsum_sub) <- c("simsum_sub_d3",
                        "simsum_sub_d4",
@@ -188,42 +200,6 @@ rm(simsum_sub_1, simsum_sub_2, simsum_sub_3, simsum_sub_4, simsum_sub_5, simsum_
    simsum_sub_7, simsum_sub_8, simsum_sub_9, simsum_sub_10, simsum_sub_11, simsum_sub_12,
    simsum_sub_13, simsum_sub_14, simsum_sub_15, simsum_sub_16, simsum_sub_17, simsum_sub_18,
    simsum_sub_19, simsum_sub_20, simsum_sub_21, simsum_sub_22, simsum_sub_23, simsum_sub_24)
-
-substutitution_gt_d3[, To := NA]
-substutitution_gt_d3[, To := ifelse(Sleep == 30, "Sleep", To)]
-substutitution_gt_d3[, To := ifelse(PA == 30, "PA", To)]
-substutitution_gt_d3[, To := ifelse(SB == 30, "SB", To)]
-
-substutitution_gt_d3[, From := NA]
-substutitution_gt_d3[, From := ifelse(Sleep == -30, "Sleep", From)]
-substutitution_gt_d3[, From := ifelse(PA == -30, "PA", From)]
-substutitution_gt_d3[, From := ifelse(SB == -30, "SB", From)]
-
-substutitution_gt_d4[, To := NA]
-substutitution_gt_d4[, To := ifelse(Sleep == 30, "Sleep", To)]
-substutitution_gt_d4[, To := ifelse(MVPA == 30, "MVPA", To)]
-substutitution_gt_d4[, To := ifelse(LPA == 30, "LPA", To)]
-substutitution_gt_d4[, To := ifelse(SB == 30, "SB", To)]
-
-substutitution_gt_d4[, From := NA]
-substutitution_gt_d4[, From := ifelse(Sleep == -30, "Sleep", From)]
-substutitution_gt_d4[, From := ifelse(MVPA == -30, "MVPA", From)]
-substutitution_gt_d4[, From := ifelse(LPA == -30, "LPA", From)]
-substutitution_gt_d4[, From := ifelse(SB == -30, "SB", From)]
-
-substutitution_gt_d5[, To := NA]
-substutitution_gt_d5[, To := ifelse(TST == 30, "TST", To)]
-substutitution_gt_d5[, To := ifelse(WAKE == 30, "WAKE", To)]
-substutitution_gt_d5[, To := ifelse(MVPA == 30, "MVPA", To)]
-substutitution_gt_d5[, To := ifelse(LPA == 30, "LPA", To)]
-substutitution_gt_d5[, To := ifelse(SB == 30, "SB", To)]
-
-substutitution_gt_d5[, From := NA]
-substutitution_gt_d5[, From := ifelse(TST == -30, "TST", From)]
-substutitution_gt_d5[, From := ifelse(WAKE == -30, "WAKE", From)]
-substutitution_gt_d5[, From := ifelse(MVPA == -30, "MVPA", From)]
-substutitution_gt_d5[, From := ifelse(LPA == -30, "LPA", From)]
-substutitution_gt_d5[, From := ifelse(SB == -30, "SB", From)]
 
 # merge diag stats to simsum_sub and save -----------------------
 ## 3 parts
@@ -244,3 +220,7 @@ simsum_sub[["simsum_sub_d5"]] <- merge(simsum_sub[["simsum_sub_d5"]],
                                        by = intersect(colnames(simsum_sub[["simsum_sub_d5"]]), 
                                                       colnames(simsum_brmcoda[["simsum_brmcoda_d5"]]))
 )
+
+# save --------------
+# saveRDS(simsum_sub, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub.RDS")
+# saveRDS(simsum_brmcoda, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda.RDS")
