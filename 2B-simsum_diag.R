@@ -77,12 +77,11 @@ estnames_brmcoda_d5 <- colnames(simsum_brmcoda_d5) %snin% c(condvars, rhatvars_d
 # ests of any runs with divergent transition to NA
 
 simsum_brmcoda_d3 <- simsum_brmcoda_d3[ndt != 0 | zero != 0, (estnames_brmcoda_d3) := NA]
-nrow(simsum_brmcoda_d3[ndt != 0]) #520
-
 simsum_brmcoda_d4 <- simsum_brmcoda_d4[ndt != 0 | zero != 0, (estnames_brmcoda_d4) := NA]
-nrow( simsum_brmcoda_d4[ndt != 0]) #392
-
 simsum_brmcoda_d5 <- simsum_brmcoda_d5[ndt != 0 | zero != 0, (estnames_brmcoda_d5) := NA]
+
+nrow(simsum_brmcoda_d3[ndt != 0]) #520
+nrow( simsum_brmcoda_d4[ndt != 0]) #392
 nrow(simsum_brmcoda_d5[ndt != 0]) #400
 
 egltable(condvars, data = rbind(simsum_brmcoda_d3[ndt != 0, ..condvars],
@@ -95,10 +94,10 @@ apply(simsum_brmcoda_d3[, rhatvars_d3, with = FALSE], 2, function(x) sum(x > 1.0
 apply(simsum_brmcoda_d4[, rhatvars_d4, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
 apply(simsum_brmcoda_d5[, rhatvars_d5, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
 
-# ests of any runs with R hat > 1.01 to NA
 nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3]])
 nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4]])
 nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5]])
+# ests of any runs with R hat > 1.01 to NA
 
 # simsum_brmcoda_d3 <- simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], (estnames_brmcoda_d3) := NA]
 # simsum_brmcoda_d4 <- simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], (estnames_brmcoda_d4) := NA]
@@ -138,6 +137,7 @@ nrow(rbind(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 40
            simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5] |
                                simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
            ))
+# 27651
 # sub diag -------------------
 simsum_sub_d3 <- simsum_sub[["simsum_sub_d3"]]
 simsum_sub_d4 <- simsum_sub[["simsum_sub_d4"]]
@@ -156,12 +156,11 @@ estnames_sub_d5 <- colnames(simsum_sub_d5) %snin% c(condvars, rhatvars_d5, essva
 ## ndt -----------------------
 # ests of any runs with divergent transition to NA
 simsum_sub_d3 <- simsum_sub_d3[ndt != 0 | zero != 0, (estnames_sub_d3) := NA]
-nrow(simsum_sub_d3[is.na(b_Intercept)]) #6240
-
 simsum_sub_d4 <- simsum_sub_d4[ndt != 0 | zero != 0, (estnames_sub_d4) := NA]
-nrow(simsum_sub_d4[is.na(b_Intercept)]) #9408
-
 simsum_sub_d5 <- simsum_sub_d5[ndt != 0 | zero != 0, (estnames_sub_d5) := NA]
+
+nrow(simsum_sub_d4[is.na(b_Intercept)]) #9408
+nrow(simsum_sub_d3[is.na(b_Intercept)]) #6240
 nrow(simsum_sub_d5[is.na(b_Intercept)]) #16000
 
 egltable(condvars, data = rbind(simsum_sub_d3[ndt != 0, ..condvars],
@@ -236,16 +235,13 @@ nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESlarge" & !is.na
 nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESsmall" & !is.na(b_Intercept)]) 
 nrow(simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: base" & !is.na(b_Intercept)]) 
 
-lapply(simsum_sub_d3[, essvars_d3, with = FALSE], quantile ,probs=.05)
+lapply(simsum_sub_d3[, essvars_d3, with = FALSE], quantile , probs = .05)
 lapply(simsum_sub_d4[, essvars_d4, with = FALSE], min)
 lapply(simsum_sub_d5[, essvars_d5, with = FALSE], min)
 
 lapply(simsum_sub_d3[, essvars_d3, with = FALSE], max)
 lapply(simsum_sub_d4[, essvars_d4, with = FALSE], max)
 lapply(simsum_sub_d5[, essvars_d5, with = FALSE], max)
-
-simsum_sub_d3[, ICC := (rint_sd^2)/(rint_sd^2 + res_sd^2)]
-simsum_brmcoda_d3[, ICC := (rint_sd^2)/(rint_sd^2 + res_sd^2)]
 
 egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: base"])
 egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: RElarge_RESsmall"])
