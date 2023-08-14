@@ -36,7 +36,7 @@ library(latex2exp)
 
 options(digits = 2)
 
-source("input.R")
+source("1C-simmodel_input.R")
 
 col4 <- c("#A69188", "#C6BFB9", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 col <- c("#978787", "#C99696", "#C6BFB9", "#A1B2C2", "#647F9A") #lpa #mvpa #sb #wake #tst
@@ -54,13 +54,13 @@ destress <- readRDS("/Volumes/shared/Behavioral-med-lab/DESTRESSStudy/Data/destr
 aces <- readRDS("/Volumes/shared/Behavioral-med-lab/ACESStudy/Data/aces_daily_ggir.RDS")
 
 d <- rbind(shs[, .(ID, UID = paste0("S", ID), SurveyDay, Survey, USURVEYID,
-                   COPE_Appr, SLEEPY, SLEEPYNextDay, 
+                   SLEEPY, SLEEPYNextDay, COPE_Appr, 
                    TIBg, Sleepg, WAKEg, MVPAg, LPAg, SBg)],
            destress[, .(ID, UID = paste0("D", ID), SurveyDay, Survey, USURVEYID,
-                   COPE_Appr, SLEEPY, SLEEPYNextDay,
+                  SLEEPY, SLEEPYNextDay, COPE_Appr,
                    TIBg, Sleepg, WAKEg, MVPAg, LPAg, SBg)],
            aces[, .(ID, UID = paste0("A", ID), SurveyDay, Survey, USURVEYID,
-                   COPE_Appr, SLEEPY, SLEEPYNextDay,
+                   SLEEPY, SLEEPYNextDay, COPE_Appr,
                    TIBg, Sleepg, WAKEg, MVPAg, LPAg, SBg)])
 
 d <- d[complete.cases(d[, .(Sleepg, WAKEg, MVPAg, LPAg, SBg)])]
@@ -97,15 +97,21 @@ any(apply(d[, parts, with = FALSE], 2, function(x) is.na(x)))
 #     .SD[.(ID = ID, USURVEYID = USURVEYID + 1), .(COPE_Appr),
 #         on = c("ID", "USURVEYID")]]
 # 
-# d[, c("COPE_Appr_NextDay") :=
+d[, c("COPE_Appr_NextDay") :=
+    .SD[.(UID = UID, Survey = Survey, SurveyDay = SurveyDay + 1),
+        .(COPE_Appr),
+        on = c("UID", "SurveyDay", "Survey")]]
+# d[, c("COPE_Avoi_NextDay") :=
 #     .SD[.(UID = UID, Survey = Survey, SurveyDay = SurveyDay + 1),
-#         .(COPE_Appr),
+#         .(COPE_Avoi),
 #         on = c("UID", "SurveyDay", "Survey")]]
+
 ```
 
 ## 5-part wake-wake composition model
 
 ```{r}
+
 parts5 <- c("Sleepg", "WAKEg", "MVPAg", "LPAg", "SBg")
 cilr5 <- compilr(d, sbp = sbp5,
                  parts = parts5, idvar = "UID")
@@ -372,10 +378,71 @@ figurew <- ggarrange(pw1, pw2, pw3, pw4, pw5, nrow = 5, legend = "none")
 figure <- ggarrange(figureb, figurew, ncol = 2, common.legend = TRUE, legend = "none")
 #sae as 14:11
 annotate_figure(figure, left = text_grob("Predicted change in Sleepiness", size = 13, rot = 90, family = "Arial Narrow", face = "bold"))
+
 ```
 
+Only sig figures
 
+```{r}
+names <- c(`Sleepg` = "Sleep",
+           `WAKEg` = "Awake in Bed",
+           `MVPAg` = "MVPA",
+           `LPAg` = "LPA",
+           `SBg` = "SB")
+labeller <- function(variable,value){
+  return(names[value])
+}
+pw1 <- 
+  plot(submodel5, ref = "grandmean", level = "within", to = "Sleepg") +
+  scale_colour_manual(values = col[1:4], labels = c("Light Physical Activity", "Moderate to Vigorous Physical Activity", "Sedentary Behaviour", "Awake in Bed")) +
+  scale_fill_manual(values = colf[1:4], labels = c("Light Physical Activity", "Moderate to Vigorous Physical Activity", "Sedentary Behaviour", "Awake in Bed")) +
+  labs(x = "Minutes Reallocation to Total Sleep Time at Within level",
+       y = " ") +
+    facet_grid(~From, labeller = labeller) +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.15, 0.15),
+                     breaks = c(-0.1, 0, 0.1)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm"),
+    legend.position = "bottom"
+  ) 
+pw2 <- 
+  plot(submodel5, ref = "grandmean", level = "within", to = "WAKEg") +
+  scale_colour_manual(values = c(col[1:3], col[5]), labels = c("LPA", "MVPA", "SB", "TST")) +
+  scale_fill_manual(values = c(colf[1:3], colf[5]), labels = c("LPA", "MVPA", "SB", "TST"))  +
+  labs(x = "Minutes Reallocation to Awake in Bed at Within level",
+       y = " ") +
+  facet_grid(~From, labeller = labeller) +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.15, 0.15),
+                     breaks = c(-0.1, 0, 0.1)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm"),
+    legend.position = "bottom"
+  ) 
+    
+sigfig <- ggarrange(pw1, pw2, nrow = 2, legend = "none")
+annotate_figure(sigfig, left = text_grob("Predicted change in Sleepiness", size = 13, rot = 90, family = "Arial Narrow"))
 
+```
 
 ## 4-part wake-wake composition model
 
@@ -455,3 +522,243 @@ plotsub(submodel3$WithinSub$PAg, "Within-person PA", "Sleepiness")
 plotsub(submodel3$WithinSub$SBg, "Within-person SB", "Sleepiness")
 
 ```
+
+## Coping as outcome
+
+```{r}
+mcope <- brmcoda(cilr5,
+                 COPE_Appr_NextDay ~ bilr1 + bilr2 + bilr3 + bilr4 +
+                   wilr1 + wilr2 + wilr3 + wilr4 + (1 | UID), 
+                 cores = 4,
+                 chains = 4,
+                 iter = 3000,
+                 warmup = 500,
+                 seed = 123,
+                 backend = "cmdstanr"
+)
+summary(mcope)
+
+mcoper <- brmcoda(cilr5,
+                 COPE_Appr_NextDay ~ bilr1 + bilr2 + bilr3 + bilr4 +
+                   wilr1 + wilr2 + wilr3 + wilr4 + 
+                   (1 + wilr1 + wilr2 + wilr3 + wilr4 | UID), 
+                 cores = 4,
+                 chains = 4,
+                 iter = 3000,
+                 warmup = 500,
+                 seed = 123,
+                 backend = "cmdstanr"
+)
+summary(mcoper)
+
+subcope <- substitution(
+  mcoper,
+  delta = c(1:30),
+  level = c("between", "within"),
+  ref = "grandmean")
+
+plot(subcope, ref = "grandmean", level = "between", to = "Sleepg") +
+  scale_colour_manual(values = col[1:4], labels = c("LPA", "MVPA", "SB", "WAKE")) +
+  scale_fill_manual(values = colf[1:4], labels = c("LPA", "MVPA", "SB", "WAKE")) +
+  labs(x = "Minutes Reallocation to Total Sleep Time at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  )
+
+plot(subcope, ref = "grandmean", level = "between", to = "WAKEg") +
+  scale_colour_manual(values = c(col[1:3], col[5]), labels = c("LPA", "MVPA", "SB", "TST")) +
+  scale_fill_manual(values = c(colf[1:3], colf[5]), labels = c("LPA", "MVPA", "SB", "TST"))  +
+  labs(x = "Minutes Reallocation to Awake in Bed at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  ) 
+plot(subcope, ref = "grandmean", level = "between", to = "MVPAg") +
+  scale_colour_manual(values = c(col[1], col[3], col[5], col[4]), labels = c("LPA", "SB", "TST", "WAKE")) +
+  scale_fill_manual(values = c(colf[1], colf[3], colf[5], colf[4]), labels = c("LPA", "SB", "TST", "WAKE")) +
+  labs(x = "Minutes Reallocation to Moderate-to-Vigorous Physical Activity at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  ) 
+plot(subcope, ref = "grandmean", level = "between", to = "LPAg") +
+  scale_colour_manual(values = c(col[2:3], col[5:4]), labels = c("MVPA", "SB", "TST", "WAKE")) +
+  scale_fill_manual(values = c(colf[2:3], colf[5:4]), labels = c("MVPA", "SB", "TST", "WAKE"))  +
+  labs(x = "Minutes Reallocation to Light Physical Activity at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  )
+plot(subcope, ref = "grandmean", level = "between", to = "SBg") +
+  scale_colour_manual(values = c(col[1:2], col[5:4]), labels = c("LPA", "MVPA", "TST", "WAKE")) +
+  scale_fill_manual(values = c(colf[1:2], colf[5:4]), labels = c("LPA", "MVPA", "TST", "WAKE")) +
+  labs(x = "Minutes Reallocation to Sedentary Behaviour at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  ) 
+
+plot(subcope, ref = "grandmean", level = "within", to = "Sleepg") +
+  scale_colour_manual(values = col[1:4], labels = c("LPA", "MVPA", "SB", "WAKE")) +
+  scale_fill_manual(values = colf[1:4], labels = c("LPA", "MVPA", "SB", "WAKE")) +
+  labs(x = "Minutes Reallocation to Total Sleep Time at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  )
+
+plot(subcope, ref = "grandmean", level = "within", to = "WAKEg") +
+  scale_colour_manual(values = c(col[1:3], col[5]), labels = c("LPA", "MVPA", "SB", "TST")) +
+  scale_fill_manual(values = c(colf[1:3], colf[5]), labels = c("LPA", "MVPA", "SB", "TST"))  +
+  labs(x = "Minutes Reallocation to Awake in Bed at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  ) 
+plot(subcope, ref = "grandmean", level = "within", to = "MVPAg") +
+  scale_colour_manual(values = c(col[1], col[3], col[5], col[4]), labels = c("LPA", "SB", "TST", "WAKE")) +
+  scale_fill_manual(values = c(colf[1], colf[3], colf[5], colf[4]), labels = c("LPA", "SB", "TST", "WAKE")) +
+  labs(x = "Minutes Reallocation to Moderate-to-Vigorous Physical Activity at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  ) 
+plot(subcope, ref = "grandmean", level = "within", to = "LPAg") +
+  scale_colour_manual(values = c(col[2:3], col[5:4]), labels = c("MVPA", "SB", "TST", "WAKE")) +
+  scale_fill_manual(values = c(colf[2:3], colf[5:4]), labels = c("MVPA", "SB", "TST", "WAKE"))  +
+  labs(x = "Minutes Reallocation to Light Physical Activity at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  )
+plot(subcope, ref = "grandmean", level = "within", to = "SBg") +
+  scale_colour_manual(values = c(col[1:2], col[5:4]), labels = c("LPA", "MVPA", "TST", "WAKE")) +
+  scale_fill_manual(values = c(colf[1:2], colf[5:4]), labels = c("LPA", "MVPA", "TST", "WAKE")) +
+  labs(x = "Minutes Reallocation to Sedentary Behaviour at Between level",
+       y = " ") +
+  scale_x_continuous(breaks = c(-30, 0, 30)) +
+  scale_y_continuous(limits = c(-0.32, 0.32),
+                     breaks = c(-0.25, 0, 0.25)) +
+  hrbrthemes::theme_ipsum() +
+  theme(
+    axis.ticks        = element_blank(),
+    panel.background  = element_blank(),
+    panel.border      = element_blank(),
+    panel.grid.major  = element_blank(),
+    panel.grid.minor  = element_blank(),
+    plot.background   = element_rect(fill = "transparent", colour = NA),
+    # strip.text = element_blank(),
+    axis.title.x      = element_text(size = 12),
+    plot.margin = margin(.5, .5, .5, .5, "cm")
+  )
+```
+
