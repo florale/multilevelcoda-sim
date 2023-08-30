@@ -90,29 +90,29 @@ egltable(condvars, data = rbind(simsum_brmcoda_d3[ndt != 0, ..condvars],
 ))
 
 ## rhat -----------------------
-apply(simsum_brmcoda_d3[, rhatvars_d3, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
-apply(simsum_brmcoda_d4[, rhatvars_d4, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
-apply(simsum_brmcoda_d5[, rhatvars_d5, with = FALSE], 2, function(x) sum(x > 1.01, na.rm = TRUE))
+apply(simsum_brmcoda_d3[, rhatvars_d3, with = FALSE], 2, function(x) sum(x > 1.05, na.rm = TRUE))
+apply(simsum_brmcoda_d4[, rhatvars_d4, with = FALSE], 2, function(x) sum(x > 1.05, na.rm = TRUE))
+apply(simsum_brmcoda_d5[, rhatvars_d5, with = FALSE], 2, function(x) sum(x > 1.05, na.rm = TRUE))
 
-nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3]])
-nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4]])
-nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5]])
-# ests of any runs with R hat > 1.01 to NA
+# set estimates from large rhat runs to NA
+nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3]]) + 
+nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4]]) +
+nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5]]) # 17
 
-# simsum_brmcoda_d3 <- simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], (estnames_brmcoda_d3) := NA]
-# simsum_brmcoda_d4 <- simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], (estnames_brmcoda_d4) := NA]
-# simsum_brmcoda_d5 <- simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], (estnames_brmcoda_d5) := NA]
+simsum_brmcoda_d3 <- simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3], (estnames_brmcoda_d3) := NA]
+simsum_brmcoda_d4 <- simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4], (estnames_brmcoda_d4) := NA]
+simsum_brmcoda_d5 <- simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5], (estnames_brmcoda_d5) := NA]
 
-egltable(condvars, data = rbind(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
-                                simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
-                                simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
+egltable(condvars, data = rbind(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3], ..condvars],
+                                simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4], ..condvars],
+                                simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5], ..condvars]
 ))
 
 ## ess -----------------------
 # ests of any runs with ESS < 400 to NA
-nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3]])
-nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4]])
-nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5]])
+nrow(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3]]) +
+nrow(simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4]]) +
+nrow(simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5]]) # 14090
 
 # simsum_brmcoda_d3 <- simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3], (estnames_brmcoda_d3) := NA]
 # simsum_brmcoda_d4 <- simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4], (estnames_brmcoda_d4) := NA]
@@ -124,20 +124,20 @@ egltable(condvars, data = rbind(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`
 ))
 
 egltable(condvars, data = rbind(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3] |
-                                                  simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
+                                                  simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3], ..condvars],
                                 simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4] |
-                                                  simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
+                                                  simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4], ..condvars],
                                 simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5] |
-                                                  simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
+                                                  simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5], ..condvars]
 ))
 nrow(rbind(simsum_brmcoda_d3[simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3] |
-                               simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
+                               simsum_brmcoda_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3], ..condvars],
            simsum_brmcoda_d4[simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4] |
-                               simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
+                               simsum_brmcoda_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4], ..condvars],
            simsum_brmcoda_d5[simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5] |
-                               simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
-           ))
-# 27651
+                               simsum_brmcoda_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5], ..condvars]
+           )) # 14090
+
 # sub diag -------------------
 simsum_sub_d3 <- simsum_sub[["simsum_sub_d3"]]
 simsum_sub_d4 <- simsum_sub[["simsum_sub_d4"]]
@@ -169,24 +169,22 @@ egltable(condvars, data = rbind(simsum_sub_d3[ndt != 0, ..condvars],
 ))
 
 ## rhat -----------------------
+nrow(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3]]) #144
+nrow(simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4]]) #120
+nrow(simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5]]) #0
 
-nrow(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3]])
-nrow(simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4]])
-nrow(simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5]])
+# set estimates from large rhat runs to NA
+simsum_sub_d3 <- simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3], (estnames_sub_d3) := NA]
+simsum_sub_d4 <- simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4], (estnames_sub_d4) := NA]
+simsum_sub_d5 <- simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5], (estnames_sub_d5) := NA]
 
-# simsum_sub_d3 <- simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], (estnames_sub_d3) := NA]
-# simsum_sub_d4 <- simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], (estnames_sub_d4) := NA]
-# simsum_sub_d5 <- simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], (estnames_sub_d5) := NA]
-
-egltable(condvars, data = rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
-                                simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
-                                simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
+egltable(condvars, data = rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3], ..condvars],
+                                simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4], ..condvars],
+                                simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5], ..condvars]
 ))
 
 
 ## ess -----------------------
-# ests of any runs with ESS < 400 to NA
-
 # simsum_sub_d3 <- simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3], (estnames_sub_d3) := NA]
 # simsum_sub_d4 <- simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4], (estnames_sub_d4) := NA]
 # simsum_sub_d5 <- simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5], (estnames_sub_d5) := NA]
@@ -197,19 +195,19 @@ egltable(condvars, data = rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply
 ))
 
 egltable(condvars, data = rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3] |
-                                                simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
+                                                simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3], ..condvars],
                                 simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4] |
-                                                simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
+                                                simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4], ..condvars],
                                 simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5] |
-                                                simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
+                                                simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5], ..condvars]
 ))
 nrow(rbind(simsum_sub_d3[simsum_sub_d3[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d3] |
-                           simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d3], ..condvars],
+                           simsum_sub_d3[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d3], ..condvars],
            simsum_sub_d4[simsum_sub_d4[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d4] |
-                           simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d4], ..condvars],
+                           simsum_sub_d4[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d4], ..condvars],
            simsum_sub_d5[simsum_sub_d5[, Reduce(`|`, lapply(.SD, `<`, 400)), .SDcols = essvars_d5] |
-                           simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.01)), .SDcols = rhatvars_d5], ..condvars]
-))
+                           simsum_sub_d5[, Reduce(`|`, lapply(.SD, `>`, 1.05)), .SDcols = rhatvars_d5], ..condvars]
+)) #357108
 
 ## DESC -------------------------
 ## Descriptive of conditions of problematic runs
@@ -243,11 +241,11 @@ lapply(simsum_sub_d3[, essvars_d3, with = FALSE], max)
 lapply(simsum_sub_d4[, essvars_d4, with = FALSE], max)
 lapply(simsum_sub_d5[, essvars_d5, with = FALSE], max)
 
-egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: base"])
-egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: RElarge_RESsmall"])
-egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REsmall_RESlarge"])
-egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESlarge"])
-egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESsmall"])
+# egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: base"])
+# egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: RElarge_RESsmall"])
+# egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REsmall_RESlarge"])
+# egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESlarge"])
+# egltable("ICC", data = simsum_brmcoda_d3[cond == "J: 1200, I: 14, sigma: REbase_RESsmall"])
 
 # save diag stats ------------------
 ## D3 --------------------
