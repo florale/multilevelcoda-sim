@@ -541,7 +541,7 @@ p2 <- sub_par_d4 | p[[5]] | p[[6]] | p[[7]] | p[[8]] + theme(plot.margin = unit(
 p3 <- sub_par_d4 | p[[9]] | p[[10]] | p[[1]] | p[[12]] + theme(plot.margin = unit(c(1,1,0,0), "lines"))
 p4 <- sub_par_d4 | p[[13]] | p[[14]] | p[[15]] | p[[16]] + theme(plot.margin = unit(c(1,1,0,0), "lines"))
 p1 / p2 / p3 / p4
-# save as 16x10
+# save as 16x12
 
 ### sub cover plots ---------------------
 out = list()
