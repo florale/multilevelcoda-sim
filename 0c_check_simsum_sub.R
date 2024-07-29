@@ -23,8 +23,8 @@ library(ggpubr)
 
 data.table::setDTthreads(10)
 
-source("input.R") # groundtruth, conditions and functions
-source("functions.R") # functions for plots
+source("1c_simmodel_input.R") # groundtruth, conditions and functions
+source("0a_functions.R") # functions for plots
 ssub <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/rounded_sub_res/simsum_sub_d4.RDS")
 ssub[To == "Sleep" & From == "SB"]$diff_delta_y_w
 mean(ssub[To == "Sleep"][["Mean"]], na.rm = TRUE)

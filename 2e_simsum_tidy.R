@@ -1,5 +1,5 @@
-source("2C-simsum_brmcoda_out.R")
-source("2D-simsum_sub_out.R")
+source("2c_simsum_brmcoda_out.R")
+source("2d_simsum_sub_out.R")
 
 ## d3 fixed ----------------
 b0_d3    <- as.data.table(tidy(summary(s_b0_d3), stats = c("bias", "becover", "cover", "empse", "mse", "power")))

@@ -21,7 +21,7 @@ library("purrr")
 
 # data ----------------------------------------------------------------------------------------
 brmcoda_gt <- readRDS("brmcoda_gt.RDS")
-source("input.R") # groundtruth, conditions and functions
+source("1c_simmodel_input.R") # groundtruth, conditions and functions
 n_parts <- c(3:5)
 
 parts3 <- c("Sleep", "PA", "SB")

@@ -13,9 +13,8 @@ library(MASS)
 
 ## input ---------
 meanscovs <- readRDS("meanscovs.RDS")
-source("input.R") # groundtruth, conditions and functions
+source("1c_simmodel_input.R") # groundtruth, conditions and functions
 set.seed(2023)
-source("input.R")
 sampled_cond <- cond[1]
 
 ## SIM MODEL

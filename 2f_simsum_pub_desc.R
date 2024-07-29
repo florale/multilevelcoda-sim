@@ -455,7 +455,7 @@ psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "RE
 psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "REsmall_RESlarge" & D == 4]$est)
 psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "REsmall_RESlarge" & D == 5]$est)
 
-psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "RElarge_RESsmall" & D == 3]$est) # this bitch
+psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "RElarge_RESsmall" & D == 3]$est) #
 psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "RElarge_RESsmall" & D == 4]$est)
 psych::describe(sub_tab[Stat == "cover" & J == 1200 & I == 14 & condition == "RElarge_RESsmall" & D == 5]$est)
 

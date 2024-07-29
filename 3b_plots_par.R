@@ -1,4 +1,4 @@
-source("simsum_tidy.R")
+source("2E_simsum_tidy.R")
 
 # library, colours ----------------------
 colour <- c("#A69188", "#DCD5CE", "#FAF7F3", "#A1B2C2", "#CFDAE2")

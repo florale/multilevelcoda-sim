@@ -23,9 +23,9 @@ library(ggpubr)
 
 data.table::setDTthreads(10)
 
-source("1C-simmodel_input.R") # groundtruth, conditions and functions
-source("2B-simsum_diag.R") # check diag and set problematic runs to missing
-source("0A-functions.R")
+source("1c_simmodel_input.R") # groundtruth, conditions and functions
+source("2b_simsum_diag.R") # check diag and set problematic runs to missing
+source("0a_functions.R")
 
 substutitution_gt <- readRDS("substutitution_gt.RDS")
 substutitution_gt_d3 <- substutitution_gt[[1]]

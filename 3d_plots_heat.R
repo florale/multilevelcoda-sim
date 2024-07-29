@@ -1,3 +1,5 @@
+source("2c_simsum_brmcoda_out.R")
+source("2d_simsum_sub_out.R")
 
 .heat_plot(
   data = tidy(s_b0_d3, stats = "bias"),
