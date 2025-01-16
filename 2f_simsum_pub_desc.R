@@ -1,8 +1,8 @@
-brmcoda_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_tab.RDS")
-simsum_brmcoda_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_tab.RDS")
-sub_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
-brmcoda_diag <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_diag.RDS")
-simsum_diag <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_diag.RDS")
+brmcoda_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/brmcoda_tab.RDS")
+simsum_brmcoda_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/simsum_brmcoda_tab.RDS")
+sub_tab <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/sub_tab.RDS")
+brmcoda_diag <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/brmcoda_diag.RDS")
+simsum_diag <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/simsum_diag.RDS")
 
 ## DESC ----------
 psych::describe(brmcoda_tab[Stat == "bias"]$est)

@@ -1071,13 +1071,13 @@ simsum_brmcoda_tab[, Estimand := factor(Estimand, levels = c(
   "b_Intercept"
 ))]
 
-saveRDS(simsum_brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_tabb.RDS")
+saveRDS(simsum_brmcoda_tab, "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda_tabb.RDS")
 
 ## save all brmcoda dat for plots -----------
 brmcoda_dat <- split(brmcoda_tab, by = "D")
 names(brmcoda_dat) <- c("brmcoda_d3", "brmcoda_d4","brmcoda_d5")
 
-saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
+saveRDS(brmcoda_dat, "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/brmcoda_dat.RDS")
 
 ## save all sub dat for shiny tables -------------------------
 sub_tab <- rbind(sub_d3,
@@ -1217,7 +1217,7 @@ sub_tab[, Parameter := Estimand]
 sub_tab <- sub_tab[stat %in% c("bias", "cover", "becover")]
 setnames(sub_tab, "stat", "Stat")
 
-saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
+saveRDS(sub_tab, "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_tab.RDS")
 
 ## subset sub dat for plots --------
 sub_dat <- split(sub_tab, by = "D")
@@ -1331,4 +1331,4 @@ sub_dat[["sub_d5"]][, Substitution := factor(
   )
 )]
 
-saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")
+saveRDS(sub_dat, "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/sub_dat.RDS")

@@ -36,7 +36,7 @@ library(latex2exp)
 
 options(digits = 2)
 
-source("1C-simmodel_input.R")
+source("1c_simmodel_input.R")
 
 col4 <- c("#A69188", "#C6BFB9", "#FAF7F3", "#A1B2C2", "#CFDAE2")
 col <- c("#978787", "#C99696", "#C6BFB9", "#A1B2C2", "#647F9A") #lpa #mvpa #sb #wake #tst

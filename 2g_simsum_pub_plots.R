@@ -32,10 +32,10 @@ font <- "Roboto"
 font <- "Times New Roman"
 font <- "Arial Narrow"
 
-brmcoda_dat <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/brmcoda_dat.RDS")
-sub_dat <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/sub_dat.RDS")
+brmcoda_dat <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/brmcoda_dat.RDS")
+sub_dat <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/sub_dat.RDS")
 
-outputdir <- "/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/"
+outputdir <- "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/"
 
 # D4 -------------------
 brmcoda_dat_d4 <- brmcoda_dat[["brmcoda_d4"]]

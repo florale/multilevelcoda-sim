@@ -12,8 +12,8 @@ library(doRNG)
 library(parallel)
 
 # source("simsum_in.R") # raw output from sim
-simsum_sub <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_sub.RDS")
-simsum_brmcoda <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-MonashUniversity/PhD/Manuscripts/Project_multilevelcoda/multilevelcoda-sim-proj/Results/simsum_brmcoda.RDS")
+simsum_sub <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/simsum_sub.RDS")
+simsum_brmcoda <- readRDS("/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/multilevelcoda/multilevelcoda-sim-proj/multilevelcoda-sim-results/simsum_brmcoda.RDS")
 
 # diag var names ----------------
 condvars <- c("N", "K", "J", "I", "D", "rint_sd", "res_sd", "run", 
